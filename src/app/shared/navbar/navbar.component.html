@@ -1,0 +1,239 @@
+<!-- Main Sidebar Container -->
+<aside class="main-sidebar sidebar-dark-primary elevation-4">
+  <!-- Brand Logo -->
+  <!-- <a href="index3.html" class="brand-link">
+        <img src="assets/img/AdminLTELogo.png" alt="AdminLTE Logo" class="brand-image img-circle elevation-3"
+            style="opacity: .8">
+        <span class="brand-text font-weight-light">SB Web</span>
+    </a> -->
+  <a href="index3.html" class="brand-link bg-lightblue">
+    <img src="assets/img/AdminLTELogo.png" alt="AdminLTE Logo" class="brand-image img-circle elevation-3"
+      style="opacity: .8">
+    <span class="brand-text font-weight-light">SB Web</span>
+  </a>
+
+  <!-- Sidebar -->
+  <!-- <div class="sidebar" style="overflow-y: auto;"> -->
+  <div class="sidebar" style="overflow-y: auto;">
+    <!-- Sidebar user panel (optional) -->
+    <div class="user-panel mt-3 pb-3 mb-3 d-flex">
+      <div class="image">
+        <img src="assets/img/user2-160x160.jpg" class="img-circle elevation-2" alt="User Image">
+      </div>
+      <div class="info">
+        <a href="#" class="d-block">Alexander Pierce</a>
+      </div>
+    </div>
+
+    <!-- SidebarSearch Form -->
+    <div class="form-inline">
+      <div class="input-group" data-widget="sidebar-search">
+        <input class="form-control form-control-sidebar" type="search" placeholder="Search" aria-label="Search">
+        <div class="input-group-append">
+          <button class="btn btn-sidebar">
+            <i class="fas fa-search fa-fw"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sidebar Menu -->
+    <nav class="mt-2">
+      <!-- <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
+        <li class="{{menu.IsHeader?menu.CssClass:menu.CssClass}}" *ngFor="let menu of menuList; index as i;">
+          <span *ngIf="menu.IsHeader">{{ menu.Name }}</span>
+          <a *ngIf="!menu.IsHeader && menu.Children.length === 0" href="#" [routerLink]="[menu.RouteLink]"
+            routerLinkActive="active" class="{{menu.RouteLinkClass}}">
+            <i *ngIf="!menu.IsHeader" class="{{menu.Icon}}"></i>
+            <p *ngIf="!menu.IsHeader">
+              {{menu.Name}}
+            </p>
+          </a>
+          <a *ngIf="!menu.IsHeader && menu.Children.length > 0" href="#" [routerLink]="[menu.RouteLink]"
+            routerLinkActive="active" class="{{menu.RouteLinkClass}}">
+            <i *ngIf="!menu.IsHeader" class="{{menu.Icon}}"></i>
+            <p *ngIf="!menu.IsHeader">
+              {{menu.Name}}
+              <i *ngIf="!menu.IsHeader" class="{{menu.DropdownIcon}}"></i>
+            </p>
+          </a>
+          <ul *ngIf="!menu.IsHeader && menu.Children.length > 0" class="nav nav-treeview">
+            <li class="{{child.CssClass}}" *ngFor="let child of menu.Children; index as j;">
+              <a href="#" [routerLink]="[child.RouteLink]" routerLinkActive="active" class="{{child.RouteLinkClass}}">
+                <i class="{{child.Icon}}"></i>
+                <p>{{child.Name}}</p>
+              </a>
+            </li>
+          </ul>
+        </li>
+      </ul> -->
+      <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
+        <ng-container *ngFor="let item of menuList; index as i;">
+          <li *ngIf="item.IsHeader && !item.IsModule && !item.IsComponent && item.Children.length > 0" class="{{item.CssClass}}">{{ item.Name }}
+          </li>
+          <!-- <li  class="{{child.CssClass}}" *ngFor="let child of item.Children">
+            <a *ngIf="!item.IsHeader && item.IsModule && !item.IsComponent" href="#" [routerLink]="[child.RouteLink]" class="{{child.RouteLinkClass}}">
+              <i class="{{child.Icon}}"></i>
+              <p>{{child.Name}}</p>
+            </a>
+            <ul class="nav nav-treeview" *ngIf="child.Children && child.Children.length > 0">
+              <ng-container *ngFor="let childOfChild of child.Children">
+                <li *ngIf="!childOfChild.IsHeader && !childOfChild.IsModule && childOfChild.IsComponent"
+                class="{{childOfChild.CssClass}}">
+                  <a href="#" [routerLink]="[childOfChild.RouteLink]" class="{{childOfChild.RouteLinkClass}}">
+                    <i class="{{childOfChild.Icon}}"></i>
+                    <p>{{childOfChild.Name}}</p>
+                  </a>
+                </li>
+              </ng-container>
+            </ul>
+          </li> -->
+          <ng-container *ngFor="let child of item.Children">
+            <li *ngIf="!child.IsHeader && child.IsModule && !child.IsComponent" class="{{child.CssClass}}">
+              <a href="#" [routerLink]="[child.RouteLink]" class="{{child.RouteLinkClass}}">
+                <i class="{{child.Icon}}"></i>
+                <p>{{child.Name}}
+                  <i *ngIf="child.Children && child.Children.length > 0" class="fas fa-angle-left right"></i>
+                </p>
+              </a>
+              <ul class="nav nav-treeview" *ngIf="child.Children && child.Children.length > 0">
+                <ng-container *ngFor="let childOfChild of child.Children">
+                  <li *ngIf="!childOfChild.IsHeader && !childOfChild.IsModule && childOfChild.IsComponent"
+                  class="{{childOfChild.CssClass}}">
+                    <a href="#" [routerLink]="[childOfChild.RouteLink]" class="{{childOfChild.RouteLinkClass}}">
+                      <i class="{{childOfChild.Icon}}"></i>
+                      <p>{{childOfChild.Name}}</p>
+                    </a>
+                  </li>
+                </ng-container>
+              </ul>
+            </li>
+          </ng-container>
+          <!-- <li [ngClass]="item.CssClass" *ngIf="!item.ParentId">
+            <a [href]="item.RouteLink || '#'" [ngClass]="item.RouteLinkClass" class="nav-link">
+              <i class="nav-icon {{item.Icon}}"></i>
+              <p>
+                {{item.Name}}
+                <span *ngIf="item.DropdownIcon" class="right"><i class="{{item.DropdownIcon}}"></i></span>
+              </p>
+            </a>
+            <ul class="nav nav-treeview" *ngIf="item.Children && item.Children.length > 0">
+              <ng-container *ngFor="let child of item.Children">
+                <li [ngClass]="child.CssClass">
+                  <a [href]="child.RouteLink || '#'" [ngClass]="child.RouteLinkClass" class="nav-link">
+                    <i class="nav-icon {{child.Icon}}"></i>
+                    <p>{{child.Name}}</p>
+                  </a>
+                </li>
+              </ng-container>
+            </ul>
+          </li> -->
+        </ng-container>
+      </ul>
+      <!-- <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
+        <li class="nav-header">EXAMPLES</li>
+        <li class="nav-item">
+          <a href="pages/kanban.html" class="nav-link">
+            <i class="nav-icon fas fa-columns"></i>
+            <p>
+              Kanban Board
+            </p>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="#" class="nav-link">
+            <i class="nav-icon far fa-envelope"></i>
+            <p>
+              Mailbox
+              <i class="fas fa-angle-left right"></i>
+            </p>
+          </a>
+          <ul class="nav nav-treeview">
+            <li class="nav-item">
+              <a href="pages/mailbox/mailbox.html" class="nav-link">
+                <i class="far fa-circle nav-icon"></i>
+                <p>Inbox</p>
+              </a>
+            </li>
+          </ul>
+        </li>
+        <li class="nav-item">
+          <a href="pages/gallery.html" class="nav-link">
+            <i class="nav-icon far fa-image"></i>
+            <p>
+              Gallery
+            </p>
+          </a>
+        </li>
+      </ul> -->
+      <!-- 
+      <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
+        <li class="{{menu.IsHeader?menu.CssClass:menu.CssClass}}" *ngFor="let menu of menuList; index as i;">
+          <span *ngIf="menu.IsHeader">{{ menu.Name }}</span>
+          <a *ngIf="!menu.IsHeader && menu.Children.length === 0" href="#" [routerLink]="[menu.RouteLink]"
+            routerLinkActive="active" class="{{menu.RouteLinkClass}}">
+            <i *ngIf="!menu.IsHeader" class="{{menu.Icon}}"></i>
+            <p *ngIf="!menu.IsHeader">
+              {{menu.Name}}
+            </p>
+          </a>
+          <a *ngIf="!menu.IsHeader && menu.Children.length > 0" href="#" [routerLink]="[menu.RouteLink]"
+            routerLinkActive="active" class="{{menu.RouteLinkClass}}">
+            <i *ngIf="!menu.IsHeader" class="{{menu.Icon}}"></i>
+            <p *ngIf="!menu.IsHeader">
+              {{menu.Name}}
+              <i *ngIf="!menu.IsHeader" class="{{menu.DropdownIcon}}"></i>
+            </p>
+          </a>
+          <ul *ngIf="!menu.IsHeader && menu.Children.length > 0" class="nav nav-treeview">
+            <li class="{{child.CssClass}}" *ngFor="let child of menu.Children; index as j;">
+              <a href="#" [routerLink]="[child.RouteLink]" routerLinkActive="active" class="{{child.RouteLinkClass}}">
+                <i class="{{child.Icon}}"></i>
+                <p>{{child.Name}}</p>
+              </a>
+            </li>
+          </ul>
+        </li>
+      </ul>
+      <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
+        <li class="{{menu.IsHeader?menu.CssClass:menu.CssClass}}" *ngFor="let menu of menuList; index as i;">
+          <span
+            *ngIf="menu.IsHeader && !menu.IsModule && !menu.IsComponent && menu.Children.length > 0">{{ menu.Name }}</span>
+          <a *ngIf="menu.Children.length === 1 && menu.Children[0].Children.length === 0 && !menu.Children[0].IsHeader && menu.Children[0].IsModule && !menu.Children[0].IsComponent"
+            href="#" [routerLink]="[menu.Children[0].RouteLink]"
+            class="{{menu.Children[0].RouteLinkClass}}">
+            <i *ngIf="!menu.Children[0].IsHeader && menu.Children[0].IsModule && !menu.Children[0].IsComponent"
+              class="{{menu.Children[0].Icon}}"></i>
+            <p *ngIf="!menu.Children[0].IsHeader && menu.Children[0].IsModule && !menu.Children[0].IsComponent">
+              {{menu.Children[0].Name}}
+            </p>
+          </a>
+          <a *ngIf="menu.Children.length === 1 && menu.Children[0].Children.length > 0 && !menu.Children[0].IsHeader && menu.Children[0].IsModule && !menu.Children[0].IsComponent"
+            href="#" [routerLink]="[menu.Children[0].RouteLink]" 
+            class="{{menu.Children[0].RouteLinkClass}}">
+            <i *ngIf="!menu.Children[0].IsHeader && menu.Children[0].IsModule && !menu.Children[0].IsComponent"
+              class="{{menu.Children[0].Icon}}"></i>
+            <p *ngIf="!menu.Children[0].IsHeader && menu.Children[0].IsModule && !menu.Children[0].IsComponent">
+              {{menu.Children[0].Name}}
+              <i *ngIf="!menu.Children[0].IsHeader && menu.Children[0].IsModule && !menu.Children[0].IsComponent"
+                class="{{menu.Children[0].DropdownIcon}}"></i>
+            </p>
+          </a>
+          <ul
+            *ngIf="menu.Children.length === 1 && menu.Children[0].Children.length > 0 && !menu.Children[0].IsHeader && menu.Children[0].IsModule && !menu.Children[0].IsComponent"
+            class="nav nav-treeview">
+            <li class="{{child.CssClass}}" *ngFor="let child of menu.Children[0].Children; index as j;">
+              <a *ngIf="!child.IsHeader && !child.IsModule && child.IsComponent" href="#"
+                [routerLink]="[child.RouteLink]"  class="{{child.RouteLinkClass}}">
+                <i class="{{child.Icon}}"></i>
+                <p>{{child.Name}}</p>
+              </a>
+            </li>
+          </ul>
+        </li>
+      </ul> -->
+    </nav>
+    <!-- /.sidebar-menu -->
+  </div>
+  <!-- /.sidebar -->
+</aside>

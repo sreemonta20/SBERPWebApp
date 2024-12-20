@@ -1,0 +1,179 @@
+<!-- <ngx-spinner bdColor="rgba(51, 51, 51, 0.8)" size="default" type="ball-spin-clockwise">
+  <p style="color: white">Please Wait. </p>
+</ngx-spinner> -->
+
+<!-- <ngx-spinner bdColor="rgba(51,51,51,0.8)" size="large" color="#fff" type="ball-clip-rotate-pulse" [fullScreen] = "true"></ngx-spinner> -->
+<ngx-spinner  size="medium" type="ball-clip-rotate-pulse"></ngx-spinner>
+<div class="login-box">
+  <div class="card card-outline card-primary">
+    <div class="card-header text-center">
+      <a href="javascript: void(0);" [routerLink]="['/auth/login']" class="h1"><b>SBWeb</b> Login</a>
+    </div>
+    <div class="card-body">
+      <p class="login-box-msg">Sign in to start your session</p>
+
+      <form id="loginForm" [formGroup]="loginForm" novalidate #fb="ngForm" (ngSubmit)="signIn()">
+        <div class="input-group mb-3">
+          <input type="text" class="form-control" id="userName" name="userName" placeholder="User Name"
+            formControlName="userName" class="form-control"
+            [ngClass]="{ 'is-invalid': f.userName.errors && f.userName.invalid && (f.userName.dirty || f.userName.touched)  }"
+            required autocomplete="off">
+          <div class="input-group-append">
+            <div class="input-group-text">
+              <span class="fas fa-envelope"></span>
+            </div>
+          </div>
+          <span class="glyphicon glyphicon-envelope form-control-feedback"></span>
+          <div *ngIf="f.userName.errors && f.userName.invalid && (f.userName.dirty || f.userName.touched)"
+            class="invalid-feedback">
+            <div *ngIf="f.userName.errors.required">User Name is required</div>
+            <div *ngIf="f.userName.errors.noWhiteSpace">White and empty spaces
+              are not allowed</div>
+          </div>
+        </div>
+        <div class="input-group mb-3">
+          <input type="password" class="form-control" id="password" name="password" placeholder="Password"
+            formControlName="password" class="form-control"
+            [ngClass]="{ 'is-invalid': f.password.errors && f.password.invalid && (f.password.dirty || f.password.touched) }"
+            required autocomplete="off">
+          <div class="input-group-append">
+            <div class="input-group-text">
+              <span class="fas fa-lock"></span>
+            </div>
+          </div>
+          <span class="glyphicon glyphicon-lock form-control-feedback"></span>
+          <div *ngIf="f.password.errors && f.password.invalid && (f.password.dirty || f.password.touched)"
+            class="invalid-feedback">
+            <div *ngIf="f.password.errors.required">Password is required</div>
+            <div *ngIf="f.password.errors?.noWhiteSpace"><i>White and empty spaces
+                are not allowed</i></div>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-8">
+            <div class="icheck-primary">
+              <input type="checkbox" id="remember" style="margin-right: 2%;" />
+              <label for="remember"> Remember Me </label>
+            </div>
+          </div>
+          <div class="col-4">
+            <button type="submit" class="btn btn-primary btn-block">
+              Sign In
+            </button>
+          </div>
+        </div>
+      </form>
+
+      <div class="social-auth-links text-center mt-2 mb-3">
+        <a href="javascript: void(0);" class="btn btn-block btn-primary">
+          <i class="fab fa-facebook mr-2"></i> Sign in using Facebook
+        </a>
+        <a href="javascript: void(0);" class="btn btn-block btn-danger">
+          <i class="fab fa-google-plus mr-2"></i> Sign in using Google+
+        </a>
+      </div>
+
+      <p class="mb-1">
+        <a href="javascript: void(0);" [routerLink]="['/auth/resetpassword']">I forgot my password</a>
+      </p>
+      <p class="mb-0">
+        <a href="javascript: void(0);" [routerLink]="['/auth/register']" class="text-center">Register a new
+          membership</a>
+      </p>
+    </div>
+  </div>
+</div>
+<!-- <ngx-spinner  size="medium" type="ball-clip-rotate-pulse"></ngx-spinner> -->
+<!-- -----------------------------------------Alternative login form----------------------------------------------- -->
+<!-- <section class="login-box">
+	<div class="login-box-body">
+		<p class="login-box-msg">Sign in to start your session</p>
+		<p class="login-box-msg"> intelchiprules@yahoo.co.in :: admin@123</p>
+ 
+		<form id="loginForm" [formGroup]="loginForm" novalidate #fb="ngForm" (ngSubmit)="signIn()">
+			<div class="form-group has-feedback">
+				<input 
+          type="text" 
+          class="form-control"
+          id="userName" name="userName"
+          placeholder="User Name" 
+          formControlName="userName"
+          class="form-control" 
+          [ngClass]="{ 'is-invalid': submitted && f.userName.errors }">
+        <span class="glyphicon glyphicon-envelope form-control-feedback"></span>
+        <div *ngIf="submitted && f.userName.errors" class="invalid-feedback">
+            <div *ngIf="f.userName.errors.required">User Name is required</div>
+        </div>
+      </div>
+      <div class="form-group has-feedback">
+        <input 
+          type="password" 
+          class="form-control" 
+          id="password" name="password"
+          placeholder="Password" 
+          formControlName="password"  
+          class="form-control" 
+          [ngClass]="{ 'is-invalid': submitted && f.password.errors }">
+        <span class="glyphicon glyphicon-lock form-control-feedback"></span>
+        <div *ngIf="submitted && f.password.errors" class="invalid-feedback">
+            <div *ngIf="f.password.errors.required">Password is required</div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-xs-8"> 
+          <div class="checkbox icheck">
+            <label>
+              <input type="checkbox" checked> Remember Me
+            </label>
+          </div>
+        </div>
+        <div class="col-xs-4">
+          <button type="submit" class="btn btn-primary btn-block btn-flat">Sign In</button>
+        </div>
+      </div>
+    </form> 
+  </div> 
+</section> -->
+
+<!-- -----------------------------------------Alternative login form----------------------------------------------- -->
+
+<!-- <div class="form-v6">
+  "src/assets/css/nunito-font.css",
+</div> -->
+
+<!-- <div class="page-content">
+  <div class="form-v6-content">
+    <div class="form-left">
+      <img src="assets/img/form-v6.jpg" alt="form">
+    </div>
+    <form class="form-detail" id="loginForm" [formGroup]="loginForm" novalidate #fb="ngForm" (ngSubmit)="signIn()">
+      <h2>Login Form</h2>
+      <div class="form-row">
+        <input type="text" class="input-text" id="userName" name="userName" formControlName="userName"
+          placeholder="User Name" required autocomplete="off">
+      </div>
+      <div
+        *ngIf="loginForm.get('userName').invalid && (loginForm.get('userName').dirty || loginForm.get('userName').touched)"
+        class="text-danger field-require-text-msg">
+        <span *ngIf="loginForm.get('userName').errors?.required"><i>User Name is required</i></span>
+        <span *ngIf="loginForm.get('userName').errors?.noWhiteSpace"><i>White and empty spaces
+            are not allowed</i></span>
+      </div>
+
+      <div class="form-row">
+        <input type="password" class="form-control" id="password" type="password" formControlName="password"
+          placeholder="Password" required autocomplete="off">
+      </div>
+      <div
+        *ngIf="loginForm.get('password').invalid && (loginForm.get('password').dirty || loginForm.get('password').touched)"
+        class="text-danger field-require-text-msg">
+        <span *ngIf="loginForm.get('password').errors?.required"><i>Password Name is required</i></span>
+        <span *ngIf="loginForm.get('password').errors?.noWhiteSpace"><i>White and empty spaces
+            are not allowed</i></span>
+      </div>
+      <div class="form-row-last">
+        <input type="submit" class="register" value="Singin">
+      </div>
+    </form>
+  </div>
+</div> -->

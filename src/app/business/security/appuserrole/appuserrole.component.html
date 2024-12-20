@@ -1,0 +1,214 @@
+<!-- Content Wrapper. Contains page content -->
+<ngx-spinner size="medium" type="ball-clip-rotate-pulse"></ngx-spinner>
+<div class="content-wrapper">
+  <!-- Content Header (Page header) -->
+  <section class="content-header">
+    <div class="container-fluid">
+      <div class="row mb-2">
+        <div class="col-sm-6">
+          <h1>Role Management</h1>
+        </div>
+        <div class="col-sm-6">
+          <ol class="breadcrumb float-sm-right">
+            <li class="breadcrumb-item"><a href="#" [routerLink]="['/business/home']">Home</a></li>
+            <li class="breadcrumb-item active">Role</li>
+          </ol>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="content">
+    <div class="container-fluid">
+      <div class="card card-default">
+        <div class="card-header">
+          <h3 class="card-title">Create/Edit/Delete Role</h3>
+
+          <div class="card-tools">
+            <button type="button" class="btn btn-tool" data-card-widget="collapse">
+              <i class="fas fa-minus"></i>
+            </button>
+            <button type="button" class="btn btn-tool" data-card-widget="remove">
+              <i class="fas fa-times"></i>
+            </button>
+          </div>
+        </div>
+        <form [formGroup]="appUserRoleForm" (ngSubmit)="createUpdateAppUserRole(appUserRoleForm.value)">
+          <div class="card-body">
+            <div class="row">
+              <input type="hidden" formControlName="Id" />
+              <input type="hidden" formControlName="CreateUpdateBy" />
+              <div class="col-md-6 col-sm-6 col-lg-6">
+                <div class="form-group">
+                  <label for="txtRoleName">Application User Role<label style="color: red;">*</label></label>
+                  <input type="text" id="txtRoleName" name="RoleName" formControlName="RoleName" class="form-control" />
+                  <div *ngIf="appUserRoleForm.get('RoleName').touched && appUserRoleForm.get('RoleName').invalid"
+                    class="error-message">
+                    <div *ngIf="appUserRoleForm.get('RoleName').errors?.required" class="text-danger">Role Name is
+                      required.</div>
+                    <div *ngIf="appUserRoleForm.get('RoleName').errors?.englishText" class="text-danger">{{
+                      appUserRoleForm.get('RoleName').errors?.englishText }}</div>
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-6 col-sm-6 col-lg-6">
+                <div class="form-group form-check">
+                  <input type="checkbox" id="chkIsActive" name="IsActive" formControlName="IsActive"
+                    class="form-check-input" />
+                  <label for="chkIsActive" class="form-check-label" style="font-weight: bold;">Is Active</label>
+                </div>
+              </div>
+            </div>
+
+            <div class="row">
+              <div class="col-12  col-sm-12 col-lg-12">
+                <div class="form-group">
+                  <label for="txtAreaDescription">Description<label style="color: red;">*</label></label>
+                  <textarea id="txtAreaDescription" name="Description" formControlName="Description"
+                    class="form-control" rows="5" resize="false"></textarea>
+                  <div *ngIf="appUserRoleForm.get('Description').touched && appUserRoleForm.get('Description').invalid"
+                    class="error-message">
+                    <div *ngIf="appUserRoleForm.get('Description').errors?.required" class="text-danger">Role Name is
+                      required.</div>
+                    <div *ngIf="appUserRoleForm.get('Description').errors?.englishText" class="text-danger">{{
+                      appUserRoleForm.get('Description').errors?.englishText }}</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="card-footer text-right">
+            <button type="submit" [disabled]="isEdit? !isUpdate:!isCreate" class="btn btn-sm btn-primary mr-1">{{isEdit?
+              'Update':'Save'}}</button>
+            <button type="button" [disabled]="isEdit? !isUpdate:!isCreate" class="btn btn-sm btn-warning"
+              (click)="resetForm();">Clear</button>
+          </div>
+        </form>
+
+      </div>
+      <div class="row">
+        <div class="col-12">
+          <div class="card">
+            <div class="card-header p-2">
+              <div class="row">
+                <div class="col-2 mr-0 pr-0">
+                  <h3 class="card-title" style="width: 100px;">All Users</h3>
+                </div>
+                <div class="col-2">
+                  <div class="input-group input-group-sm">
+                    <select class="form-control select2" name="pageSize" [(ngModel)]="pageSize"
+                      (change)="changePageSize($event)" style="width: 100px;">
+                      <option *ngFor="let size of pageSizeList" [value]="size">{{size}}</option>
+                    </select>
+                  </div>
+
+                </div>
+                <div class="col-8 d-flex justify-content-end">
+                  <div class="card-tools">
+                    <div class="input-group input-group-sm" style="width: 150px;">
+                      <input type="text" name="table_search" class="form-control float-right" placeholder="Search">
+                      <div class="input-group-append">
+                        <button type="submit" class="btn btn-default">
+                          <i class="fas fa-search"></i>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="card-body table-responsive p-2">
+              <table class="table table-hover text-nowrap">
+                <thead>
+                  <tr>
+                    <th>Role Name</th>
+                    <th>Description</th>
+                    <th>Created By</th>
+                    <th>Created Date</th>
+                    <th>Updated By</th>
+                    <th>Updated Date</th>
+                    <th>Active</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let appUserRole of appUserRoleList">
+                    <td data-label="Role Name">{{ appUserRole.RoleName }}</td>
+                    <td data-label="Description">{{ appUserRole.Description }}</td>
+                    <td data-label="Created By">{{ appUserRole.CreatedByName }}</td>
+                    <td data-label="Created Date">{{ appUserRole.CreatedDate | date:'medium'}}</td>
+                    <td data-label="Updated By">{{ appUserRole.UpdatedByName }}</td>
+                    <td data-label="Updated Date">{{ appUserRole.UpdatedDate | date:'medium'}} </td>
+                    <td data-label="Active">{{ appUserRole.IsActive ? 'Yes' : 'No' }}</td>
+                    <td data-label="Action">
+                      <!-- <ul class="list-inline m-0">
+                                            <li class="list-inline-item">
+                                              <i class="fa fa-edit" (click)="editAppUserRole(appUserRole)"></i>
+                                            </li>
+                                            <li class="list-inline-item">
+                                              <i class="fa fa-trash" (click)="deleteAppUserRole(appUserRole.Id)"></i>
+                                            </li>
+                                          </ul> -->
+                      <ul class="list-inline m-0">
+                        <li class="list-inline-item" [class.disabled]="!isUpdate" (click)="isUpdate && editAppUserRole(appUserRole)">
+                          <i class="fa fa-edit"></i>
+                        </li>
+                        <li class="list-inline-item" [class.disabled]="!isDelete" (click)="isDelete && deleteAppUserRole(appUserRole.Id)">
+                          <i class="fa fa-trash"></i>
+                        </li>
+                      </ul>
+                    </td>
+                  </tr>
+                </tbody>
+                <tfoot *ngIf="appUserRoleList.length === 0">
+                  <tr>
+                    <td colspan="7" class="text-center">No data found</td>
+                  </tr>
+                </tfoot>
+              </table>
+            </div>
+            <div class="card-footer clearfix p-2">
+              <div class="row">
+                <div class="col-sm-5">
+                  <div class="dataTables_info" id="example1_info" role="status" aria-live="polite">Showing <span
+                      class="text-success"><b>{{startPage}}</b></span> to <span
+                      class="text-success"><b>{{endPage}}</b></span> of <span
+                      class="text-success"><b>{{totalRows}}</b></span>
+                    entries</div>
+                </div>
+                <div class="col-sm-7">
+                  <ul class="pagination pagination-sm m-0 float-right">
+                    <li class="page-item" [class.disabled]="currentPage === 1">
+                      <a class="page-link" (click)="changePage(1)" aria-label="First" href="#">
+                        <span aria-hidden="true">&laquo;&laquo;</span>
+                      </a>
+                    </li>
+                    <li class="page-item" [class.disabled]="currentPage === 1">
+                      <a class="page-link" (click)="changePage(currentPage - 1)" aria-label="Previous" href="#">
+                        <span aria-hidden="true">&laquo;</span>
+                      </a>
+                    </li>
+                    <li class="page-item" *ngFor="let page of [].constructor(pageCount); let i = index"
+                      [class.active]="currentPage === i + 1">
+                      <a class="page-link" (click)="changePage(i + 1)" href="#">{{ i + 1 }}</a>
+                    </li>
+                    <li class="page-item" [class.disabled]="currentPage === pageCount">
+                      <a class="page-link" (click)="changePage(currentPage + 1)" aria-label="Next" href="#">
+                        <span aria-hidden="true">&raquo;</span>
+                      </a>
+                    </li>
+                    <li class="page-item" [class.disabled]="currentPage === pageCount">
+                      <a class="page-link" (click)="changePage(pageCount)" aria-label="Last" href="#">
+                        <span aria-hidden="true">&raquo;&raquo;</span>
+                      </a>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>

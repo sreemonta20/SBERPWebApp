@@ -1,0 +1,36 @@
+/* You can add global styles to this file, and also import other style files */
+@media screen and (max-width: 768px) {
+    .table tr {
+      border: 1px solid #ccc; /* Light border for highlighting */
+      display: block;
+      margin-bottom: 10px;
+    }
+  
+    .table td {
+      display: block;
+      text-align: right;
+      padding-left: 50%; /* Adjust this based on the length of your data-labels */
+      position: relative;
+      word-wrap: break-word; /* Ensures words will break if too long */
+      white-space: normal; /* Ensures the text wraps to the next line */
+      margin-bottom: 5px;
+    }
+  
+    .table td::before {
+      content: attr(data-label);
+      position: absolute;
+      left: 0;
+      width: 50%; /* Adjust based on your layout */
+      padding-left: 10px;
+      font-weight: bold;
+      white-space: nowrap; 
+      text-align: left;
+      /* margin-bottom: 5px; */
+    }
+  }
+  
+
+  .disabled {
+    pointer-events: none;
+    opacity: 0.5;
+  }
