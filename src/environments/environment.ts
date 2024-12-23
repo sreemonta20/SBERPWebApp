@@ -11,7 +11,8 @@ export const environment = {
   encryptIV:'1203199320052021'
 };
 
-export const securityApiUrl = 'https://localhost:44360';
+// export const securityApiUrl = 'https://localhost:44360';
+export const securityApiUrl = 'https://localhost:44357';
 //https://localhost:44360/
 /*
  * For easier debugging in development mode, you can import the following file
