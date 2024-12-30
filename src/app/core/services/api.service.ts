@@ -85,9 +85,9 @@ export class ApiService<T> {
     return this.http.get<T>(url, { headers });
   }
 
-  public getAllExtn(endpoint: string): Observable<T> {
+  public getAllWithoutParams(endpoint: string): Observable<T> {
     const headers = this.getHeaders();
-    const url = `${this.baseUrl}/${endpoint}`;
+    const url = `${this.baseUrl}${endpoint}`;
     return this.http.get<T>(url, { headers });
   }
 

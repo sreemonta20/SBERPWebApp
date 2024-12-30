@@ -1,0 +1,331 @@
+<!-- Content Wrapper. Contains page content -->
+<ngx-spinner size="medium" type="ball-clip-rotate-pulse"></ngx-spinner>
+<div class="content-wrapper">
+  <!-- Content Header (Page header) -->
+  <section class="content-header">
+    <div class="container-fluid">
+      <div class="row mb-2">
+        <div class="col-sm-6">
+          <h1>User Menu Management</h1>
+        </div>
+        <div class="col-sm-6">
+          <ol class="breadcrumb float-sm-right">
+            <li class="breadcrumb-item"><a href="#" [routerLink]="['/business/home']">Home</a></li>
+            <li class="breadcrumb-item active">User Menu</li>
+          </ol>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="content">
+    <div class="container-fluid">
+      <div class="card card-default">
+        <div class="card-header">
+          <h3 class="card-title">Create/Edit/Delete User Menu</h3>
+
+          <div class="card-tools">
+            <button type="button" class="btn btn-tool" data-card-widget="collapse">
+              <i class="fas fa-minus"></i>
+            </button>
+            <button type="button" class="btn btn-tool" data-card-widget="remove">
+              <i class="fas fa-times"></i>
+            </button>
+          </div>
+        </div>
+        <form [formGroup]="appUserMenuForm" (ngSubmit)="createUpdateAppUserMenu(appUserMenuForm.value)">
+          <div class="card-body">
+            <div class="row">
+              <input type="hidden" formControlName="Id" />
+              <input type="hidden" formControlName="CreateUpdateBy" />
+              <div class="col-md-3 col-sm-3 col-lg-3">
+                <div class="form-group">
+                  <label for="txtName">Menu Name<label style="color: red; margin-bottom: 0rem;">*</label></label>
+                  <input type="text" id="txtName" name="Name" formControlName="Name" class="form-control" />
+                  <div *ngIf="appUserMenuForm.get('Name').touched && appUserMenuForm.get('Name').invalid"
+                    class="error-message">
+                    <div *ngIf="appUserMenuForm.get('Name').errors?.required" class="text-danger">Menu Name is
+                      required.</div>
+                    <div *ngIf="appUserMenuForm.get('Name').errors?.englishText" class="text-danger">{{
+                      appUserMenuForm.get('Name').errors?.englishText }}</div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="col-md-3 col-sm-3 col-lg-3">
+                <div class="form-group">
+                  <label for="txtCssClass">CSS Class <span style="color: red;">*</span></label>
+                  <input type="text" class="form-control" id="txtCssClass" formControlName="CssClass"
+                    list="cssClassOptions" (input)="onCssClassInput($event)" />
+                  <datalist id="cssClassOptions">
+                    <option *ngFor="let cssClass of filteredCssClassList" [value]="cssClass.name"></option>
+                  </datalist>
+                  <div *ngIf="appUserMenuForm.get('CssClass').invalid && appUserMenuForm.get('CssClass').touched"
+                    class="text-danger">
+                    CSS Class is required.
+                  </div>
+                </div>
+              </div>
+
+              <div class="col-md-3 col-sm-3 col-lg-3">
+                <div class="form-group">
+                  <label for="txtRouteLink">Route Link <span style="color: red;">*</span></label>
+                  <input type="text" class="form-control" id="txtRouteLink" formControlName="RouteLink"
+                    list="routeLinkOptions" (input)="onCssClassInput($event)" />
+                  <datalist id="routeLinkOptions">
+                    <option *ngFor="let routeLink of filteredRouteLinkList" [value]="routeLink.name"></option>
+                  </datalist>
+                  <div *ngIf="appUserMenuForm.get('RouteLink').invalid && appUserMenuForm.get('RouteLink').touched"
+                    class="text-danger">
+                    Route Link is required.
+                  </div>
+                </div>
+              </div>
+
+              <div class="col-md-3 col-sm-3 col-lg-3">
+                <div class="form-group">
+                  <label for="txtRouteLinkClass">Route Link Class <span style="color: red;">*</span></label>
+                  <input type="text" class="form-control" id="txtRouteLinkClass" formControlName="RouteLinkClass"
+                    list="routeLinkClassOptions" (input)="onRouteLinkClassInput($event)" />
+                  <datalist id="routeLinkClassOptions">
+                    <option *ngFor="let routeLinkClass of filteredRouteLinkClassList" [value]="routeLinkClass.name"></option>
+                  </datalist>
+                  <div *ngIf="appUserMenuForm.get('RouteLinkClass').invalid && appUserMenuForm.get('RouteLinkClass').touched"
+                    class="text-danger">
+                    Route Link Class is required.
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="row">
+              <div class="col-md-3 col-sm-3 col-lg-3">
+                <div class="form-group">
+                  <label for="txtIcon">Icon <span style="color: red;">*</span></label>
+                  <input type="text" class="form-control" id="txtIcon" formControlName="Icon"
+                    list="iconOptions" (input)="onIconInput($event)" />
+                  <datalist id="iconOptions">
+                    <option *ngFor="let icon of filteredIconList" [value]="icon.name"></option>
+                  </datalist>
+                  <div *ngIf="appUserMenuForm.get('Icon').invalid && appUserMenuForm.get('Icon').touched"
+                    class="text-danger">
+                    Icon is required.
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-3 col-sm-3 col-lg-3">
+                <div class="form-group">
+                  <label for="ddlParentId">Parent Menu</label>
+                  <select name="select" class="form-control" id="ddlParentId" name="ParentId" formControlName="ParentId">
+                    <option value="" disabled selected>Please select</option>
+                    <option *ngFor="let parentMenu of parentMenuList" value={{parentMenu.Id}}>
+                      {{parentMenu.Name}}
+                    </option>
+                  </select>
+                </div>
+              </div>
+              <div class="col-md-3 col-sm-3 col-lg-3">
+                <div class="form-group">
+                  <label for="txtDropdownIcon">Icon</label>
+                  <input type="text" class="form-control" id="txtDropdownIcon" formControlName="DropdownIcon"
+                    list="dropdownIconOptions" (input)="onDropdownIconInput($event)" />
+                  <datalist id="dropdownIconOptions">
+                    <option *ngFor="let dropdownIcon of filteredDropdownIconList" [value]="dropdownIcon.name"></option>
+                  </datalist>
+                </div>
+              </div>
+              <div class="col-md-3 col-sm-3 col-lg-3">
+                <div class="form-group">
+                  <label for="txtSerialNo">Serial No.<label style="color: red; margin-bottom: 0rem;">*</label></label>
+                  <input type="text" class="form-control" id="txtSerialNo" name="SerialNo" formControlName="SerialNo"  [attr.disabled]="isSerialNoDisabled ? true : null" />
+                  <div *ngIf="appUserMenuForm.get('SerialNo').touched && appUserMenuForm.get('SerialNo').invalid"
+                    class="error-message">
+                    <div *ngIf="appUserMenuForm.get('SerialNo').errors?.required" class="text-danger">Serial No is
+                      required.</div>
+                    <div *ngIf="appUserMenuForm.get('SerialNo').errors?.englishText" class="text-danger">{{
+                      appUserMenuForm.get('SerialNo').errors?.englishText }}</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="row">
+              <div class="col-md-3 col-sm-3 col-lg-3">
+                <div class="form-group form-check">
+                  <input type="checkbox" id="chkIsHeader" name="IsHeader" formControlName="IsHeader"
+                    class="form-check-input" />
+                  <label for="chkIsHeader" class="form-check-label" style="font-weight: bold;">Is Header</label>
+                </div>
+              </div>
+
+              <div class="col-md-3 col-sm-3 col-lg-3">
+                <div class="form-group form-check">
+                  <input type="checkbox" id="chkIsModule" name="IsModule" formControlName="IsModule"
+                    class="form-check-input" />
+                  <label for="chkIsModule" class="form-check-label" style="font-weight: bold;">Is Module</label>
+                </div>
+              </div>
+
+              <div class="col-md-3 col-sm-3 col-lg-3">
+                <div class="form-group form-check">
+                  <input type="checkbox" id="chkIsComponent" name="IsComponent" formControlName="IsComponent"
+                    class="form-check-input" />
+                  <label for="chkIsComponent" class="form-check-label" style="font-weight: bold;">Is Component</label>
+                </div>
+              </div>
+
+              <div class="col-md-3 col-sm-3 col-lg-3">
+                <div class="form-group form-check">
+                  <input type="checkbox" id="chkIsActive" name="IsActive" formControlName="IsActive"
+                    class="form-check-input" />
+                  <label for="chkIsActive" class="form-check-label" style="font-weight: bold;">Is Active</label>
+                </div>
+              </div>
+            </div>
+
+            <div class="row">
+              <div class="col-12  col-sm-12 col-lg-12">
+                <div class="form-group">
+                  <label for="txtRemark">Remark</label>
+                  <textarea id="txtRemark" name="Remark" formControlName="Remark"
+                    class="form-control" rows="5" resize="false"></textarea>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="card-footer text-right">
+            <button type="submit" [disabled]="isEdit? !isUpdate:!isCreate" class="btn btn-sm btn-primary mr-1">{{isEdit?
+              'Update':'Save'}}</button>
+            <button type="button" [disabled]="isEdit? !isUpdate:!isCreate" class="btn btn-sm btn-warning"
+              (click)="resetForm();">Clear</button>
+          </div>
+        </form>
+
+      </div>
+      <div class="row">
+        <div class="col-12">
+          <div class="card">
+            <div class="card-header p-2">
+              <div class="row">
+                <div class="col-2 mr-0 pr-0">
+                  <h3 class="card-title" style="width: 100px;">All User Menus</h3>
+                </div>
+                <div class="col-2">
+                  <div class="input-group input-group-sm">
+                    <select class="form-control select2" name="pageSize" [(ngModel)]="pageSize"
+                      (change)="changePageSize($event)" style="width: 100px;">
+                      <option *ngFor="let size of pageSizeList" [value]="size">{{size}}</option>
+                    </select>
+                  </div>
+
+                </div>
+                <div class="col-8 d-flex justify-content-end">
+                  <div class="card-tools">
+                    <div class="input-group input-group-sm" style="width: 150px;">
+                      <!-- <input type="text" name="table_search" class="form-control float-right" placeholder="Search"> -->
+                      <input 
+                      type="text" 
+                      name="table_search" 
+                      class="form-control float-right" 
+                      placeholder="Search" 
+                      [(ngModel)]="searchTerm" 
+                      (keyup)="onSearch()" />
+                      <div class="input-group-append">
+                        <button type="submit" class="btn btn-default">
+                          <i class="fas fa-search"></i>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="card-body table-responsive p-2">
+              <table class="table table-hover text-nowrap">
+                <thead>
+                  <tr>
+                    <th (click)="changeSort('Name')">Menu Name <i [ngClass]="{'fas fa-arrow-up': sortColumnName === 'Name' && sortColumnDirection === 'ASC', 'fas fa-arrow-down': sortColumnName === 'Name' && sortColumnDirection === 'DESC'}"></i></th>
+                    <th (click)="changeSort('IsHeader')">Header? <i [ngClass]="{'fas fa-arrow-up': sortColumnName === 'IsHeader' && sortColumnDirection === 'ASC', 'fas fa-arrow-down': sortColumnName === 'IsHeader' && sortColumnDirection === 'DESC'}"></i></th>
+                    <th (click)="changeSort('IsModule')">Module? <i [ngClass]="{'fas fa-arrow-up': sortColumnName === 'IsModule' && sortColumnDirection === 'ASC', 'fas fa-arrow-down': sortColumnName === 'IsModule' && sortColumnDirection === 'DESC'}"></i></th>
+                    <th (click)="changeSort('IsComponent')">Component? <i [ngClass]="{'fas fa-arrow-up': sortColumnName === 'IsComponent' && sortColumnDirection === 'ASC', 'fas fa-arrow-down': sortColumnName === 'IsComponent' && sortColumnDirection === 'DESC'}"></i></th>
+                    <th (click)="changeSort('RouteLink')">Route Link <i [ngClass]="{'fas fa-arrow-up': sortColumnName === 'RouteLink' && sortColumnDirection === 'ASC', 'fas fa-arrow-down': sortColumnName === 'RouteLink' && sortColumnDirection === 'DESC'}"></i></th>
+                    <th (click)="changeSort('ParentName')">Parent Menu <i [ngClass]="{'fas fa-arrow-up': sortColumnName === 'ParentName' && sortColumnDirection === 'ASC', 'fas fa-arrow-down': sortColumnName === 'ParentName' && sortColumnDirection === 'DESC'}"></i></th>
+                    <th (click)="changeSort('IsActive')">Active <i [ngClass]="{'fas fa-arrow-up': sortColumnName === 'IsActive' && sortColumnDirection === 'ASC', 'fas fa-arrow-down': sortColumnName === 'IsActive' && sortColumnDirection === 'DESC'}"></i></th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let appUserMenu of appUserMenuList">
+                    <td data-label="Menu Name">{{ appUserMenu.Name }}</td>
+                    <td data-label="Header?">{{ appUserMenu.IsHeader ? 'Yes' : 'No'}}</td>
+                    <td data-label="Module?">{{ appUserMenu.IsModule ? 'Yes' : 'No'}}</td>
+                    <td data-label="Component?">{{ appUserMenu.IsComponent ? 'Yes' : 'No'}}</td>
+                    <td data-label="Route Link">{{ appUserMenu.RouteLink }}</td>
+                    <td data-label="Parent Menu">{{ appUserMenu.ParentName}} </td>
+                    <td data-label="Active">{{ appUserMenu.IsActive ? 'Yes' : 'No' }}</td>
+                    <td data-label="Action">
+                      <ul class="list-inline m-0">
+                        <li class="list-inline-item" [class.disabled]="!isUpdate"
+                          (click)="isUpdate && editAppUserMenu(appUserMenu)">
+                          <i class="fa fa-edit"></i>
+                        </li>
+                        <li class="list-inline-item" [class.disabled]="!isDelete"
+                          (click)="isDelete && deleteAppUserMenu(appUserMenu.Id)">
+                          <i class="fa fa-trash"></i>
+                        </li>
+                      </ul>
+                    </td>
+                  </tr>
+                </tbody>
+                <tfoot *ngIf="appUserMenuList.length === 0">
+                  <tr>
+                    <td colspan="7" class="text-center">No data found</td>
+                  </tr>
+                </tfoot>
+              </table>
+            </div>
+            <div class="card-footer clearfix p-2">
+              <div class="row">
+                <div class="col-sm-5">
+                  <div class="dataTables_info" id="example1_info" role="status" aria-live="polite">Showing <span
+                      class="text-success"><b>{{startPage}}</b></span> to <span
+                      class="text-success"><b>{{endPage}}</b></span> of <span
+                      class="text-success"><b>{{totalRows}}</b></span>
+                    entries</div>
+                </div>
+                <div class="col-sm-7">
+                  <ul class="pagination pagination-sm m-0 float-right">
+                    <li class="page-item" [class.disabled]="currentPage === 1">
+                      <a class="page-link" (click)="changePage(1)" aria-label="First" href="#">
+                        <span aria-hidden="true">&laquo;&laquo;</span>
+                      </a>
+                    </li>
+                    <li class="page-item" [class.disabled]="currentPage === 1">
+                      <a class="page-link" (click)="changePage(currentPage - 1)" aria-label="Previous" href="#">
+                        <span aria-hidden="true">&laquo;</span>
+                      </a>
+                    </li>
+                    <li class="page-item" *ngFor="let page of [].constructor(pageCount); let i = index"
+                      [class.active]="currentPage === i + 1">
+                      <a class="page-link" (click)="changePage(i + 1)" href="#">{{ i + 1 }}</a>
+                    </li>
+                    <li class="page-item" [class.disabled]="currentPage === pageCount">
+                      <a class="page-link" (click)="changePage(currentPage + 1)" aria-label="Next" href="#">
+                        <span aria-hidden="true">&raquo;</span>
+                      </a>
+                    </li>
+                    <li class="page-item" [class.disabled]="currentPage === pageCount">
+                      <a class="page-link" (click)="changePage(pageCount)" aria-label="Last" href="#">
+                        <span aria-hidden="true">&raquo;&raquo;</span>
+                      </a>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>

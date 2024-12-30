@@ -46,7 +46,13 @@ export const APIConstants = {
   API_GET_ALL_APP_USER_PROFILE_URL:'/api/v1/User/getAllAppUserProfile',
   API_GET_APP_USER_PROFILE_BY_ID_URL: '/api/v1/User/getAppUserProfileById',
   API_CREATE_UPDATE_APP_USER_PROFILE_URL: '/api/v1/User/createUpdateAppUserProfile',
-  API_DELETE_APP_USER_PROFILE_URL: '/api/v1/User/deleteAppUserProfile'
+  API_DELETE_APP_USER_PROFILE_URL: '/api/v1/User/deleteAppUserProfile',
+
+  API_GET_ALL_APP_USER_ROLE_MENU_INITIAL_DATA_URL: '/api/v1/RoleMenu/getAppUserRoleMenuInitialData',
+  API_GET_ALL_APP_USER_MENU_PAGING_WITH_SEARCH_TERM_URL: '/api/v1/RoleMenu/getAllAppUserMenuPagingWithSearch',
+  API_GET_ALL_MENU_BY_USER_ID_URL: '/api/v1/RoleMenu/getAllAppUserMenuByUserId',
+  API_POST_SAVE_UPDATE_USER_MENU_URL: '/api/v1/RoleMenu/createUpdateAppUserMenu',
+  API_DELETE_USER_MENU_URL: '/api/v1/RoleMenu/deleteAppUserMenu'
 }
 
 export const MessageConstants = {
@@ -68,6 +74,12 @@ export const MessageConstants = {
   APP_USER_ROLE_NOT_FOUND_MEG: 'There is no user role found.',
   APP_USER_ROLE_NOT_FOUND_TO_UPDATE_MEG: 'There is no user role to update.',
 
+  APP_USER_MENU_TITLE: "App User Menu",
+  APP_USER_MENU_FOUND_MEG: 'User menu found',
+  APP_USER_ROLE_MENU_INITIAL_DATA_NOT_FOUND_MEG: 'There is no initial data found.',
+  APP_USER_MENU_NOT_FOUND_MEG: 'There is no user menu found.',
+  APP_USER_MENU_NOT_FOUND_TO_UPDATE_MEG: 'There is no user menu to update.',
+  APP_USER_MENU_DELETE_CONFIRMATION_MSG: 'Are you sure you want to delete this menu?'
   
 };
 

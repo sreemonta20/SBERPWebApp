@@ -8,6 +8,7 @@ import {
   SaveUpdateRequest,
   UserResponse,
   RoleSaveUpdateRequest,
+  AppUserMenuRequest,
 } from '@app/core/class/index';
 import { MenuItem } from '@app/core/interface';
 import { securityApiUrl } from 'src/environments/environment';
@@ -31,10 +32,10 @@ export class SecurityService {
     this.apiService.initializeBaseURL(securityApiUrl);
   }
 
-  ///-----------------------------------------------------AppUserRole Start--------------------------------------------------------
+  ///-----------------------------------------------------AppUserRole start-----------------------------------------------
   getAllAppUserRoles(): Observable<DataResponse | undefined> {
     return this.apiService
-      .getAllExtn(APIConstants.API_GET_ALL_APP_USER_ROLES_URL)
+      .getAllWithoutParams(APIConstants.API_GET_ALL_APP_USER_ROLES_URL)
       .pipe(
         map((response: DataResponse) => {
           if (response) {
@@ -75,15 +76,6 @@ export class SecurityService {
       );
   }
 
-  // createUpdateAppUserRole(
-  //   roleRequest: RoleSaveUpdateRequest
-  // ): Observable<DataResponse> {
-  //   return this.http.post<DataResponse>(
-  //     APIConstants.API_SAVE_UPDATE_APP_USER_ROLE_URL,
-  //     roleRequest
-  //   );
-  // }
-
   createUpdateAppUserRole(
     roleRequest: RoleSaveUpdateRequest
   ): Observable<DataResponse> {
@@ -98,28 +90,136 @@ export class SecurityService {
       );
   }
 
-  // deleteAppUserRole(roleId: string): Observable<DataResponse> {
-  //   const params = new HttpParams().set('roleId', roleId);
-  //   return this.http.delete<DataResponse>(
-  //     APIConstants.API_DELETE_APP_USER_ROLE_URL,
-  //     {
-  //       params,
-  //     }
-  //   );
-  // }
-
   deleteAppUserRole(roleId: string): Observable<DataResponse> {
     const params = new HttpParams().set('roleId', roleId);
-    return this.apiService.delete(APIConstants.API_DELETE_APP_USER_ROLE_URL, params).pipe(
-      map((response: DataResponse) => {
-        if (response) {
-          return response;
-        }
-      })
-    );
+    return this.apiService
+      .delete(APIConstants.API_DELETE_APP_USER_ROLE_URL, params)
+      .pipe(
+        map((response: DataResponse) => {
+          if (response) {
+            return response;
+          }
+        })
+      );
   }
 
-  ///-----------------------------------------------------AppUserRole Ends--------------------------------------------------------
+  ///-----------------------------------------------------AppUserRole ends-------------------------
+
+  ///---------------------------------------------AppUserMenu starts-------------------------------
+  getAppUserRoleMenuInitialData(): Observable<DataResponse | undefined> {
+    return this.apiService
+      .getAllWithoutParams(APIConstants.API_GET_ALL_APP_USER_ROLE_MENU_INITIAL_DATA_URL)
+      .pipe(
+        map((response: DataResponse) => {
+          if (response) {
+            return response;
+          }
+        })
+      );
+  }
+
+  // getAllAppUserMenuPagingWithSearch(
+  //   searchTerm: string,
+  //   sortColumnName: string,
+  //   sortColumnDirection: string,
+  //   pageNumber: number,
+  //   pageSize: number
+  // ): Observable<DataResponse | undefined> {
+  //   const params = new HttpParams()
+  //     .set('searchTerm', searchTerm)
+  //     .set('sortColumnName', sortColumnName)
+  //     .set('sortColumnDirection', sortColumnDirection)
+  //     .set('pageNumber', pageNumber)
+  //     .set('pageSize', pageSize);
+  //   return this.apiService
+  //     .getAll(
+  //       APIConstants.API_GET_ALL_APP_USER_MENU_PAGING_WITH_SEARCH_TERM_URL,
+  //       params
+  //     )
+  //     .pipe(
+  //       map((response: DataResponse) => {
+  //         if (response) {
+  //           return response;
+  //         }
+  //       })
+  //     );
+  // }
+
+  getAllAppUserMenuPagingWithSearch(
+    searchTerm: string,
+    sortColumnName: string,
+    sortColumnDirection: string,
+    pageNumber: number,
+    pageSize: number
+  ): Observable<DataResponse | undefined> {
+    // Create the request object as expected by the API
+    const param = {
+      SearchTerm: searchTerm,
+      SortColumnName: sortColumnName,
+      SortColumnDirection: sortColumnDirection,
+      PageNumber: pageNumber,
+      PageSize: pageSize,
+    };
+    const params = new HttpParams().set('param', JSON.stringify(param));
+    // Send the request object as a query parameter
+    return this.apiService
+      .getAll(
+        APIConstants.API_GET_ALL_APP_USER_MENU_PAGING_WITH_SEARCH_TERM_URL,
+        params
+      )
+      .pipe(
+        map((response: DataResponse) => {
+          if (response) {
+            return response;
+          }
+        })
+      );
+  }
+
+  getAllAppUserMenuByUserId(
+    userId: string
+  ): Observable<DataResponse | undefined> {
+    const params = new HttpParams().set('userId', userId);
+    return this.apiService
+      .getById(APIConstants.API_GET_ALL_MENU_BY_USER_ID_URL, params)
+      .pipe(
+        map((response: DataResponse) => {
+          if (response) {
+            return response;
+          }
+        })
+      );
+  }
+
+  createUpdateAppUserMenu(
+    appUserMenuRequest: AppUserMenuRequest
+  ): Observable<DataResponse> {
+    return this.apiService
+      .post(APIConstants.API_POST_SAVE_UPDATE_USER_MENU_URL, appUserMenuRequest)
+      .pipe(
+        map((response: DataResponse) => {
+          if (response) {
+            return response;
+          }
+        })
+      );
+  }
+
+  deleteAppUserMenu(appUserMenuId: string): Observable<DataResponse> {
+    const params = new HttpParams().set('menuId', appUserMenuId);
+    return this.apiService
+      .delete(APIConstants.API_DELETE_USER_MENU_URL, params)
+      .pipe(
+        map((response: DataResponse) => {
+          if (response) {
+            return response;
+          }
+        })
+      );
+  }
+
+  ///---------------------------------------------AppUserMenu ends---------------------------------
+
   getAllAppUserProfile(
     pageNumber: number,
     pageSize: number

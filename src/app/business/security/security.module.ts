@@ -4,11 +4,12 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { NgxSpinnerModule } from 'ngx-spinner';
 import { SecurityRoutingModule } from './security.routes';
 import { AppUserRoleComponent } from './appuserrole/appuserrole.component';
-
+import { AppUserMenuComponent } from './appusermenu/appusermenu.component';
 
 @NgModule({
   declarations: [
-    AppUserRoleComponent
+    AppUserRoleComponent,
+    AppUserMenuComponent
   ],
   imports: [
     CommonModule,
