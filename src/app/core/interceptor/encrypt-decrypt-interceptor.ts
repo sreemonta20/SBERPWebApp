@@ -73,10 +73,10 @@ export const EncryptDecryptAuthInterceptor: HttpInterceptorFn = (
   next: HttpHandlerFn
 ): Observable<HttpEvent<any>> => {
   const encryptDecryptService = inject(EncryptDecryptService);
-  debugger
   let ExcludeURLList: any[] = [
     '/api/v1/Auth/authenticateUser',
-    '/api/v1/Auth/refreshtoken',
+    '/api/v1/Auth/getAppUserProfileMenu',
+    '/api/v1/Auth/refreshToken',
     '/api/v1/Auth/revoke',
     '/api/v1/User/createUpdateAppUser',
     '/api/v1/User/getAllAppUserProfile',

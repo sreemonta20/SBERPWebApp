@@ -6,7 +6,6 @@ import {
   LoginRequest,
   RefreshTokenRequest,
   SaveUpdateRequest,
-  UserResponse,
   RoleSaveUpdateRequest,
   AppUserMenuRequest,
 } from '@app/core/class/index';

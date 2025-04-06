@@ -7,8 +7,13 @@ export const SessionConstants = {
   IS_LOGGED_IN: 'isLoggedIn',
   AUTH_TOKEN: 'auth_token',
   AUTH_REFRESH_TOKEN: 'auth_refresh_token',
+  ACCESS_TOKEN: 'access_token',
+  REFRESH_TOKEN: 'refresh_token',
+  USER_PROFILE: 'user_profile',
   USER_MENU:'user_menu',
-  SERIALIZED_MENU: 'serialized_menu'
+  SERIALIZED_MENU: 'serialized_menu',
+  PREVIOUS_URL: 'previousUrl',
+  IS_REFRESHING_TOKEN: 'is_refreshing_token'
 };
 
 export const RouteConstants = {
@@ -28,7 +33,8 @@ export const APIConstants = {
   BEARER: 'Bearer',
   TOKEN: 'access_token',
   API_USER_LOGIN_URL: '/api/v1/Auth/authenticateUser',
-  API_REFRESH_TOKEN_URL: '/api/v1/Auth/refreshtoken',
+  API_USER_PROFILE_MENU_URL: '/api/v1/Auth/getAppUserProfileMenu',
+  API_REFRESH_TOKEN_URL: '/api/v1/Auth/refreshToken',
   API_REVOKE_URL: '/api/v1/Auth/revoke',
   API_GET_ALL_APP_USER_ROLES_URL: '/api/v1/RoleMenu/getAllAppUserRoles',
   API_GET_ALL_APP_USER_ROLES_PAGINATION_URL: '/api/v1/RoleMenu/getAllAppUserRolesPagination',

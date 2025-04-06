@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Router } from '@angular/router';
-import { UserResponse } from '@app/core/class';
+import { User, ProfileMenuResponse } from '@app/core/class';
 import { Common, RouteConstants, SessionConstants } from '@app/core/constants';
 import { MenuItem } from '@app/core/interface';
 import { SessionStorageService } from '@app/core/services';
@@ -14,18 +14,18 @@ export class CommonService {
   private flattenedMenuItems: MenuItem[] = [];
   permission: MenuPermission = null;
 
-  // private isLoggedIn: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(false);
-  // public isLoggedIn$: Observable<boolean> = this.isLoggedIn.asObservable();
   private isLoggedIn: BehaviorSubject<boolean>;
   public isLoggedIn$: Observable<boolean>;
 
-  // private loggedInUser = new BehaviorSubject<UserResponse>(new UserResponse());
-  // public loggedInUser$: Observable<UserResponse> = this.loggedInUser.asObservable();
-  private loggedInUser: BehaviorSubject<UserResponse>;
-  public loggedInUser$: Observable<UserResponse>;
+  private accessToken: BehaviorSubject<string>;
+  public accessToken$: Observable<string>;
 
-  // private userMenus: BehaviorSubject<MenuItem[]> = new BehaviorSubject<MenuItem[]>([]);
-  // public userMenus$: Observable<MenuItem[]> = this.userMenus.asObservable();
+  private refreshToken: BehaviorSubject<string>;
+  public refreshToken$: Observable<string>;
+
+  private loggedInUser: BehaviorSubject<User>;
+  public loggedInUser$: Observable<User>;
+
   private userMenus: BehaviorSubject<MenuItem[]>;
   public userMenus$: Observable<MenuItem[]>;
 
@@ -36,15 +36,21 @@ export class CommonService {
     private sessionService: SessionStorageService,
     private router: Router
   ) {
-    const sessionIsLoggedIn = this.sessionService.get(
-      SessionConstants.IS_LOGGED_IN
-    );
-    const sessionLoggedInUser = this.sessionService.get(
-      SessionConstants.LOGGED_IN_USER
-    );
-    const sessionUserMenus = this.sessionService.get(
-      SessionConstants.USER_MENU
-    );
+    const sessionIsLoggedIn =
+      this.sessionService.get(SessionConstants.IS_LOGGED_IN) || false;
+
+    const sessionAccessToken =
+      this.sessionService.get(SessionConstants.ACCESS_TOKEN) ?? '';
+
+    const sessionRefreshToken =
+      this.sessionService.get(SessionConstants.REFRESH_TOKEN) ?? '';
+
+    const sessionLoggedInUser =
+      this.sessionService.get(SessionConstants.USER_PROFILE) || null;
+
+    const sessionUserMenus =
+      this.sessionService.get(SessionConstants.USER_MENU) || [];
+
     const sessionSerializedMenus = this.sessionService.get(
       SessionConstants.SERIALIZED_MENU
     ) as MenuItem[];
@@ -52,7 +58,13 @@ export class CommonService {
     this.isLoggedIn = new BehaviorSubject<boolean>(sessionIsLoggedIn);
     this.isLoggedIn$ = this.isLoggedIn.asObservable();
 
-    this.loggedInUser = new BehaviorSubject<UserResponse>(sessionLoggedInUser);
+    this.accessToken = new BehaviorSubject<string>(sessionAccessToken);
+    this.accessToken$ = this.accessToken.asObservable();
+
+    this.refreshToken = new BehaviorSubject<string>(sessionRefreshToken);
+    this.refreshToken$ = this.refreshToken.asObservable();
+
+    this.loggedInUser = new BehaviorSubject<User>(sessionLoggedInUser);
     this.loggedInUser$ = this.loggedInUser.asObservable();
 
     this.userMenus = new BehaviorSubject<MenuItem[]>(sessionUserMenus);
@@ -69,10 +81,19 @@ export class CommonService {
     this.isLoggedIn.next(isLoggedIn);
   }
 
-  UpdateLoggedInUser(userResponse: UserResponse) {
-    
-    this.sessionService.set(SessionConstants.LOGGED_IN_USER, userResponse);
-    this.loggedInUser.next(userResponse);
+  UpdateAccessToken(accessToken: string): void {
+    this.sessionService.set(SessionConstants.ACCESS_TOKEN, accessToken);
+    this.accessToken.next(accessToken);
+  }
+
+  UpdateRefreshToken(refreshToken: string): void {
+    this.sessionService.set(SessionConstants.REFRESH_TOKEN, refreshToken);
+    this.refreshToken.next(refreshToken);
+  }
+
+  UpdateLoggedInUser(user: User) {
+    this.sessionService.set(SessionConstants.USER_PROFILE, user);
+    this.loggedInUser.next(user);
   }
 
   UpdateUserMenus(userMenus: MenuItem[]) {
@@ -91,22 +112,28 @@ export class CommonService {
     this.serializedUserMenus.next(serializedMenu);
   }
 
-  GetIsUserLoggedIn(): boolean {
-    return this.isLoggedIn.value;
+  GetIsUserLoggedIn(): Observable<boolean> {
+    return this.isLoggedIn$;
   }
 
-  GetLoggedInUser(): UserResponse {
-    return this.loggedInUser.value;
+  GetAccessToken(): Observable<string> {
+    return this.accessToken$;
   }
 
-  GetUserMenus(): MenuItem[] {
-    return this.userMenus.value;
+  GetRefreshToken(): Observable<string> {
+    return this.refreshToken$;
   }
 
-  GetSerializedUserMenus(): MenuItem[] {
-    const serializedMenus = this.serializedUserMenus.value;
-    console.log('Retrieved Serialized User Menus:', serializedMenus);
-    return serializedMenus;
+  GetLoggedInUser(): Observable<User> {
+    return this.loggedInUser$;
+  }
+
+  GetUserMenus(): Observable<MenuItem[]> {
+    return this.userMenus$;
+  }
+
+  GetSerializedUserMenus(): Observable<MenuItem[]> {
+    return this.serializedUserMenus$;
   }
 
   public IsExpired(sourceTime: any, currentTime) {
@@ -114,35 +141,34 @@ export class CommonService {
   }
 
   public RevokeSession() {
-    
+    this.UpdateAccessToken('');
+    this.UpdateRefreshToken('');
     this.UpdateIsLoggedIn(false);
     this.UpdateLoggedInUser(null);
-    this.UpdateUserMenus(null);
-    this.UpdateSerializedUserMenus(null);
+    this.UpdateUserMenus([]);
     this.sessionService.remove(SessionConstants.LOGGED_IN_USER);
     this.sessionService.remove(SessionConstants.IS_LOGGED_IN);
     this.sessionService.remove(SessionConstants.USER_MENU);
     this.sessionService.remove(SessionConstants.SERIALIZED_MENU);
+    this.sessionService.remove(SessionConstants.ACCESS_TOKEN);
+    this.sessionService.remove(SessionConstants.REFRESH_TOKEN);
     this.sessionService.clear();
     this.router.navigate([RouteConstants.LOGIN_USER_URL]);
   }
 
-  isRouteValid(url: any): boolean {
-    
-    let isRouteValid = false;
-    this.serializedUserMenus$.subscribe((serializedMenus) => {
-      if(!this.isInvalidObject(serializedMenus)){
-        const matchedMenu = serializedMenus.find((element: MenuItem) =>
-          element.RouteLink.includes(url)
-        );
-        if (matchedMenu) {
-          isRouteValid = true;
-          return isRouteValid;
+  async isRouteValid(url: string): Promise<boolean> {
+    return new Promise((resolve) => {
+      this.serializedUserMenus$.subscribe((serializedMenus) => {
+        if (!this.isInvalidObject(serializedMenus)) {
+          const matchedMenu = serializedMenus.find((element: MenuItem) =>
+            element.RouteLink.includes(url)
+          );
+          resolve(!!matchedMenu);
+        } else {
+          resolve(false);
         }
-      }
-      return isRouteValid;
+      });
     });
-    return isRouteValid;
   }
 
   createSerializedUserMenus(userMenus: MenuItem[]) {
@@ -159,24 +185,22 @@ export class CommonService {
   }
 
   public getMenuPermission(url: any): MenuPermission {
-    
     let menuPermission = new MenuPermission();
     this.serializedUserMenus$.subscribe((serializedMenus) => {
-      if(!this.isInvalidObject(serializedMenus)){
+      if (!this.isInvalidObject(serializedMenus)) {
         const matchedMenu = serializedMenus.find((element: MenuItem) =>
           element.RouteLink.includes(url)
         );
-  
+
         if (matchedMenu) {
           menuPermission.IsView = matchedMenu.IsView;
           menuPermission.IsCreate = matchedMenu.IsCreate;
           menuPermission.IsUpdate = matchedMenu.IsUpdate;
           menuPermission.IsDelete = matchedMenu.IsDelete;
         }
-      }else{
+      } else {
         return null;
       }
-      
     });
     return menuPermission;
   }
@@ -225,10 +249,32 @@ export class CommonService {
   }
 
   generateGUID(): string {
-    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
-      const r = (Math.random() * 16) | 0;
-      const v = c === 'x' ? r : (r & 0x3) | 0x8;
-      return v.toString(16);
-    });
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(
+      /[xy]/g,
+      function (c) {
+        const r = (Math.random() * 16) | 0;
+        const v = c === 'x' ? r : (r & 0x3) | 0x8;
+        return v.toString(16);
+      }
+    );
+  }
+
+  parseMenu(userMenus: any): MenuItem[] {
+    try {
+      let parsed = userMenus;
+
+      // Handle possible double-encoded JSON
+      if (typeof parsed === 'string') parsed = JSON.parse(parsed);
+      if (Array.isArray(parsed)) {
+        console.log('Parsed menu with', parsed.length, 'items');
+        return parsed;
+      } else {
+        console.warn('Menu data is not an array:', parsed);
+        return [];
+      }
+    } catch (error) {
+      console.error('Failed to parse menu:', error);
+      return [];
+    }
   }
 }

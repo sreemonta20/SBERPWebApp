@@ -85,6 +85,15 @@ export class ApiService<T> {
     return this.http.get<T>(url, { headers });
   }
 
+  public async getAllWithoutParamsAsync(endpoint: string): Promise<T> {
+    const headers = this.getHeaders();
+    const url = `${this.baseUrl}${endpoint}`;
+    const response = await lastValueFrom(
+      this.http.get<T>(url, { headers })
+    );
+    return response;
+  }
+
   public getAllWithoutParams(endpoint: string): Observable<T> {
     const headers = this.getHeaders();
     const url = `${this.baseUrl}${endpoint}`;

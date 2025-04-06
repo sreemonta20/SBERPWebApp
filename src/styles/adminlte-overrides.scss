@@ -1,0 +1,44 @@
+/* Define print color adjust mixin */
+@mixin print-color-adjust {
+  -webkit-print-color-adjust: var(--webkit-print-color-adjust) !important;
+  print-color-adjust: var(--print-color-adjust) !important;
+  -moz-print-color-adjust: var(--moz-print-color-adjust) !important;
+  -ms-print-color-adjust: var(--ms-print-color-adjust) !important;
+}
+
+/* Override AdminLTE styles */
+@media print {
+  * {
+    @include print-color-adjust;
+  }
+}
+
+/* Override specific AdminLTE classes that use color-adjust */
+.card,
+.modal,
+.nav-tabs,
+.nav-pills,
+.navbar,
+.sidebar,
+.main-header,
+.main-footer,
+.content-wrapper,
+.content-header,
+.info-box,
+.small-box,
+.timeline,
+.timeline-item,
+.timeline-label,
+.timeline-item > .timeline-point,
+.timeline-item > .timeline-badge,
+.timeline-item > .timeline-content,
+.timeline-item > .timeline-item {
+  @include print-color-adjust;
+}
+
+/* Override any other AdminLTE elements that might use color-adjust */
+[class*="bg-"],
+[class*="text-"],
+[class*="border-"] {
+  @include print-color-adjust;
+} 

@@ -11,16 +11,18 @@ import {
 } from '@angular/core';
 import { Title } from '@angular/platform-browser';
 import { Router } from '@angular/router';
-import { MenuPermission } from '@app/core/class/models/menu.permission';
+import { User } from '@app/core/class';
+import { MenuPermission } from '@app/core/class';
 import { MessageConstants, SessionConstants } from '@app/core/constants';
 import {
   CommonService,
   LoaderService,
   NotificationService,
   SessionStorageService,
-  ValidationFormsService
+  ValidationFormsService,
 } from '@app/core/services/index';
 import { NgxSpinnerService } from 'ngx-spinner';
+import { Subject, Subscription, filter, take, takeUntil, tap } from 'rxjs';
 declare var $: any;
 
 @Component({
@@ -38,6 +40,10 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
   public isCreate = false;
   public isUpdate = false;
   public isDelete = false;
+
+  // Subscription management
+  private destroy$ = new Subject<void>();
+  private scriptsLoaded: HTMLScriptElement[] = [];
   constructor(
     @Inject(DOCUMENT) private document: Document,
     private elementRef: ElementRef,
@@ -51,21 +57,38 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
     private commonService: CommonService,
     private titleService: Title
   ) {
-    this.appUserProfileId = this.commonService.GetLoggedInUser().user.Id;
-    this.loadPermission(this.router.url);
   }
 
   ngOnInit(): void {
     this.titleService.setTitle(MessageConstants.HOME_DASHBOARD_TITLE);
+    this.loadUserData();
   }
 
   ngAfterViewInit() {
     this.loadScripts(['assets/js/pages/dashboard2.js']);
   }
 
-  loadPermission(url:any):void{
-    console.log("Execution from Home");
-    const permissionModel  = this.commonService.getMenuPermission(url);
+  private loadUserData(): void {
+    // Using takeUntil for proper subscription management
+    this.commonService
+      .GetLoggedInUser()
+      .pipe(
+        filter((userInformation) => !!userInformation),
+        take(1),
+        tap((userInformation: User) => {
+          console.log('Home-> appUserProfileId: '+userInformation.Id);
+
+          this.appUserProfileId = userInformation.Id;
+          // Now that we have the user info, load permissions
+          this.loadPermission(this.router.url);
+        }),
+        takeUntil(this.destroy$)
+      )
+      .subscribe();
+  }
+
+  loadPermission(url: any): void {
+    const permissionModel = this.commonService.getMenuPermission(url);
     this.isView = permissionModel.IsView;
     this.isCreate = permissionModel.IsCreate;
     this.isUpdate = permissionModel.IsUpdate;
@@ -78,10 +101,26 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
       script.src = url;
       script.type = 'text/javascript';
       this.renderer.appendChild(document.body, script);
+      this.scriptsLoaded.push(script);
     }
   }
 
+  cleanupScripts(): void {
+    // Remove dynamically added scripts to prevent memory leaks
+    this.scriptsLoaded.forEach(script => {
+      if (script.parentNode) {
+        this.renderer.removeChild(script.parentNode, script);
+      }
+    });
+    this.scriptsLoaded = [];
+  }
+
   ngOnDestroy(): void {
+    // Complete the subject to notify all subscriptions to unsubscribe
+    this.destroy$.next();
+    this.destroy$.complete();
     
+    // Clean up dynamically added scripts
+    this.cleanupScripts();
   }
 }

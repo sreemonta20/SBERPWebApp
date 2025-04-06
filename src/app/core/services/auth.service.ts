@@ -1,11 +1,10 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { Observable, map } from 'rxjs';
+import { Observable, map, take } from 'rxjs';
 import {
   DataResponse,
   LoginRequest,
-  RefreshTokenRequest,
-  UserResponse,
+  RefreshTokenRequest
 } from '@app/core/class/index';
 import { MenuItem } from '@app/core/interface';
 import { securityApiUrl } from 'src/environments/environment';
@@ -18,7 +17,6 @@ import { ApiService } from './api.service';
   providedIn: 'root',
 })
 export class AuthService {
-  public loggedInUser: UserResponse = new UserResponse();
   public userMenus: MenuItem[];
   constructor(
     private commonService: CommonService,
@@ -38,73 +36,8 @@ export class AuthService {
     );
   }
 
-  renewToken(
-    refreshTokenRequest: RefreshTokenRequest
-  ): Observable<DataResponse> {
-    return this.apiService
-      .post(APIConstants.API_REFRESH_TOKEN_URL, refreshTokenRequest)
-      .pipe(
-        map((response: DataResponse) => {
-          if (response) {
-            return response;
-          }
-        })
-      );
-  }
-
-  async refreshToken<DataResponse>(
-    refreshTokenRequest: RefreshTokenRequest
-  ): Promise<DataResponse> {
-    const result = await this.apiService.postDataAsync<DataResponse>(
-      APIConstants.API_REFRESH_TOKEN_URL,
-      refreshTokenRequest
-    );
-    return result;
-  }
-
-  async refreshTokenAsync(
-    refreshTokenModelReq: RefreshTokenRequest
-  ): Promise<boolean> {
-    if (
-      !refreshTokenModelReq.Access_Token ||
-      !refreshTokenModelReq.Refresh_Token
-    ) {
-      return false;
-    }
-    let isRefreshSuccess: boolean;
-
-    try {
-      const result = await this.apiService.postAsync(
-        APIConstants.API_REFRESH_TOKEN_URL,
-        refreshTokenModelReq
-      );
-      if (result.ResponseCode === 200) {
-        this.loggedInUser = result.Result;
-        this.userMenus = JSON.parse(this.loggedInUser.userMenus);
-        this.sessionService.set(
-          SessionConstants.LOGGED_IN_USER,
-          this.loggedInUser
-        );
-        this.sessionService.set(SessionConstants.IS_LOGGED_IN, true);
-        this.sessionService.set(SessionConstants.USER_MENU, this.userMenus);
-
-        this.commonService.UpdateIsLoggedIn(true);
-        this.commonService.UpdateLoggedInUser(this.loggedInUser);
-        this.commonService.UpdateUserMenus(this.userMenus);
-        isRefreshSuccess = true;
-      } else if (result.ResponseCode === 400 || result.ResponseCode === 500) {
-        isRefreshSuccess = false;
-      }
-    } catch (error) {
-      console.error('An error occurred during refresh token:', error);
-      isRefreshSuccess = false;
-    }
-    return isRefreshSuccess;
-  }
-
-  revoke(userToken: string): Observable<DataResponse> {
-    const params = new HttpParams().set('userToken', userToken);
-    return this.apiService.get(APIConstants.API_REVOKE_URL, params).pipe(
+  getUserProfileMenu(): Observable<DataResponse | undefined> {
+    return this.apiService.getAllWithoutParams(APIConstants.API_USER_PROFILE_MENU_URL).pipe(
       map((response: DataResponse) => {
         if (response) {
           return response;
@@ -113,12 +46,80 @@ export class AuthService {
     );
   }
 
-  async revokeAsync(userToken: string): Promise<DataResponse> {
-    const params = new HttpParams().set('userToken', userToken);
-    const result = await this.apiService.postAsync(
-      APIConstants.API_REVOKE_URL,
-      { params }
-    );
-    return result;
+  async getUserProfileMenuAsync(): Promise<DataResponse>{
+    const userProfileMenuResponse = await this.apiService.getAllWithoutParamsAsync(APIConstants.API_USER_PROFILE_MENU_URL);
+    return userProfileMenuResponse;
+
   }
+
+
+  refreshToken(refreshTokenRequest: RefreshTokenRequest): Observable<DataResponse | undefined> {
+    return this.apiService.post(APIConstants.API_REFRESH_TOKEN_URL, refreshTokenRequest).pipe(
+      map((response: DataResponse) => {
+        if (response) {
+          return response;
+        }
+      })
+    );
+  }
+
+  async refreshTokenAsync(refreshTokenRequest: RefreshTokenRequest): Promise<boolean>{
+    
+    if(!refreshTokenRequest){
+      return false;
+    }
+
+    try {
+      const tokenResponse = await this.apiService.postAsync(APIConstants.API_REFRESH_TOKEN_URL,refreshTokenRequest);
+      if(tokenResponse.Success){
+        this.commonService.UpdateIsLoggedIn(true);
+        this.commonService.UpdateAccessToken(tokenResponse.Result.access_token);
+        this.commonService.UpdateRefreshToken(tokenResponse.Result.refresh_token);
+        const userProfileMenuResponse = await this.apiService.getAllWithoutParamsAsync(APIConstants.API_USER_PROFILE_MENU_URL);
+        if(userProfileMenuResponse.Success){
+          this.commonService.UpdateLoggedInUser(userProfileMenuResponse.Result.user);
+          this.commonService.UpdateUserMenus(userProfileMenuResponse.Result.userMenus);
+          this.commonService.UpdateSerializedUserMenus(this.commonService.parseMenu(userProfileMenuResponse.Result.userMenus));
+          return true;
+        }
+        return false;
+      }
+      return false;
+    } catch (error) {
+      console.error('An error occurred during refresh token:', error);
+      return false;
+    }
+    
+  }
+
+
+  // Simplified logout function
+  logout(): void {
+    this.commonService.GetLoggedInUser().pipe(
+      take(1)
+    ).subscribe(userProfile => {
+      if (userProfile && userProfile.UserName) {
+        const request = { UserName: userProfile.UserName };
+        
+        this.apiService.post(APIConstants.API_REVOKE_URL, request).pipe(
+          take(1)
+        ).subscribe({
+          next: (response) => {
+            if (response.Success) {
+              console.log('Refresh token revoked successfully.');
+            }
+          },
+          error: (err) => {
+            console.error('Error revoking refresh token:', err);
+          },
+          complete: () => {
+            this.commonService.RevokeSession();
+          }
+        });
+      } else {
+        this.commonService.RevokeSession();
+      }
+    });
+  }
+
 }

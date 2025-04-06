@@ -8,13 +8,7 @@ export class DataResponse {
     Result: any;
   }
 
-  export class UserResponse {
-    access_token: string;
-    refresh_token: string;
-    expires_in:  Date;
-    token_type: string;
-    error: string;
-    error_description: string;
+  export class ProfileMenuResponse {
     user: User;
     userMenus: any
   }

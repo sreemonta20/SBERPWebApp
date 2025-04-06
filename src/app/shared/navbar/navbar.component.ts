@@ -13,6 +13,7 @@ import { Router } from '@angular/router';
 import { SessionConstants } from '@app/core/constants';
 import { MenuItem } from '@app/core/interface';
 import { CommonService, SessionStorageService } from '@app/core/services';
+import { Subscription } from 'rxjs';
 declare var $: any;
 
 @Component({
@@ -24,8 +25,9 @@ declare var $: any;
 export class NavbarComponent implements OnInit, AfterViewInit, OnDestroy {
   //Menu Related
   isLoggedIn: boolean = false;
-  menuList: MenuItem[];
-
+  menuList: MenuItem[] = [];
+  private menuSubscription?: Subscription;
+  
   constructor(
     @Inject(DOCUMENT) private document: Document,
     private elementRef: ElementRef,
@@ -53,23 +55,70 @@ export class NavbarComponent implements OnInit, AfterViewInit, OnDestroy {
     }
   }
 
-  initializeMenu() {
-    $('[data-widget="treeview"]').Treeview('init');
-    // this.commonService.isLoggedIn$.subscribe(
-    //   (isLoggedIn) => (this.isLoggedIn = isLoggedIn)
-    // );
-    this.commonService.userMenus$.subscribe((userMenus) => {
-      this.menuList = userMenus;
+  initializeMenu(): void {
+    this.initTreeview(); // Optional pre-init if needed
+
+    this.menuSubscription = this.commonService.GetUserMenus().subscribe({
+      next: (userMenus) => {
+        this.menuList = this.commonService.parseMenu(userMenus);
+        this.reinitializeTreeview(); // Initialize menu after data
+      },
+      error: (err) => {
+        console.error('Error loading user menus:', err);
+        this.menuList = [];
+      },
     });
+  }
+
+  // private parseMenu(userMenus: any): MenuItem[] {
+  //   try {
+  //     let parsed = userMenus;
+
+  //     // Handle possible double-encoded JSON
+  //     if (typeof parsed === 'string') parsed = JSON.parse(parsed);
+  //     if (Array.isArray(parsed)) {
+  //       console.log('Parsed menu with', parsed.length, 'items');
+  //       return parsed;
+  //     } else {
+  //       console.warn('Menu data is not an array:', parsed);
+  //       return [];
+  //     }
+  //   } catch (error) {
+  //     console.error('Failed to parse menu:', error);
+  //     return [];
+  //   }
+  // }
+
+  private initTreeview(): void {
+    if ($ && $('[data-widget="treeview"]').length > 0) {
+      try {
+        $('[data-widget="treeview"]').Treeview('init');
+      } catch (e) {
+        console.warn('Initial treeview init error (optional):', e);
+      }
+    }
+  }
+
+  private reinitializeTreeview(): void {
+    setTimeout(() => {
+      if ($ && $('[data-widget="treeview"]').length > 0) {
+        try {
+          $('[data-widget="treeview"]').Treeview('init');
+          console.log('Treeview initialized after loading menu');
+        } catch (e) {
+          console.error('Error initializing Treeview:', e);
+        }
+      }
+    }, 0);
   }
 
   signOut(): void {
     this.commonService.RevokeSession();
   }
 
-  // TestClick() {
-  //   this.router.navigate(['/business/home']);
-  // }
-
-  ngOnDestroy(): void {}
+  ngOnDestroy(): void {
+    if (this.menuSubscription) {
+      this.menuSubscription.unsubscribe();
+    }
+  }
 }

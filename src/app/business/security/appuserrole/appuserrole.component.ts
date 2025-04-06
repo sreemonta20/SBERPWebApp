@@ -17,6 +17,7 @@ import {
   CustomValidators,
   DataResponse,
   RoleSaveUpdateRequest,
+  User,
 } from '@app/core/class';
 import { MessageConstants } from '@app/core/constants';
 import { MenuItem } from '@app/core/interface';
@@ -57,12 +58,11 @@ export class AppUserRoleComponent implements OnInit, AfterViewInit, OnDestroy {
   // Form Details
   public appUserRoleForm: FormGroup;
   public isEdit: boolean = false;
-  public menuSubscription: Subscription;
-
+  
   // Response related
   public appUserRoleList: AppUserRoleResponse[] = [];
   public error_message: any;
-  
+  private subscription: Subscription = new Subscription();
   constructor(
     @Inject(DOCUMENT) private document: Document,
     private elementRef: ElementRef,
@@ -75,7 +75,11 @@ export class AppUserRoleComponent implements OnInit, AfterViewInit, OnDestroy {
     private formBuilder: FormBuilder,
     private titleService: Title
   ) {
-    this.appUserProfileId = this.commonService.GetLoggedInUser().user.Id;
+    this.subscription = this.commonService
+              .GetLoggedInUser()
+              .subscribe((userInformation: User) => {
+                this.appUserProfileId = userInformation.Id;
+              });
     this.loadPermission(this.router.url);
   }
 
@@ -90,7 +94,7 @@ export class AppUserRoleComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   loadPermission(url: any): void {
-    console.log("Execution from Home");
+    console.log("Execution from AppUserRole");
     const permissionModel = this.commonService.getMenuPermission(url);
     this.isView = permissionModel.IsView;
     this.isCreate = permissionModel.IsCreate;
@@ -99,7 +103,6 @@ export class AppUserRoleComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   createForm() {
-    //ActionName: ['Save', Validators.required],
     this.appUserRoleForm = this.formBuilder.group({
       Id: [null],
       RoleName: [
@@ -114,14 +117,13 @@ export class AppUserRoleComponent implements OnInit, AfterViewInit, OnDestroy {
       IsActive: [true],
     });
   }
-  ///----------------------------------------------List & Pagination Starts----------------------------------------------
+  ///----------------------------------------------List & Pagination Starts----------------------------------------
   getAllAppUserRolesPagination(pageNumber: number, pageSize: number) {
     this.loadingService.setLoading(true);
     this.securityService
       .getAllAppUserRolesPagination(pageNumber, pageSize)
       .subscribe({
         next: (response: DataResponse) => {
-          debugger
           if (response.ResponseCode === 200) {
             this.loadingService.setLoading(false);
             this.appUserRoleList = response.Result.Items;
@@ -139,7 +141,6 @@ export class AppUserRoleComponent implements OnInit, AfterViewInit, OnDestroy {
           }
         },
         error: (error) => {
-          debugger
           this.loadingService.setLoading(false);
           this.error_message = error.error;
           this.notifyService.showError(
@@ -176,9 +177,9 @@ export class AppUserRoleComponent implements OnInit, AfterViewInit, OnDestroy {
       this.renderer.appendChild(document.body, script);
     }
   }
-  ///----------------------------------------------List & Pagination Ends----------------------------------------------
+  ///----------------------------------------------List & Pagination Ends----------------------------------------
 
-  ///----------------------------------------------Create, Update, and Delete Starts-----------------------------------
+  ///-----------------------------------Create, Update, and Delete Starts----------------------------------------
   createUpdateAppUserRole(appUserRole): void {
     let roleRequest: RoleSaveUpdateRequest = new RoleSaveUpdateRequest();
     this.loadingService.setLoading(true);
@@ -194,14 +195,6 @@ export class AppUserRoleComponent implements OnInit, AfterViewInit, OnDestroy {
       roleRequest.Description = appUserRole['Description'];
       roleRequest.CreateUpdateBy = appUserRole['CreateUpdateBy'];
       roleRequest.IsActive = appUserRole['IsActive'];
-      // roleRequest = new RoleSaveUpdateRequest(
-      //   'Save',
-      //   null,
-      //   appUserRole['RoleName'],
-      //   appUserRole['Description'],
-      //   appUserRole['CreateUpdateBy'],
-      //   appUserRole['IsActive']
-      // );
     } else {
       roleRequest.ActionName = 'Update';
       roleRequest.Id = appUserRole['Id'];
@@ -209,17 +202,9 @@ export class AppUserRoleComponent implements OnInit, AfterViewInit, OnDestroy {
       roleRequest.Description = appUserRole['Description'];
       roleRequest.CreateUpdateBy = appUserRole['CreateUpdateBy'];
       roleRequest.IsActive = appUserRole['IsActive'];
-      // roleRequest = new RoleSaveUpdateRequest(
-      //   'Update',
-      //   appUserRole['Id'],
-      //   appUserRole['RoleName'],
-      //   appUserRole['Description'],
-      //   appUserRole['CreateUpdateBy'],
-      //   appUserRole['IsActive']
-      // );
     }
 
-    // const roleRequest: RoleSaveUpdateRequest = this.appUserRoleForm.value;
+    
     this.securityService.createUpdateAppUserRole(roleRequest).subscribe({
       next: (response: DataResponse) => {
         this.loadingService.setLoading(false);
@@ -252,11 +237,6 @@ export class AppUserRoleComponent implements OnInit, AfterViewInit, OnDestroy {
   editAppUserRole(role: AppUserRoleResponse): void {
     this.isEdit = true;
     if (!this.commonService.isInvalidObject(role)) {
-      // this.appUserRoleForm.controls['Id'].setValue(role.Id);
-      // this.appUserRoleForm.controls['RoleName'].setValue(role.RoleName);
-      // this.appUserRoleForm.controls['Description'].setValue(role.Description);
-      // this.appUserRoleForm.controls['CreateUpdateBy'].setValue(this.appUserProfileId);
-      // this.appUserRoleForm.controls['IsActive'].setValue(role.IsActive);
       this.appUserRoleForm.patchValue({
         Id: role.Id,
         RoleName: role.RoleName,
@@ -315,11 +295,11 @@ export class AppUserRoleComponent implements OnInit, AfterViewInit, OnDestroy {
       IsActive: true,
     });
   }
-  ///----------------------------------------------Create, Update, and Delete Ends-----------------------------------
+  ///------------------------------------Create, Update, and Delete Ends----------------------------------------
 
   ngOnDestroy(): void {
-    if (this.menuSubscription) {
-      this.menuSubscription.unsubscribe();
+    if (this.subscription) {
+      this.subscription.unsubscribe();
     }
   }
 }

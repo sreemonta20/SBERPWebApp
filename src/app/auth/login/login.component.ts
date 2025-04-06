@@ -16,12 +16,13 @@ import {
   Validators,
 } from '@angular/forms';
 import { Router } from '@angular/router';
-import { DataResponse, LoginRequest, UserResponse } from '@app/core/class';
 import {
-  MessageConstants,
-  RouteConstants,
-  SessionConstants,
-} from '@app/core/constants/index';
+  DataResponse,
+  LoginRequest,
+  TokenResponse,
+  ProfileMenuResponse,
+} from '@app/core/class';
+import { MessageConstants, RouteConstants } from '@app/core/constants/index';
 import { MenuItem } from '@app/core/interface';
 import {
   AuthService,
@@ -32,7 +33,7 @@ import {
   ValidationFormsService,
 } from '@app/core/services/index';
 import { NgxSpinnerService } from 'ngx-spinner';
-declare var $: any;
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-login',
@@ -43,18 +44,18 @@ declare var $: any;
 })
 export class LoginComponent implements OnInit, AfterViewInit, OnDestroy {
   // Declaration & initialization
-  //host: { class: 'form-v6' },
   loginForm!: FormGroup;
   submitted = false;
   formErrors: any;
   hide: boolean = true;
   error_message: string = '';
   isLoggedIn: boolean = false;
-  loggedInUser: UserResponse = new UserResponse();
-  formControls!: string[];
+  public tokenResponse: TokenResponse = new TokenResponse();
+  public profileMenuResponse: ProfileMenuResponse = new ProfileMenuResponse();
 
-  loginModelRequest = new LoginRequest();
-  userMenus: MenuItem[];
+  // loginModelRequest = new LoginRequest();
+  userMenus: MenuItem[] = [];
+  private subscriptions = new Subscription();
 
   constructor(
     @Inject(DOCUMENT) private document: Document,
@@ -74,22 +75,7 @@ export class LoginComponent implements OnInit, AfterViewInit, OnDestroy {
     this.createForm();
   }
 
-  createForm() {
-    this.loginForm = this.fb.group({
-      userName: new FormControl('', Validators.required),
-      password: new FormControl('', Validators.required),
-    });
-  }
-
-  ngOnInit(): void {
-    // this.commonService.isLoggedIn$.subscribe(
-    //   (response) => (this.isLoggedIn = response)
-    // );
-
-    // this.commonService.loggedInUser$.subscribe(
-    //   (response) => (this.loggedInUser = response)
-    // );
-  }
+  ngOnInit(): void {}
 
   ngAfterViewInit() {
     // this.loadScripts(['assets/js/adminlte.js']);
@@ -99,48 +85,80 @@ export class LoginComponent implements OnInit, AfterViewInit, OnDestroy {
     return this.loginForm.controls;
   }
 
+  createForm() {
+    this.loginForm = this.fb.group({
+      userName: new FormControl('', Validators.required),
+      password: new FormControl('', Validators.required),
+    });
+  }
+
   signIn(): void {
     this.submitted = true;
-    this.loadingService.setLoading(true);
+
     if (this.loginForm.invalid) {
       return;
     }
 
-    this.loginModelRequest.UserName = this.loginForm.controls['userName'].value;
-    this.loginModelRequest.Password = this.loginForm.controls['password'].value;
-    this.authService.login(this.loginModelRequest).subscribe({
-      next: (response: DataResponse) => {
-        if (response.ResponseCode === 200) {
-          this.loadingService.setLoading(false);
-          this.isLoggedIn = true;
-          this.loggedInUser = response.Result;
-          this.userMenus = JSON.parse(this.loggedInUser.userMenus);
+    this.loadingService.setLoading(true);
 
-          this.commonService.UpdateIsLoggedIn(this.isLoggedIn);
-          this.commonService.UpdateLoggedInUser(this.loggedInUser);
-          this.commonService.UpdateUserMenus(this.userMenus);
-          this.commonService.UpdateSerializedUserMenus(this.userMenus);
-          
-          this.router.navigate([RouteConstants.BUSINESS_HOME_URL]);
+    const loginModelRequest: LoginRequest = {
+      UserName: this.f.userName.value,
+      Password: this.f.password.value,
+    };
+
+    const loginSub = this.authService.login(loginModelRequest).subscribe({
+      next: async (response: DataResponse) => {
+        this.loadingService.setLoading(false);
+
+        if (response.ResponseCode === 200) {
+          this.tokenResponse = response.Result;
+          this.isLoggedIn = true;
+
+          this.commonService.UpdateIsLoggedIn(true);
+          this.commonService.UpdateAccessToken(this.tokenResponse.access_token);
+          this.commonService.UpdateRefreshToken(
+            this.tokenResponse.refresh_token
+          );
+
+          const userProfileMenuResponse =
+            await this.authService.getUserProfileMenuAsync();
+
+          if (userProfileMenuResponse?.Success) {
+            this.profileMenuResponse = userProfileMenuResponse.Result;
+
+            this.commonService.UpdateLoggedInUser(
+              this.profileMenuResponse.user
+            );
+            this.commonService.UpdateUserMenus(
+              this.profileMenuResponse.userMenus
+            );
+            this.commonService.UpdateSerializedUserMenus(
+              this.commonService.parseMenu(this.profileMenuResponse.userMenus)
+            );
+
+            setTimeout(() => {
+              this.router.navigate([RouteConstants.BUSINESS_HOME_URL]);
+            }, 500);
+          } else {
+            this.commonService.RevokeSession();
+          }
         } else {
-          this.loadingService.setLoading(false);
           this.notifyService.showError(
             response.Message,
             MessageConstants.GENERAL_ERROR_TITLE
           );
-          return;
         }
       },
       error: (error) => {
         this.loadingService.setLoading(false);
-        this.error_message = error.error;
         this.notifyService.showError(
-          this.error_message,
+          error?.error,
           MessageConstants.GENERAL_ERROR_TITLE
         );
-        return;
       },
     });
+
+    this.subscriptions.add(loginSub);
   }
 
   loadScripts(urls: string[]) {
@@ -152,5 +170,7 @@ export class LoginComponent implements OnInit, AfterViewInit, OnDestroy {
     }
   }
 
-  ngOnDestroy(): void {}
+  ngOnDestroy(): void {
+    this.subscriptions.unsubscribe(); // Important for preventing memory leaks
+  }
 }

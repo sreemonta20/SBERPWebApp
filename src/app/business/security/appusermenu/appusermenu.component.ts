@@ -24,6 +24,7 @@ import {
   CustomValidators,
   DataResponse,
   AppUserMenuRequest,
+  User,
 } from '@app/core/class';
 import { MessageConstants } from '@app/core/constants';
 import { MenuItem } from '@app/core/interface';
@@ -67,18 +68,10 @@ export class AppUserMenuComponent implements OnInit, AfterViewInit, OnDestroy {
   // Form Details
   public appUserMenuForm: FormGroup;
   public isEdit: boolean = false;
-  public menuSubscription: Subscription;
 
   // Response related
 
   public initialDataResponse: InitialDataResponse;
-
-  // public parentMenuList: AppUserRoleMenuInitialData[] = [];
-  // public cssClassList: AppUserRoleMenuInitialData[] = [];
-  // public routeLinkList: AppUserRoleMenuInitialData[] = [];
-  // public routeLinkClassList: AppUserRoleMenuInitialData[] = [];
-  // public iconList: AppUserRoleMenuInitialData[] = [];
-  // public dropdownIconList: AppUserRoleMenuInitialData[] = [];
 
   public cssClassList: { name: string }[] = [];
   public filteredCssClassList: { name: string }[] = [];
@@ -106,7 +99,7 @@ export class AppUserMenuComponent implements OnInit, AfterViewInit, OnDestroy {
     PageNumber: this.currentPage,
     PageSize: this.pageSize,
   };
-
+  private subscription: Subscription = new Subscription();
   constructor(
     @Inject(DOCUMENT) private document: Document,
     private elementRef: ElementRef,
@@ -119,7 +112,11 @@ export class AppUserMenuComponent implements OnInit, AfterViewInit, OnDestroy {
     private formBuilder: FormBuilder,
     private titleService: Title
   ) {
-    this.appUserProfileId = this.commonService.GetLoggedInUser().user.Id;
+    this.subscription = this.commonService
+          .GetLoggedInUser()
+          .subscribe((userInformation: User) => {
+            this.appUserProfileId = userInformation.Id;
+          });
     this.loadPermission(this.router.url);
   }
 
@@ -286,7 +283,7 @@ export class AppUserMenuComponent implements OnInit, AfterViewInit, OnDestroy {
     );
   }
 
-  ///----------------------------------------------List & Pagination Starts----------------------------------------------
+  ///-----------------------------------------List & Pagination Starts----------------------------------------------
   getAllAppUserMenuPagingWithSearch(
     searchTerm: string,
     sortColumnName: string,
@@ -305,7 +302,6 @@ export class AppUserMenuComponent implements OnInit, AfterViewInit, OnDestroy {
       )
       .subscribe({
         next: (response: DataResponse) => {
-          debugger
           if (response.ResponseCode === 302) {
             this.loadingService.setLoading(false);
             this.appUserMenuList = response.Result.Items;
@@ -400,9 +396,9 @@ export class AppUserMenuComponent implements OnInit, AfterViewInit, OnDestroy {
       this.renderer.appendChild(document.body, script);
     }
   }
-  ///----------------------------------------------List & Pagination Ends----------------------------------------------
+  ///-----------------------------------------List & Pagination Ends----------------------------------------------
 
-  ///----------------------------------------------Create, Update, and Delete Starts-----------------------------------
+  ///-----------------------------------------Create, Update, and Delete Starts-----------------------------------
   createUpdateAppUserMenu(appUserMenu): void {
     let appUserMenuRequest: AppUserMenuRequest = new AppUserMenuRequest();
     this.loadingService.setLoading(true);
@@ -588,11 +584,11 @@ export class AppUserMenuComponent implements OnInit, AfterViewInit, OnDestroy {
     });
     this.initializeFormData();
   }
-  ///----------------------------------------------Create, Update, and Delete Ends-----------------------------------
+  ///------------------------------------------Create, Update, and Delete Ends-----------------------------------
 
   ngOnDestroy(): void {
-    if (this.menuSubscription) {
-      this.menuSubscription.unsubscribe();
+    if (this.subscription) {
+      this.subscription.unsubscribe(); // Prevent memory leaks
     }
   }
 }
