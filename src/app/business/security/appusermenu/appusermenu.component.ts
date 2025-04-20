@@ -25,6 +25,7 @@ import {
   DataResponse,
   AppUserMenuRequest,
   User,
+  PagingResult,
 } from '@app/core/class';
 import { MessageConstants } from '@app/core/constants';
 import { MenuItem } from '@app/core/interface';
@@ -35,7 +36,7 @@ import {
   SecurityService,
 } from '@app/core/services';
 declare var $: any;
-import { Subscription } from 'rxjs';
+import { Subject, Subscription, takeUntil } from 'rxjs';
 
 @Component({
   selector: 'app-appusermenu',
@@ -44,6 +45,9 @@ import { Subscription } from 'rxjs';
   styleUrls: ['./appusermenu.component.css'],
 })
 export class AppUserMenuComponent implements OnInit, AfterViewInit, OnDestroy {
+  private subscription: Subscription = new Subscription();
+  private destroy$: Subject<void> = new Subject<void>();
+
   // Current User
   public appUserProfileId: string = '';
 
@@ -52,27 +56,27 @@ export class AppUserMenuComponent implements OnInit, AfterViewInit, OnDestroy {
   public isCreate = false;
   public isUpdate = false;
   public isDelete = false;
+  public loading: boolean = false;
+  public errorMessage: string = '';
 
-  //Pagination
-  public totalRows: number = 0;
-  public currentPage: number = 1;
-  public pageSize: number = 5;
-  public pageCount: number = 0;
-  public startPage: number = 1;
-  public endPage: number = 5;
+  // DataTable Properties & Pagination
+  public dataTable: any;
   public pageSizeList: number[] = this.commonService.pageSize();
+  public appUserMenuList: AppUserMenuResponse[] = [];
   public searchTerm: string = '';
   public sortColumnName: string = '';
   public sortColumnDirection: string = 'ASC'; // ASC or DESC
+  public pageNumber: number = 1;
+  public pageSize: number = 5;
+  public totalRecords: number = 0;
+  public totalPages: number = 0;
 
   // Form Details
   public appUserMenuForm: FormGroup;
   public isEdit: boolean = false;
 
   // Response related
-
   public initialDataResponse: InitialDataResponse;
-
   public cssClassList: { name: string }[] = [];
   public filteredCssClassList: { name: string }[] = [];
   public routeLinkList: { name: string }[] = [];
@@ -85,21 +89,13 @@ export class AppUserMenuComponent implements OnInit, AfterViewInit, OnDestroy {
   public dropdownIconList: { name: string }[] = [];
   public filteredDropdownIconList: { name: string }[] = [];
 
-  public appUserMenuList: AppUserMenuResponse[] = [];
-
-  nextMenuSerialNo: number = 0;
-  isSerialNoDisabled: boolean = false;
+  public nextMenuSerialNo: number = 0;
+  public isSerialNoDisabled: boolean = false;
 
   public error_message: any;
 
-  public param = {
-    SearchTerm: this.searchTerm,
-    SortColumnName: this.sortColumnName,
-    SortColumnDirection: this.sortColumnDirection,
-    PageNumber: this.currentPage,
-    PageSize: this.pageSize,
-  };
-  private subscription: Subscription = new Subscription();
+  // dtMainOptions: DataTables.Settings = {};
+
   constructor(
     @Inject(DOCUMENT) private document: Document,
     private elementRef: ElementRef,
@@ -113,10 +109,11 @@ export class AppUserMenuComponent implements OnInit, AfterViewInit, OnDestroy {
     private titleService: Title
   ) {
     this.subscription = this.commonService
-          .GetLoggedInUser()
-          .subscribe((userInformation: User) => {
-            this.appUserProfileId = userInformation.Id;
-          });
+      .GetLoggedInUser()
+      .subscribe((userInformation: User) => {
+        debugger;
+        this.appUserProfileId = userInformation.Id;
+      });
     this.loadPermission(this.router.url);
   }
 
@@ -124,16 +121,20 @@ export class AppUserMenuComponent implements OnInit, AfterViewInit, OnDestroy {
     this.titleService.setTitle(MessageConstants.APP_USER_MENU_TITLE);
     this.createForm();
     this.initializeFormData();
-    this.getAllAppUserMenuPagingWithSearch(
-      this.searchTerm,
-      this.sortColumnName,
-      this.sortColumnDirection,
-      this.currentPage,
-      this.pageSize
-    );
+    // this.getAllAppUserMenuPagingWithSearch();
+    this.getAllAppUserMenuPagingWithSearch();
   }
 
-  ngAfterViewInit() {}
+  ngAfterViewInit() {
+    // ($('#appUserMenuTable') as any).DataTable({
+    //   paging: true,
+    //   lengthChange: true,
+    //   searching: true,
+    //   ordering: true,
+    //   responsive: true,
+    // });
+    // this.getAllAppUserMenuPagingWithSearch();
+  }
 
   loadPermission(url: any): void {
     console.log('Execution from Home');
@@ -166,10 +167,8 @@ export class AppUserMenuComponent implements OnInit, AfterViewInit, OnDestroy {
 
   initializeFormData() {
     try {
-      
       this.securityService.getAppUserRoleMenuInitialData().subscribe({
         next: (response: DataResponse) => {
-          
           if (response.ResponseCode === 200) {
             this.initialDataResponse = response.Result;
 
@@ -257,135 +256,431 @@ export class AppUserMenuComponent implements OnInit, AfterViewInit, OnDestroy {
   onCssClassInput(event: Event): void {
     const inputValue = (event.target as HTMLInputElement).value.toLowerCase();
 
-    this.filteredCssClassList = this.cssClassList.filter(cssClass =>
+    this.filteredCssClassList = this.cssClassList.filter((cssClass) =>
       cssClass.name.toLowerCase().includes(inputValue)
     );
   }
 
   onRouteLinkClassInput(event: Event): void {
     const inputValue = (event.target as HTMLInputElement).value.toLowerCase();
-    this.filteredRouteLinkClassList = this.routeLinkClassList.filter(routeLinkClass =>
-      routeLinkClass.name.toLowerCase().includes(inputValue)
+    this.filteredRouteLinkClassList = this.routeLinkClassList.filter(
+      (routeLinkClass) => routeLinkClass.name.toLowerCase().includes(inputValue)
     );
   }
 
   onIconInput(event: Event): void {
     const inputValue = (event.target as HTMLInputElement).value.toLowerCase();
-    this.filteredIconList = this.iconList.filter(icon =>
+    this.filteredIconList = this.iconList.filter((icon) =>
       icon.name.toLowerCase().includes(inputValue)
     );
   }
 
   onDropdownIconInput(event: Event): void {
     const inputValue = (event.target as HTMLInputElement).value.toLowerCase();
-    this.filteredDropdownIconList = this.dropdownIconList.filter(dropdownIcon =>
-      dropdownIcon.name.toLowerCase().includes(inputValue)
+    this.filteredDropdownIconList = this.dropdownIconList.filter(
+      (dropdownIcon) => dropdownIcon.name.toLowerCase().includes(inputValue)
     );
   }
 
   ///-----------------------------------------List & Pagination Starts----------------------------------------------
-  getAllAppUserMenuPagingWithSearch(
-    searchTerm: string,
-    sortColumnName: string,
-    sortColumnDirection: string,
-    pageNumber: number,
-    pageSize: number
-  ) {
-    this.loadingService.setLoading(true);
+
+  // getAllAppUserMenuPagingWithSearch(): void {
+  //   // Destroy existing DataTable if it exists
+  //   if (this.dataTable) {
+  //     this.dataTable.destroy();
+  //   }
+
+  //   // Initialize the DataTable with proper column definitions
+  //   this.dataTable = $('#appUserMenuTable').DataTable({
+  //     processing: true,
+  //     serverSide: true,
+  //     searching: true,
+  //     ordering: true,
+  //     lengthChange: true,
+  //     lengthMenu: this.pageSizeList,
+  //     pageLength: 5,
+  //     ajax: (dataTablesParameters: any, callback: any) => {
+  //       // Show loading indicator
+  //       this.loading = true;
+  //       this.errorMessage = '';
+
+  //       // Extract pagination, search and sort parameters
+  //       const pageNumber =
+  //         dataTablesParameters.start !== 0
+  //           ? Math.floor(
+  //               dataTablesParameters.start / dataTablesParameters.length
+  //             ) + 1
+  //           : 1;
+  //       const pageSize = dataTablesParameters.length;
+  //       const searchTerm = dataTablesParameters.search.value || '';
+
+  //       // Default sort values
+  //       let sortColumnName = '';
+  //       let sortColumnDirection = 'asc';
+
+  //       // Get sort column and direction if available
+  //       if (
+  //         dataTablesParameters.order &&
+  //         dataTablesParameters.order.length > 0
+  //       ) {
+  //         const columnIndex = dataTablesParameters.order[0].column;
+  //         sortColumnName = dataTablesParameters.columns[columnIndex].data || '';
+  //         sortColumnDirection = dataTablesParameters.order[0].dir || 'asc';
+  //       }
+
+  //       // Unsubscribe from previous request if it exists
+  //       if (this.subscription) {
+  //         this.subscription.unsubscribe();
+  //       }
+
+  //       // Call the service directly and store the subscription
+  //       this.subscription = this.securityService
+  //         .getAllAppUserMenuPagingWithSearch(
+  //           searchTerm,
+  //           sortColumnName,
+  //           sortColumnDirection,
+  //           pageNumber,
+  //           pageSize
+  //         )
+  //         .pipe(takeUntil(this.destroy$))
+  //         .subscribe({
+  //           next: (response: DataResponse | undefined) => {
+  //             this.loading = false;
+
+  //             if (response && response.Success && response.Result) {
+  //               const result =
+  //                 response.Result as PagingResult<AppUserMenuResponse>;
+
+  //               // Update component properties
+  //               this.appUserMenuList = result.Items || [];
+
+  //               // Return data to DataTables with properly formatted data
+  //               callback({
+  //                 recordsTotal: result.RowCount || 0,
+  //                 recordsFiltered: result.RowCount || 0,
+  //                 data: this.appUserMenuList
+  //               });
+  //             } else {
+  //               this.errorMessage = response?.Message || 'Failed to fetch data';
+  //               this.appUserMenuList = [];
+
+  //               // Return empty dataset
+  //               callback({
+  //                 recordsTotal: 0,
+  //                 recordsFiltered: 0,
+  //                 data: []
+  //               });
+  //             }
+  //           },
+  //           error: (error) => {
+  //             this.loading = false;
+  //             this.errorMessage = 'Error loading data';
+  //             this.appUserMenuList = [];
+  //             console.error('Error in data fetch:', error);
+
+  //             // Return empty dataset on error
+  //             callback({
+  //               recordsTotal: 0,
+  //               recordsFiltered: 0,
+  //               data: []
+  //             });
+  //           },
+  //         });
+  //     },
+  //     columns: [
+  //       { data: 'Name' },  // Menu Name
+  //       {
+  //         data: 'IsHeader',
+  //         render: function(data) {
+  //           return data ? 'Yes' : 'No';
+  //         }
+  //       },
+  //       {
+  //         data: 'IsModule',
+  //         render: function(data) {
+  //           return data ? 'Yes' : 'No';
+  //         }
+  //       },
+  //       {
+  //         data: 'IsComponent',
+  //         render: function(data) {
+  //           return data ? 'Yes' : 'No';
+  //         }
+  //       },
+  //       { data: 'RouteLink' },  // Route Link
+  //       { data: 'ParentName' },  // Parent Menu
+  //       {
+  //         data: 'IsActive',
+  //         render: function(data) {
+  //           return data ? 'Yes' : 'No';
+  //         }
+  //       },
+  //       {
+  //         data: null,
+  //         orderable: false,
+  //         render: (data, type, row) => {
+  //           return `
+  //             <ul class="list-inline m-0">
+  //               <li class="list-inline-item" ${!this.isUpdate ? 'style="opacity: 0.5; cursor: not-allowed;"' : ''}>
+  //                 <i class="fa fa-edit edit-menu" data-id="${row.Id}"></i>
+  //               </li>
+  //               <li class="list-inline-item" ${!this.isDelete ? 'style="opacity: 0.5; cursor: not-allowed;"' : ''}>
+  //                 <i class="fa fa-trash delete-menu" data-id="${row.Id}"></i>
+  //               </li>
+  //             </ul>
+  //           `;
+  //         }
+  //       }
+  //     ],
+  //     drawCallback: () => {
+  //       // Add event listeners for edit and delete buttons
+  //       $('.edit-menu').on('click', (e) => {
+  //         if (this.isUpdate) {
+  //           const menuId = $(e.currentTarget).data('id');
+  //           const menuToEdit = this.appUserMenuList.find(menu => menu.Id === menuId);
+  //           if (menuToEdit) {
+  //             this.editAppUserMenu(menuToEdit);
+  //           }
+  //         }
+  //       });
+
+  //       $('.delete-menu').on('click', (e) => {
+  //         if (this.isDelete) {
+  //           const menuId = $(e.currentTarget).data('id');
+  //           this.deleteAppUserMenu(menuId);
+  //         }
+  //       });
+  //     }
+  //   });
+  // }
+
+  // getAllAppUserMenuPagingWithSearch(): void {
+  //   this.dataTable = $('#appUserMenuTable').DataTable({
+  //     processing: true,
+  //     serverSide: true,
+  //     searching: true,
+  //     ordering: true,
+  //     lengthChange: true,
+  //     lengthMenu: this.pageSizeList,
+  //     pageLength: 5,
+  //     ajax: (dataTablesParameters: any, callback: any) => {
+  //       this.loading = true;
+  //       this.errorMessage = '';
+
+  //       const pageNumber =
+  //         dataTablesParameters.start !== 0
+  //           ? Math.floor(
+  //               dataTablesParameters.start / dataTablesParameters.length
+  //             ) + 1
+  //           : 1;
+  //       const pageSize = dataTablesParameters.length;
+  //       const searchTerm = dataTablesParameters.search.value || '';
+
+  //       let sortColumnName = '';
+  //       let sortColumnDirection = 'asc';
+
+  //       if (
+  //         dataTablesParameters.order &&
+  //         dataTablesParameters.order.length > 0
+  //       ) {
+  //         const columnIndex = dataTablesParameters.order[0].column;
+  //         sortColumnName = dataTablesParameters.columns[columnIndex].data || '';
+  //         sortColumnDirection = dataTablesParameters.order[0].dir || 'asc';
+  //       }
+
+  //       if (this.subscription) {
+  //         this.subscription.unsubscribe();
+  //       }
+
+  //       this.subscription = this.securityService
+  //         .getAllAppUserMenuPagingWithSearch(
+  //           searchTerm,
+  //           sortColumnName,
+  //           sortColumnDirection,
+  //           pageNumber,
+  //           pageSize
+  //         )
+  //         .pipe(takeUntil(this.destroy$))
+  //         .subscribe({
+  //           next: (response: DataResponse | undefined) => {
+  //             this.loading = false;
+
+  //             if (response && response.Success && response.Result) {
+  //               const result =
+  //                 response.Result as PagingResult<AppUserMenuResponse>;
+  //               this.appUserMenuList = result.Items || [];
+
+  //               callback({
+  //                 recordsTotal: result.RowCount || 0,
+  //                 recordsFiltered: result.RowCount || 0,
+  //                 data: this.appUserMenuList,
+  //               });
+  //             } else {
+  //               this.errorMessage = response?.Message || 'Failed to fetch data';
+  //               this.appUserMenuList = [];
+
+  //               callback({
+  //                 recordsTotal: 0,
+  //                 recordsFiltered: 0,
+  //                 data: [],
+  //               });
+  //             }
+  //           },
+  //           error: (error) => {
+  //             this.loading = false;
+  //             this.errorMessage = 'Error loading data';
+  //             this.appUserMenuList = [];
+  //             console.error('Error in data fetch:', error);
+
+  //             callback({
+  //               recordsTotal: 0,
+  //               recordsFiltered: 0,
+  //               data: [],
+  //             });
+  //           },
+  //         });
+  //     },
+  //     columns: [
+  //       { data: 'Name' },
+  //       { data: 'IsHeader' },
+  //       { data: 'IsModule' },
+  //       { data: 'IsComponent' },
+  //       { data: 'RouteLink' },
+  //       { data: 'ParentName' },
+  //       { data: 'IsActive' },
+  //       { data: null, orderable: false },
+  //     ],
+  //   });
+  // }
+
+  // getAllAppUserMenuPagingWithSearch(): void {
+  //   this.dataTable = $('#appUserMenuTable').DataTable({
+  //     pagingType: "full_numbers",
+  //     processing: true,
+  //     serverSide: true,
+  //     searching: true,
+  //     ordering: true,
+  //     lengthChange: true,
+  //     lengthMenu: this.pageSizeList,
+  //     pageLength: 5,
+  //     order: [1, 'desc'],
+  //     responsive: true,
+  //     destroy: true,
+  //     ajax: (dataTablesParameters: any, callback: any) => {
+  //       this.loading = true;
+  //       this.errorMessage = '';
+
+  //       const pageNumber =
+  //         dataTablesParameters.start !== 0
+  //           ? Math.floor(
+  //               dataTablesParameters.start / dataTablesParameters.length
+  //             ) + 1
+  //           : 1;
+  //       const pageSize = dataTablesParameters.length;
+  //       const searchTerm = dataTablesParameters.search.value || '';
+
+  //       let sortColumnName = '';
+  //       let sortColumnDirection = 'asc';
+
+  //       if (
+  //         dataTablesParameters.order &&
+  //         dataTablesParameters.order.length > 0
+  //       ) {
+  //         const columnIndex = dataTablesParameters.order[0].column;
+  //         sortColumnName = dataTablesParameters.columns[columnIndex].data || '';
+  //         sortColumnDirection = dataTablesParameters.order[0].dir || 'asc';
+  //       }
+
+  //       this.securityService
+  //         .getAllAppUserMenuPagingWithSearch(
+  //           searchTerm,
+  //           sortColumnName,
+  //           sortColumnDirection,
+  //           pageNumber,
+  //           pageSize
+  //         )
+  //         .subscribe({
+  //           next: (response: DataResponse | undefined) => {
+  //             this.loading = false;
+
+  //             if (response && response.Success && response.Result) {
+  //               const result =
+  //                 response.Result as PagingResult<AppUserMenuResponse>;
+  //               this.appUserMenuList = result.Items || [];
+
+  //               callback({
+  //                 recordsTotal: result.RowCount || 0,
+  //                 recordsFiltered: result.RowCount || 0,
+  //               });
+  //             } else {
+  //               this.errorMessage = response?.Message || 'Failed to fetch data';
+  //               this.appUserMenuList = [];
+
+  //               callback({
+  //                 recordsTotal: 0,
+  //                 recordsFiltered: 0
+  //               });
+  //             }
+  //           },
+  //           error: (error) => {
+  //             this.loading = false;
+  //             this.errorMessage = 'Error loading data';
+  //             this.appUserMenuList = [];
+  //             console.error('Error in data fetch:', error);
+
+  //             callback({
+  //               recordsTotal: 0,
+  //               recordsFiltered: 0
+  //             });
+  //           },
+  //         });
+  //     }
+  //   });
+  // }
+
+  getAllAppUserMenuPagingWithSearch(): void {
+    this.loading = true;
+    this.errorMessage = '';
+  
     this.securityService
-      .getAllAppUserMenuPagingWithSearch(
-        searchTerm,
-        sortColumnName,
-        sortColumnDirection,
-        pageNumber,
-        pageSize
-      )
+      .getAllAppUserMenuPagingWithSearch('', '', '', 1, 1000) // Adjust page size if needed
       .subscribe({
-        next: (response: DataResponse) => {
-          if (response.ResponseCode === 302) {
-            this.loadingService.setLoading(false);
-            this.appUserMenuList = response.Result.Items;
-            this.currentPage = response.Result.CurrentPage;
-            this.pageCount = response.Result.PageCount;
-            this.totalRows = response.Result.RowCount;
-            this.updatePageIndices();
+        next: (response: DataResponse | undefined) => {
+          this.loading = false;
+  
+          if (response && response.Success && response.Result) {
+            const result = response.Result as PagingResult<AppUserMenuResponse>;
+            this.appUserMenuList = result.Items || [];
+  
+            // Allow Angular time to render rows before initializing DataTables
+            setTimeout(() => {
+              if (this.dataTable) {
+                this.dataTable.destroy(); // Destroy existing instance before re-initializing
+              }
+  
+              this.dataTable = $('#appUserMenuTable').DataTable({
+                pagingType: 'full_numbers',
+                lengthChange: true,
+                lengthMenu: this.pageSizeList,
+                pageLength: 5,
+                ordering: true,
+                searching: true,
+                responsive: true,
+                destroy: true
+              });
+            }, 0);
           } else {
-            this.loadingService.setLoading(false);
-            this.notifyService.showError(
-              MessageConstants.APP_USER_MENU_NOT_FOUND_MEG,
-              MessageConstants.GENERAL_ERROR_TITLE
-            );
-            return;
+            this.errorMessage = response?.Message || 'Failed to fetch data';
+            this.appUserMenuList = [];
           }
         },
         error: (error) => {
-          
-          this.loadingService.setLoading(false);
-          this.error_message = error.error;
-          this.notifyService.showError(
-            MessageConstants.INTERNAL_ERROR_MEG,
-            MessageConstants.GENERAL_ERROR_TITLE
-          );
-          return;
-        },
+          this.loading = false;
+          this.errorMessage = 'Error loading data';
+          this.appUserMenuList = [];
+          console.error('Error fetching data:', error);
+        }
       });
-  }
-
-  changePageSize(event: any): void {
-    this.currentPage = 1;
-    this.getAllAppUserMenuPagingWithSearch(
-      this.searchTerm,
-      this.sortColumnName,
-      this.sortColumnDirection,
-      this.currentPage,
-      this.pageSize
-    );
-  }
-
-  changePage(page: number): void {
-    if (page >= 1 && page <= this.pageCount) {
-      this.getAllAppUserMenuPagingWithSearch(
-        this.searchTerm,
-        this.sortColumnName,
-        this.sortColumnDirection,
-        page,
-        this.pageSize
-      );
-    }
-  }
-
-  onSearch(): void {
-    this.currentPage = 1;
-    this.getAllAppUserMenuPagingWithSearch(
-      this.searchTerm,
-      this.sortColumnName,
-      this.sortColumnDirection,
-      this.currentPage,
-      this.pageSize
-    );
-  }
-
-  // Handle sort column click
-  changeSort(columnName: string): void {
-    if (this.sortColumnName === columnName) {
-      this.sortColumnDirection =
-        this.sortColumnDirection === 'ASC' ? 'DESC' : 'ASC';
-    } else {
-      this.sortColumnName = columnName;
-      this.sortColumnDirection = 'ASC';
-    }
-    this.getAllAppUserMenuPagingWithSearch(
-      this.searchTerm,
-      this.sortColumnName,
-      this.sortColumnDirection,
-      this.currentPage,
-      this.pageSize
-    );
-  }
-
-  updatePageIndices(): void {
-    this.startPage = (this.currentPage - 1) * this.pageSize + 1;
-    this.endPage = this.startPage - 1 + this.appUserMenuList.length;
   }
 
   loadScripts(urls: string[]) {
@@ -451,13 +746,7 @@ export class AppUserMenuComponent implements OnInit, AfterViewInit, OnDestroy {
             response.Message,
             MessageConstants.GENERAL_SUCCESS_TITLE
           );
-          this.getAllAppUserMenuPagingWithSearch(
-            this.searchTerm,
-            this.sortColumnName,
-            this.sortColumnDirection,
-            this.currentPage,
-            this.pageSize
-          );
+          this.getAllAppUserMenuPagingWithSearch();
           this.resetForm();
         } else {
           this.loadingService.setLoading(false);
@@ -518,13 +807,7 @@ export class AppUserMenuComponent implements OnInit, AfterViewInit, OnDestroy {
               response.Message,
               MessageConstants.GENERAL_SUCCESS_TITLE
             );
-            this.getAllAppUserMenuPagingWithSearch(
-              this.searchTerm,
-              this.sortColumnName,
-              this.sortColumnDirection,
-              this.currentPage,
-              this.pageSize
-            );
+            this.getAllAppUserMenuPagingWithSearch();
           } else {
             this.notifyService.showError(
               response.Message,
@@ -587,8 +870,18 @@ export class AppUserMenuComponent implements OnInit, AfterViewInit, OnDestroy {
   ///------------------------------------------Create, Update, and Delete Ends-----------------------------------
 
   ngOnDestroy(): void {
+    // Unsubscribe from the Subject (for takeUntil approach)
+    this.destroy$.next();
+    this.destroy$.complete();
+
+    // Unsubscribe from any direct subscriptions
     if (this.subscription) {
       this.subscription.unsubscribe(); // Prevent memory leaks
+    }
+
+    // Destroy datatable
+    if (this.dataTable) {
+      this.dataTable.destroy();
     }
   }
 }

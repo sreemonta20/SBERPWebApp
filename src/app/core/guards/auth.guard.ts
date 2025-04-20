@@ -81,7 +81,7 @@ export class AuthGuard implements CanActivate {
       Access_Token: accessToken,
       Refresh_Token: refreshToken,
     };
-    debugger
+    
     const isRefreshSuccess = await this.authService.refreshTokenAsync(refreshTokenRequest);
 
     if (isRefreshSuccess) {

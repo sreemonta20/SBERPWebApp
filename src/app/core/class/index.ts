@@ -8,6 +8,7 @@ export * from './models/app.user.role';
 export * from './models/app.user';
 export * from './models/menu.permission';
 export * from './models/user';
+export * from './models/paging.result';
 
 export * from './request/app.user.menu.request';
 export * from './request/app.user.role.request';

@@ -70,6 +70,8 @@ export class NavbarComponent implements OnInit, AfterViewInit, OnDestroy {
     });
   }
 
+  
+
   // private parseMenu(userMenus: any): MenuItem[] {
   //   try {
   //     let parsed = userMenus;

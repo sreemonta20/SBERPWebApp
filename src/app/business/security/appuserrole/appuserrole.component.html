@@ -150,10 +150,12 @@
                                             </li>
                                           </ul> -->
                       <ul class="list-inline m-0">
-                        <li class="list-inline-item" [class.disabled]="!isUpdate" (click)="isUpdate && editAppUserRole(appUserRole)">
+                        <li class="list-inline-item" [class.disabled]="!isUpdate"
+                          (click)="isUpdate && editAppUserRole(appUserRole)">
                           <i class="fa fa-edit"></i>
                         </li>
-                        <li class="list-inline-item" [class.disabled]="!isDelete" (click)="isDelete && deleteAppUserRole(appUserRole.Id)">
+                        <li class="list-inline-item" [class.disabled]="!isDelete"
+                          (click)="isDelete && deleteAppUserRole(appUserRole.Id)">
                           <i class="fa fa-trash"></i>
                         </li>
                       </ul>
