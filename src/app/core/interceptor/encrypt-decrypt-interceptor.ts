@@ -78,11 +78,6 @@ export const EncryptDecryptAuthInterceptor: HttpInterceptorFn = (
     '/api/v1/Auth/getAppUserProfileMenu',
     '/api/v1/Auth/refreshToken',
     '/api/v1/Auth/revoke',
-    '/api/v1/User/createUpdateAppUser',
-    '/api/v1/User/getAllAppUserProfile',
-    '/api/v1/User/getAppUserProfileById',
-    '/api/v1/User/createUpdateAppUserProfile',
-    '/api/v1/User/deleteAppUserProfile',
     '/api/v1/RoleMenu/getAllAppUserRoles',
     '/api/v1/RoleMenu/getAllAppUserRolesPagination',
     '/api/v1/RoleMenu/getAppUserRolesById',
@@ -90,11 +85,18 @@ export const EncryptDecryptAuthInterceptor: HttpInterceptorFn = (
     '/api/v1/RoleMenu/deleteAppUserRole',
     '/api/v1/RoleMenu/getAllAppUserMenuPagingWithSearch',
     '/api/v1/RoleMenu/getAllAppUserMenuByUserId',
-    '/api/v1/RoleMenu/getAllParentMenus',
     '/api/v1/RoleMenu/createUpdateAppUserMenu',
     '/api/v1/RoleMenu/deleteAppUserMenu',
+    '/api/v1/RoleMenu/getAllParentMenus',
     '/api/v1/RoleMenu/getAppUserRoleMenuInitialData',
-    '/api/v1/RoleMenu/getAllAppUserRoleMenusPagingWithSearch',
+    '/api/v1/RoleMenu/getMenusByRoleId',
+    '/api/v1/RoleMenu/getRoleMenusPagingWithSearch',
+    '/api/v1/RoleMenu/saveUpdateRoleMenuBulk',
+    '/api/v1/User/createUpdateAppUser',
+    '/api/v1/User/getAllAppUserProfile',
+    '/api/v1/User/getAppUserProfileById',
+    '/api/v1/User/createUpdateAppUserProfile',
+    '/api/v1/User/deleteAppUserProfile'
   ];
   let exludeFound = ExcludeURLList.filter((element) => {
     return req.url.includes(element);

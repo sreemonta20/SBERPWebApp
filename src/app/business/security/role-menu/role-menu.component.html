@@ -1,0 +1,160 @@
+<ngx-spinner size="medium" type="ball-clip-rotate-pulse"></ngx-spinner>
+
+<div class="content-wrapper">
+    
+    <!-- HEADER -->
+    <section class="content-header">
+        <div class="container-fluid">
+            <div class="row mb-2">
+                <div class="col-sm-6"><h1>Role Menu Permissions</h1></div>
+                <div class="col-sm-6">
+                    <ol class="breadcrumb float-sm-right">
+                        <li class="breadcrumb-item"><a [routerLink]="['/business/home']">Home</a></li>
+                        <li class="breadcrumb-item active">Role Menu</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="content">
+
+        <!-- ROLE AUTOCOMPLETE -->
+        <div class="card card-default">
+            <div class="card-header"><h5 class="card-title">Select Role</h5></div>
+
+            <div class="card-body autocomplete-container">
+                <div class="row justify-content-center">
+                    <div class="col-md-4">
+                        <label>Role</label>
+                        <input type="text"
+                               class="form-control"
+                               placeholder="Type to search role..."
+                               [(ngModel)]="roleSearch"
+                               (input)="filterRoles()"
+                               (focus)="showRoleList = true">
+
+                        <!-- AUTOCOMPLETE LIST -->
+                        <ul class="list-group position-absolute w-100 autocomplete-list"
+                            *ngIf="showRoleList && filteredRoles.length > 0">
+
+                            <li class="list-group-item list-group-item-action"
+                                *ngFor="let role of filteredRoles"
+                                (click)="selectRole(role)">
+                                {{ role.RoleName }}
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- PERMISSIONS TABLE -->
+        <div class="card mt-3" *ngIf="selectedRoleId">
+
+            <div class="card-header"><h5 class="card-title">Permissions</h5></div>
+
+            <div class="card-body table-responsive">
+
+                <table class="table table-bordered table-hover">
+
+                    <thead class="thead-light">
+
+                        <!-- Header Labels Row -->
+                        <tr>
+                            <th rowspan="2">Module</th>
+                            <th class="text-center">View</th>
+                            <th class="text-center">Create</th>
+                            <th class="text-center">Update</th>
+                            <th class="text-center">Delete</th>
+                            <th class="text-center">Active</th>
+                            <th rowspan="2">Header</th>
+                            <th rowspan="2">Module</th>
+                            <th rowspan="2">Component</th>
+                            <th rowspan="2">URL</th>
+                            <th rowspan="2">Active Menu</th>
+                        </tr>
+
+                        <!-- Header Checkboxes Row -->
+                        <tr>
+                            <th class="text-center"><input type="checkbox" [(ngModel)]="selectAll.view" (change)="toggleSelectAll('view')" /></th>
+                            <th class="text-center"><input type="checkbox" [(ngModel)]="selectAll.create" (change)="toggleSelectAll('create')" /></th>
+                            <th class="text-center"><input type="checkbox" [(ngModel)]="selectAll.update" (change)="toggleSelectAll('update')" /></th>
+                            <th class="text-center"><input type="checkbox" [(ngModel)]="selectAll.delete" (change)="toggleSelectAll('delete')" /></th>
+                            <th class="text-center"><input type="checkbox" [(ngModel)]="selectAll.active" (change)="toggleSelectAll('active')" /></th>
+                        </tr>
+
+                    </thead>
+
+                    <tbody>
+                        <tr *ngFor="let row of roleMenuList; let i = index"
+                            [class.table-warning]="modifiedIndexes.has(i)">
+                            
+                            <td>{{ row.MenuName }}</td>
+
+                            <td class="text-center"><input type="checkbox" [(ngModel)]="row.IsView" (change)="onPermissionChange(i)" /></td>
+                            <td class="text-center"><input type="checkbox" [(ngModel)]="row.IsCreate" (change)="onPermissionChange(i)" /></td>
+                            <td class="text-center"><input type="checkbox" [(ngModel)]="row.IsUpdate" (change)="onPermissionChange(i)" /></td>
+                            <td class="text-center"><input type="checkbox" [(ngModel)]="row.IsDelete" (change)="onPermissionChange(i)" /></td>
+                            <td class="text-center"><input type="checkbox" [(ngModel)]="row.IsActive" (change)="onPermissionChange(i)" /></td>
+
+                            <td class="text-center"><input type="checkbox" [checked]="row.IsHeader" disabled /></td>
+                            <td class="text-center"><input type="checkbox" [checked]="row.IsModule" disabled /></td>
+                            <td class="text-center"><input type="checkbox" [checked]="row.IsComponent" disabled /></td>
+                            <td>{{ row.Url }}</td>
+                            <td class="text-center"><input type="checkbox" [checked]="row.IsActiveMenu" disabled /></td>
+
+                        </tr>
+                    </tbody>
+
+                </table>
+
+                <!-- PAGINATION -->
+                <div class="pagination-wrapper mt-3 text-center">
+
+                    <!-- Prev -->
+                    <button class="btn btn-sm btn-outline-primary mr-2"
+                            [disabled]="pageNumber === 1"
+                            (click)="prevPage()">
+                        « Prev
+                    </button>
+
+                    <!-- Page Numbers -->
+                    <span *ngFor="let n of [].constructor(totalPages); let i = index">
+                        <button class="btn btn-sm mx-1"
+                                [ngClass]="pageNumber === i+1 ? 'btn-primary' : 'btn-outline-primary'"
+                                (click)="goToPage(i+1)">
+                            {{ i+1 }}
+                        </button>
+                    </span>
+
+                    <!-- Next -->
+                    <button class="btn btn-sm btn-outline-primary ml-2"
+                            [disabled]="pageNumber === totalPages"
+                            (click)="nextPage()">
+                        Next »
+                    </button>
+
+                    <!-- Page Size -->
+                    <select class="form-control form-control-sm d-inline w-auto ml-3"
+                            [(ngModel)]="pageSize"
+                            (change)="goToPage(1)">
+                        <option [ngValue]="5">5</option>
+                        <option [ngValue]="10">10</option>
+                        <option [ngValue]="20">20</option>
+                        <option [ngValue]="50">50</option>
+                    </select>
+
+                </div>
+
+            </div>
+
+            <div class="card-footer text-center">
+                <button class="btn btn-success mr-2" (click)="saveAll()">Save</button>
+                <button class="btn btn-secondary" (click)="cancel()">Cancel</button>
+            </div>
+
+        </div>
+
+    </section>
+</div>

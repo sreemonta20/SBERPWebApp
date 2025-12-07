@@ -9,7 +9,7 @@ import {
   RoleSaveUpdateRequest,
   AppUserMenuRequest,
 } from '@app/core/class/index';
-import { MenuItem } from '@app/core/interface';
+import { MenuItem, PagingSearchFilter } from '@app/core/interface/index';
 import { securityApiUrl } from 'src/environments/environment';
 import { APIConstants, SessionConstants } from '../constants/common.constants';
 import { CommonService } from './common.service';
@@ -107,7 +107,9 @@ export class SecurityService {
   ///---------------------------------------------AppUserMenu starts-------------------------------
   getAppUserRoleMenuInitialData(): Observable<DataResponse | undefined> {
     return this.apiService
-      .getAllWithoutParams(APIConstants.API_GET_ALL_APP_USER_ROLE_MENU_INITIAL_DATA_URL)
+      .getAllWithoutParams(
+        APIConstants.API_GET_ALL_APP_USER_ROLE_MENU_INITIAL_DATA_URL
+      )
       .pipe(
         map((response: DataResponse) => {
           if (response) {
@@ -267,5 +269,31 @@ export class SecurityService {
         params,
       }
     );
+  }
+
+  // Role Menu Service Methods
+  // getAllAppUserRoles(): Observable<DataResponse> {
+  //   return this.apiService
+  //     .getAll(APIConstants.API_GET_ALL_APP_USER_ROLES)
+  //     .pipe(map((response: DataResponse) => response));
+  // }
+
+  getRoleMenusPagingWithSearch(
+    roleId: string,
+    filter: PagingSearchFilter
+  ): Observable<DataResponse> {
+    const params = new HttpParams()
+      .set('roleId', roleId)
+      .set('param', JSON.stringify(filter));
+
+    return this.apiService
+      .getAll(APIConstants.API_GET_ALL_ROLE_MENU_PAGING_WITH_SEARCH_URL, params)
+      .pipe(map((res: DataResponse) => res));
+  }
+
+  saveUpdateRoleMenuBulk(payload: any): Observable<DataResponse> {
+    return this.apiService
+      .post(APIConstants.API_SAVE_UPDATE_ROLE_MENU_URL, payload)
+      .pipe(map((res: DataResponse) => res));
   }
 }

@@ -5,6 +5,7 @@ export class AppUserMenuResponse {
     IsModule?: boolean | null;
     IsComponent?: boolean | null;
     CssClass?: string | null;
+    IsRouteLink?: boolean | null;
     RouteLink?: string | null;
     RouteLinkClass?: string | null;
     Icon?: string | null;

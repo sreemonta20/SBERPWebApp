@@ -239,13 +239,16 @@ export class CommonService {
     return false;
   }
 
+  // isValid(value: any): boolean {
+  //   return (
+  //     value !== null ||
+  //     value !== 'undefined' ||
+  //     value !== undefined ||
+  //     typeof value !== 'undefined'
+  //   );
+  // }
   isValid(value: any): boolean {
-    return (
-      value !== null ||
-      value !== 'undefined' ||
-      value !== undefined ||
-      typeof value !== 'undefined'
-    );
+    return value !== null && value !== undefined && value !== 'undefined';
   }
 
   generateGUID(): string {

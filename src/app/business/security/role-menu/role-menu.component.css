@@ -1,0 +1,234 @@
+/* ==========================================================
+   ROLE MENU PERMISSION UI - CUSTOM COMPONENT STYLING
+   Designed for AdminLTE 3.2.0 + Bootstrap 4.6
+   Safe & conflict-free
+   ========================================================== */
+
+/* ===============================
+   AUTOCOMPLETE STYLES
+   =============================== */
+
+.autocomplete-container {
+  position: relative;
+}
+
+/* Autocomplete dropdown */
+.autocomplete-list {
+  position: absolute;
+  width: 100%;
+  max-height: 260px;
+  overflow-y: auto;
+  background: #ffffff;
+  border: 1px solid #ced4da;
+  border-top: none;
+  border-radius: 0 0 4px 4px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.12);
+  z-index: 1050;
+  /* above AdminLTE card */
+}
+
+/* Each autocomplete option */
+.autocomplete-list .list-group-item {
+  cursor: pointer;
+  padding: 8px 12px;
+  font-size: 14px;
+}
+
+.autocomplete-list .list-group-item:hover {
+  background-color: #f0f0f0;
+}
+
+/* Hide list when empty */
+.autocomplete-list:empty {
+  display: none;
+}
+
+/* Handle overflow nicely */
+.autocomplete-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.autocomplete-list::-webkit-scrollbar-thumb {
+  background: #bdbdbd;
+  border-radius: 3px;
+}
+
+
+/* ===============================
+   TABLE STYLING
+   =============================== */
+
+/* Highlight modified rows */
+.table-warning {
+  background-color: #fff7d1 !important;
+}
+
+/* Fix header style */
+.table thead th {
+  background: #f4f6f9 !important;
+  /* AdminLTE light header color */
+  font-size: 14px;
+  font-weight: 600;
+  text-align: center;
+  white-space: nowrap;
+  border-bottom: 2px solid #dee2e6;
+}
+
+/* Table rows style */
+.table tbody td {
+  font-size: 14px;
+  vertical-align: middle;
+}
+
+/* Centered checkboxes in table cells */
+.table td input[type="checkbox"] {
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+  cursor: pointer;
+}
+
+/* Disabled checkboxes style */
+.table td input[disabled] {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+/* Scrolling for long tables */
+.table-responsive {
+  max-height: 520px;
+  overflow-y: auto;
+  overflow-x: auto;
+  border: 1px solid #dee2e6;
+  border-radius: 4px;
+}
+
+/* Scrollbar aesthetics */
+.table-responsive::-webkit-scrollbar {
+  height: 8px;
+  width: 8px;
+}
+
+.table-responsive::-webkit-scrollbar-thumb {
+  background: #c7c7c7;
+  border-radius: 4px;
+}
+
+
+/* ===============================
+   BUTTONS
+   =============================== */
+
+.card-footer button {
+  min-width: 130px;
+  font-size: 15px;
+  padding: 8px 12px;
+}
+
+button.btn-success {
+  font-weight: 600;
+}
+
+button.btn-secondary {
+  font-weight: 600;
+}
+
+
+/* ===============================
+   TABLE HOVER IMPROVEMENT
+   =============================== */
+
+.table-hover tbody tr:hover {
+  background-color: #f7f7f7;
+}
+
+
+/* ===============================
+   RESPONSIVE FIXES
+   =============================== */
+
+@media (max-width: 768px) {
+
+  /* Narrow screens: ensure autocomplete fits */
+  .autocomplete-list {
+    max-height: 200px;
+  }
+
+  table td {
+    font-size: 12px;
+  }
+
+  table thead th {
+    font-size: 12px;
+  }
+
+  .card-footer button {
+    width: 100%;
+    margin-bottom: 10px;
+  }
+}
+
+
+/* ===============================
+   OPTIONAL: SMOOTH HIGHLIGHT
+   =============================== */
+
+.table-warning {
+  transition: background-color 0.25s ease;
+}
+
+.header-top-style{
+  border-top-style: groove;
+}
+
+/* =============================================
+   Proper vertical alignment for header + checkbox
+   ============================================= */
+
+/* .th-with-checkbox {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 60px;
+  padding-top: 4px;
+  padding-bottom: 4px;
+}
+
+.th-with-checkbox span {
+  margin-bottom: 4px;
+  font-weight: 600;
+}
+
+.th-with-checkbox input[type='checkbox'] {
+  margin: 0;
+  cursor: pointer;
+}
+
+
+.perm-col {
+  width: 90px;
+  text-align: center;
+  vertical-align: middle !important;
+}
+
+.perm-header {
+  display: inline-block;
+  text-align: center;
+  line-height: 1.1;
+  padding: 0;
+}
+
+.perm-header span {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.perm-header input[type='checkbox'] {
+  margin: 0 auto;
+}
+
+.module-col {
+  min-width: 180px;
+} */

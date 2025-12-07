@@ -111,6 +111,7 @@ export class LoginComponent implements OnInit, AfterViewInit, OnDestroy {
         this.loadingService.setLoading(false);
 
         if (response.ResponseCode === 200) {
+          debugger
           this.tokenResponse = response.Result;
           this.isLoggedIn = true;
 

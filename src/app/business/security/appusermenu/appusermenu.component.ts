@@ -153,6 +153,7 @@ export class AppUserMenuComponent implements OnInit, AfterViewInit, OnDestroy {
       IsModule: [false],
       IsComponent: [false],
       CssClass: new FormControl('', Validators.required),
+      IsRouteLink: [false],
       RouteLink: new FormControl('', Validators.required),
       RouteLinkClass: new FormControl('', Validators.required),
       Icon: new FormControl('', Validators.required),
@@ -710,6 +711,7 @@ export class AppUserMenuComponent implements OnInit, AfterViewInit, OnDestroy {
       appUserMenuRequest.IsModule = appUserMenu['IsModule'];
       appUserMenuRequest.IsComponent = appUserMenu['IsComponent'];
       appUserMenuRequest.CssClass = appUserMenu['CssClass'];
+      appUserMenuRequest.IsRouteLink = appUserMenu['IsRouteLink'];
       appUserMenuRequest.RouteLink = appUserMenu['RouteLink'];
       appUserMenuRequest.RouteLinkClass = appUserMenu['RouteLinkClass'];
       appUserMenuRequest.Icon = appUserMenu['Icon'];
@@ -727,6 +729,7 @@ export class AppUserMenuComponent implements OnInit, AfterViewInit, OnDestroy {
       appUserMenuRequest.IsModule = appUserMenu['IsModule'];
       appUserMenuRequest.IsComponent = appUserMenu['IsComponent'];
       appUserMenuRequest.CssClass = appUserMenu['CssClass'];
+      appUserMenuRequest.IsRouteLink = appUserMenu['IsRouteLink'];
       appUserMenuRequest.RouteLink = appUserMenu['RouteLink'];
       appUserMenuRequest.RouteLinkClass = appUserMenu['RouteLinkClass'];
       appUserMenuRequest.Icon = appUserMenu['Icon'];
@@ -777,6 +780,7 @@ export class AppUserMenuComponent implements OnInit, AfterViewInit, OnDestroy {
         IsModule: menu.IsModule,
         IsComponent: menu.IsComponent,
         CssClass: menu.CssClass,
+        IsRouteLink: menu.IsRouteLink,
         RouteLink: menu.RouteLink,
         RouteLinkClass: menu.RouteLinkClass,
         Icon: menu.Icon,
@@ -837,6 +841,7 @@ export class AppUserMenuComponent implements OnInit, AfterViewInit, OnDestroy {
       IsModule: [false],
       IsComponent: [false],
       CssClass: new FormControl('', Validators.required),
+      IsRouteLink: [false],
       RouteLink: new FormControl('', Validators.required),
       RouteLinkClass: new FormControl('', Validators.required),
       Icon: new FormControl('', Validators.required),
@@ -855,6 +860,7 @@ export class AppUserMenuComponent implements OnInit, AfterViewInit, OnDestroy {
       IsModule: false,
       IsComponent: false,
       CssClass: '',
+      IsRouteLink: false,
       RouteLink: '',
       RouteLinkClass: '',
       Icon: '',

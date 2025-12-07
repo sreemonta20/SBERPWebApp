@@ -66,7 +66,13 @@
                   </div>
                 </div>
               </div>
-
+              <div class="col-md-3 col-sm-3 col-lg-3">
+                <div class="form-group form-check">
+                  <input type="checkbox" id="chkIsRouteLink" name="IsRouteLink" formControlName="IsRouteLink"
+                    class="form-check-input" />
+                  <label for="chkIsRouteLink" class="form-check-label" style="font-weight: bold;">Is RouteLink</label>
+                </div>
+              </div>
               <div class="col-md-3 col-sm-3 col-lg-3">
                 <div class="form-group">
                   <label for="txtRouteLink">Route Link <span style="color: red;">*</span></label>
@@ -81,7 +87,9 @@
                   </div>
                 </div>
               </div>
+            </div>
 
+            <div class="row">
               <div class="col-md-3 col-sm-3 col-lg-3">
                 <div class="form-group">
                   <label for="txtRouteLinkClass">Route Link Class <span style="color: red;">*</span></label>
@@ -98,9 +106,6 @@
                   </div>
                 </div>
               </div>
-            </div>
-
-            <div class="row">
               <div class="col-md-3 col-sm-3 col-lg-3">
                 <div class="form-group">
                   <label for="txtIcon">Icon <span style="color: red;">*</span></label>
@@ -137,6 +142,9 @@
                   </datalist>
                 </div>
               </div>
+            </div>
+
+            <div class="row">
               <div class="col-md-3 col-sm-3 col-lg-3">
                 <div class="form-group">
                   <label for="txtSerialNo">Serial No.<label style="color: red; margin-bottom: 0rem;">*</label></label>
@@ -151,9 +159,6 @@
                   </div>
                 </div>
               </div>
-            </div>
-
-            <div class="row">
               <div class="col-md-3 col-sm-3 col-lg-3">
                 <div class="form-group form-check">
                   <input type="checkbox" id="chkIsHeader" name="IsHeader" formControlName="IsHeader"
@@ -177,7 +182,9 @@
                   <label for="chkIsComponent" class="form-check-label" style="font-weight: bold;">Is Component</label>
                 </div>
               </div>
+            </div>
 
+            <div class="row">
               <div class="col-md-3 col-sm-3 col-lg-3">
                 <div class="form-group form-check">
                   <input type="checkbox" id="chkIsActive" name="IsActive" formControlName="IsActive"
@@ -185,10 +192,8 @@
                   <label for="chkIsActive" class="form-check-label" style="font-weight: bold;">Is Active</label>
                 </div>
               </div>
-            </div>
 
-            <div class="row">
-              <div class="col-12  col-sm-12 col-lg-12">
+              <div class="col-9  col-sm-9 col-lg-9">
                 <div class="form-group">
                   <label for="txtRemark">Remark</label>
                   <textarea id="txtRemark" name="Remark" formControlName="Remark" class="form-control" rows="5"

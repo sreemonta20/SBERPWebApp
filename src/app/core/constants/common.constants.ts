@@ -58,7 +58,8 @@ export const APIConstants = {
   API_GET_ALL_APP_USER_MENU_PAGING_WITH_SEARCH_TERM_URL: '/api/v1/RoleMenu/getAllAppUserMenuPagingWithSearch',
   API_GET_ALL_MENU_BY_USER_ID_URL: '/api/v1/RoleMenu/getAllAppUserMenuByUserId',
   API_POST_SAVE_UPDATE_USER_MENU_URL: '/api/v1/RoleMenu/createUpdateAppUserMenu',
-  API_DELETE_USER_MENU_URL: '/api/v1/RoleMenu/deleteAppUserMenu'
+  API_DELETE_USER_MENU_URL: '/api/v1/RoleMenu/deleteAppUserMenu',
+  API_GET_ALL_ROLE_MENU_PAGING_WITH_SEARCH_URL: '/api/v1/RoleMenu/getRoleMenusPagingWithSearch',API_SAVE_UPDATE_ROLE_MENU_URL: '/api/v1/RoleMenu/saveUpdateRoleMenuBulk'
 }
 
 export const MessageConstants = {
