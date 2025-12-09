@@ -1,6 +1,8 @@
 <!-- Content Wrapper. Contains page content -->
-<ngx-spinner size="medium" type="ball-clip-rotate-pulse"></ngx-spinner>
-<div class="content-wrapper">
+<ngx-spinner size="medium" type="ball-clip-rotate-pulse">
+  <p class="text-white">Please Wait..</p>
+</ngx-spinner>
+<div class="content-wrapper" *ngIf="isView">
   <!-- Content Header (Page header) -->
   <section class="content-header">
     <div class="container-fluid">
@@ -221,8 +223,8 @@
             </div>
 
             <!-- Error message -->
-            <div *ngIf="errorMessage" class="alert alert-danger m-2">
-              {{ errorMessage }}
+            <div *ngIf="error_message" class="alert alert-danger m-2">
+              {{ error_message }}
             </div>
 
             <div class="card-body table-responsive p-2">
@@ -271,4 +273,9 @@
       </div>
     </div>
   </section>
+</div>
+<div class="content-wrapper" *ngIf="!isView">
+  <div class="alert alert-danger text-center">
+    {{ pageDisplayMessage }}
+  </div>
 </div>

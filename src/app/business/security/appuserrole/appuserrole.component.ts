@@ -27,6 +27,7 @@ import {
   NotificationService,
   SecurityService,
 } from '@app/core/services';
+import { isCommonErrorShow } from '@environments/environment';
 declare var $: any;
 import { Subscription } from 'rxjs';
 
@@ -45,6 +46,9 @@ export class AppUserRoleComponent implements OnInit, AfterViewInit, OnDestroy {
   public isCreate = false;
   public isUpdate = false;
   public isDelete = false;
+
+  // Page display prevention Message
+  public pageDisplayMessage = MessageConstants.PAGE_DISPLAY_PROHIBITION_MSG;
 
   //Pagination
   public totalRows: number = 0;
@@ -102,6 +106,9 @@ export class AppUserRoleComponent implements OnInit, AfterViewInit, OnDestroy {
     this.isDelete = permissionModel.IsDelete;
   }
 
+  // ===============================================================================================================
+  // FORM & DATA INITIALIZATION   
+  // ===============================================================================================================
   createForm() {
     this.appUserRoleForm = this.formBuilder.group({
       Id: [null],
@@ -117,22 +124,21 @@ export class AppUserRoleComponent implements OnInit, AfterViewInit, OnDestroy {
       IsActive: [true],
     });
   }
-  ///----------------------------------------------List & Pagination Starts----------------------------------------
+  
   getAllAppUserRolesPagination(pageNumber: number, pageSize: number) {
     this.loadingService.setLoading(true);
     this.securityService
       .getAllAppUserRolesPagination(pageNumber, pageSize)
       .subscribe({
         next: (response: DataResponse) => {
+          this.loadingService.setLoading(false);
           if (response.ResponseCode === 200) {
-            this.loadingService.setLoading(false);
             this.appUserRoleList = response.Result.Items;
             this.currentPage = response.Result.CurrentPage;
             this.pageCount = response.Result.PageCount;
             this.totalRows = response.Result.RowCount;
             this.updatePageIndices();
           } else {
-            this.loadingService.setLoading(false);
             this.notifyService.showError(
               MessageConstants.APP_USER_ROLE_NOT_FOUND_MEG,
               MessageConstants.GENERAL_ERROR_TITLE
@@ -144,7 +150,9 @@ export class AppUserRoleComponent implements OnInit, AfterViewInit, OnDestroy {
           this.loadingService.setLoading(false);
           this.error_message = error.error;
           this.notifyService.showError(
-            MessageConstants.INTERNAL_ERROR_MEG,
+            isCommonErrorShow
+              ? MessageConstants.INTERNAL_ERROR_MEG
+              : this.error_message,
             MessageConstants.GENERAL_ERROR_TITLE
           );
           return;
@@ -177,9 +185,10 @@ export class AppUserRoleComponent implements OnInit, AfterViewInit, OnDestroy {
       this.renderer.appendChild(document.body, script);
     }
   }
-  ///----------------------------------------------List & Pagination Ends----------------------------------------
-
-  ///-----------------------------------Create, Update, and Delete Starts----------------------------------------
+  
+  // ===============================================================================================================
+  // CREATE UPDATE & DELETE
+  // ===============================================================================================================
   createUpdateAppUserRole(appUserRole): void {
     let roleRequest: RoleSaveUpdateRequest = new RoleSaveUpdateRequest();
     this.loadingService.setLoading(true);
@@ -216,7 +225,6 @@ export class AppUserRoleComponent implements OnInit, AfterViewInit, OnDestroy {
           this.getAllAppUserRolesPagination(this.currentPage, this.pageSize);
           this.resetForm();
         } else {
-          this.loadingService.setLoading(false);
           this.notifyService.showError(
             response.Message,
             MessageConstants.GENERAL_ERROR_TITLE
@@ -227,9 +235,11 @@ export class AppUserRoleComponent implements OnInit, AfterViewInit, OnDestroy {
         this.loadingService.setLoading(false);
         this.error_message = error.error;
         this.notifyService.showError(
-          MessageConstants.INTERNAL_ERROR_MEG,
-          MessageConstants.GENERAL_ERROR_TITLE
-        );
+            isCommonErrorShow
+              ? MessageConstants.INTERNAL_ERROR_MEG
+              : this.error_message,
+            MessageConstants.GENERAL_ERROR_TITLE
+          );
       },
     });
   }
@@ -276,9 +286,11 @@ export class AppUserRoleComponent implements OnInit, AfterViewInit, OnDestroy {
           this.loadingService.setLoading(false);
           this.error_message = error.error;
           this.notifyService.showError(
-            MessageConstants.INTERNAL_ERROR_MEG,
-            MessageConstants.GENERAL_ERROR_TITLE
-          );
+                      isCommonErrorShow
+                        ? MessageConstants.INTERNAL_ERROR_MEG
+                        : this.error_message,
+                      MessageConstants.GENERAL_ERROR_TITLE
+                    );
         },
       });
     }
@@ -295,8 +307,7 @@ export class AppUserRoleComponent implements OnInit, AfterViewInit, OnDestroy {
       IsActive: true,
     });
   }
-  ///------------------------------------Create, Update, and Delete Ends----------------------------------------
-
+  
   ngOnDestroy(): void {
     if (this.subscription) {
       this.subscription.unsubscribe();

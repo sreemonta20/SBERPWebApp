@@ -8,3 +8,4 @@ export const environment = {
 };
 // export const securityApiUrl = 'https://localhost:7101';
 export const securityApiUrl = 'https://localhost:44360';
+export const isCommonErrorShow = false;

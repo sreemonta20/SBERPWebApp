@@ -1,4 +1,4 @@
-import { Component, HostListener, OnInit } from '@angular/core';
+import { Component, HostListener, OnInit, AfterViewInit } from '@angular/core';
 
 import {
   SecurityService,
@@ -9,6 +9,9 @@ import {
 
 import { DataResponse, User, AppUserRole } from '@app/core/class';
 import { PagingSearchFilter } from '@app/core/interface/index';
+import { Router } from '@angular/router';
+import { MessageConstants } from '@app/core/constants';
+import { isCommonErrorShow } from '@environments/environment';
 
 @Component({
   selector: 'app-role-menu',
@@ -16,7 +19,17 @@ import { PagingSearchFilter } from '@app/core/interface/index';
   templateUrl: './role-menu.component.html',
   styleUrl: './role-menu.component.css',
 })
-export class RoleMenuComponent implements OnInit {
+export class RoleMenuComponent implements OnInit, AfterViewInit {
+  // ========================
+  // PAGE PERMISSION
+  // ========================
+  public isView = false;
+  public isCreate = false;
+  public isUpdate = false;
+  public isDelete = false;
+
+  // Page display prevention Message
+  public pageDisplayMessage = MessageConstants.PAGE_DISPLAY_PROHIBITION_MSG;
 
   // ========================
   // ROLE AUTOCOMPLETE
@@ -53,11 +66,13 @@ export class RoleMenuComponent implements OnInit {
     delete: false,
     active: false,
   };
+  public error_message: any;
 
   constructor(
+    public router: Router,
     private securityService: SecurityService,
-    private notify: NotificationService,
-    private loader: LoaderService,
+    private notifyService: NotificationService,
+    private loadingService: LoaderService,
     private commonService: CommonService
   ) {}
 
@@ -65,8 +80,20 @@ export class RoleMenuComponent implements OnInit {
     this.commonService.GetLoggedInUser().subscribe((user: User) => {
       this.loggedInUserId = user.Id;
     });
-
+    this.loadPermission(this.router.url);
     this.loadRoles();
+  }
+
+  ngAfterViewInit() {
+    // this.loadScripts(['assets/js/adminlte.js']);
+  }
+
+  loadPermission(url: any): void {
+    const permissionModel = this.commonService.getMenuPermission(url);
+    this.isView = permissionModel.IsView;
+    this.isCreate = permissionModel.IsCreate;
+    this.isUpdate = permissionModel.IsUpdate;
+    this.isDelete = permissionModel.IsDelete;
   }
 
   // =========================================
@@ -79,10 +106,21 @@ export class RoleMenuComponent implements OnInit {
           this.roles = res.Result;
           this.filteredRoles = this.roles;
         } else {
-          this.notify.showWarning('No roles found', 'Warning');
+          this.notifyService.showWarning(
+            res.Message,
+            MessageConstants.GENERAL_WARNING_TITLE
+          );
         }
       },
-      error: () => this.notify.showError('Error loading roles', 'Error'),
+      error: (error) => {
+        this.error_message = error.error;
+        this.notifyService.showError(
+          isCommonErrorShow
+            ? MessageConstants.INTERNAL_ERROR_MEG
+            : this.error_message,
+          MessageConstants.GENERAL_ERROR_TITLE
+        );
+      },
     });
   }
 
@@ -93,9 +131,7 @@ export class RoleMenuComponent implements OnInit {
     const term = this.roleSearch.toLowerCase();
     this.filteredRoles = !term
       ? this.roles
-      : this.roles.filter((r) =>
-          r.RoleName.toLowerCase().includes(term)
-        );
+      : this.roles.filter((r) => r.RoleName.toLowerCase().includes(term));
     this.showRoleList = true;
   }
 
@@ -122,9 +158,15 @@ export class RoleMenuComponent implements OnInit {
   // LOAD ROLE MENU PERMISSIONS WITH PAGING
   // =========================================
   loadRoleMenuPermissions() {
-    if (!this.selectedRoleId) return;
-
-    this.loading = true;
+    this.loadingService.setLoading(true);
+    if (!this.selectedRoleId) {
+      this.loadingService.setLoading(false);
+      this.notifyService.showWarning(
+        MessageConstants.APP_USER_ROLE_NOT_SELECTED_MEG,
+        MessageConstants.GENERAL_WARNING_TITLE
+      );
+      return;
+    }
 
     const filter: PagingSearchFilter = {
       PageNumber: this.pageNumber,
@@ -138,8 +180,7 @@ export class RoleMenuComponent implements OnInit {
       .getRoleMenusPagingWithSearch(this.selectedRoleId, filter)
       .subscribe({
         next: (res: DataResponse) => {
-          this.loading = false;
-
+          this.loadingService.setLoading(false);
           if (res.Success) {
             const result = res.Result;
 
@@ -151,11 +192,22 @@ export class RoleMenuComponent implements OnInit {
             this.roleMenuList = result.Items;
             this.originalList = JSON.parse(JSON.stringify(result.Items));
             this.modifiedIndexes.clear();
+          } else {
+            this.notifyService.showError(
+              res.Message,
+              MessageConstants.GENERAL_ERROR_TITLE
+            );
           }
         },
-        error: () => {
-          this.loading = false;
-          this.notify.showError('Error fetching role menu permissions','Error');
+        error: (error) => {
+          this.loadingService.setLoading(false);
+          this.error_message = error.error;
+          this.notifyService.showError(
+            isCommonErrorShow
+              ? MessageConstants.INTERNAL_ERROR_MEG
+              : this.error_message,
+            MessageConstants.GENERAL_ERROR_TITLE
+          );
         },
       });
   }
@@ -197,9 +249,7 @@ export class RoleMenuComponent implements OnInit {
       current.IsDelete !== original.IsDelete ||
       current.IsActive !== original.IsActive;
 
-    changed
-      ? this.modifiedIndexes.add(i)
-      : this.modifiedIndexes.delete(i);
+    changed ? this.modifiedIndexes.add(i) : this.modifiedIndexes.delete(i);
   }
 
   // =========================================
@@ -215,11 +265,56 @@ export class RoleMenuComponent implements OnInit {
   }
 
   // =========================================
+  // HAS NEW ITEM & UPDATED ITEM
+  // =========================================
+  hasNewItems(): boolean {
+    return Array.from(this.modifiedIndexes).some(
+      (i) => !this.roleMenuList[i].RoleMenuId
+    );
+  }
+
+  hasUpdatedItems(): boolean {
+    return Array.from(this.modifiedIndexes).some(
+      (i) => this.roleMenuList[i].RoleMenuId
+    );
+  }
+
+  // =========================================
   // BULK SAVE
   // =========================================
   saveAll() {
+    this.loadingService.setLoading(true);
     if (this.modifiedIndexes.size === 0) {
-      this.notify.showWarning('No changes to save.', 'Warning');
+      this.loadingService.setLoading(false);
+      this.notifyService.showWarning(
+        MessageConstants.APP_USER_ROLE_MENU_NO_CHANGE_TO_SAVE_MEG,
+        MessageConstants.GENERAL_WARNING_TITLE
+      );
+      return;
+    }
+    // console.log(
+    //   'has new Item :' + this.hasNewItems() + ' and isCreate: ' + !this.isCreate
+    // );
+    if (this.hasNewItems() && !this.isCreate) {
+      this.loadingService.setLoading(false);
+      this.notifyService.showWarning(
+        MessageConstants.APP_USER_ROLE_MENU_NO_CREATE_PERMISSION_MSG,
+        MessageConstants.GENERAL_PERMISSION_DENIED_TITLE
+      );
+      return;
+    }
+    // console.log(
+    //   'has new Item :' +
+    //     this.hasUpdatedItems() +
+    //     ' and isCreate: ' +
+    //     !this.isUpdate
+    // );
+    if (this.hasUpdatedItems() && !this.isUpdate) {
+      this.loadingService.setLoading(false);
+      this.notifyService.showWarning(
+        MessageConstants.APP_USER_ROLE_MENU_NO_UPDATE_PERMISSION_MSG,
+        MessageConstants.GENERAL_PERMISSION_DENIED_TITLE
+      );
       return;
     }
 
@@ -242,22 +337,32 @@ export class RoleMenuComponent implements OnInit {
       Permissions: permissions,
     };
 
-    this.loader.setLoading(true);
-
     this.securityService.saveUpdateRoleMenuBulk(payload).subscribe({
       next: (res) => {
-        this.loader.setLoading(false);
+        this.loadingService.setLoading(false);
 
         if (res.Success) {
-          this.notify.showSuccess('Permissions saved successfully','Success');
+          this.notifyService.showSuccess(
+            res.Message,
+            MessageConstants.GENERAL_SUCCESS_TITLE
+          );
           this.loadRoleMenuPermissions();
         } else {
-          this.notify.showError(res.Message, 'Error');
+          this.notifyService.showError(
+            res.Message,
+            MessageConstants.GENERAL_ERROR_TITLE
+          );
         }
       },
-      error: () => {
-        this.loader.setLoading(false);
-        this.notify.showError('Error saving permissions', 'Error');
+      error: (error) => {
+        this.loadingService.setLoading(false);
+        this.error_message = error.error;
+        this.notifyService.showError(
+          isCommonErrorShow
+            ? MessageConstants.INTERNAL_ERROR_MEG
+            : this.error_message,
+          MessageConstants.GENERAL_ERROR_TITLE
+        );
       },
     });
   }

@@ -1,6 +1,8 @@
 <!-- Content Wrapper. Contains page content -->
-<ngx-spinner size="medium" type="ball-clip-rotate-pulse"></ngx-spinner>
-<div class="content-wrapper">
+<ngx-spinner size="medium" type="ball-clip-rotate-pulse">
+    <p class="text-white">Please Wait..</p>
+</ngx-spinner>
+<div class="content-wrapper" *ngIf="isView">
   <!-- Content Header (Page header) -->
   <section class="content-header">
     <div class="container-fluid">
@@ -141,14 +143,6 @@
                     <td data-label="Updated Date">{{ appUserRole.UpdatedDate | date:'medium'}} </td>
                     <td data-label="Active">{{ appUserRole.IsActive ? 'Yes' : 'No' }}</td>
                     <td data-label="Action">
-                      <!-- <ul class="list-inline m-0">
-                                            <li class="list-inline-item">
-                                              <i class="fa fa-edit" (click)="editAppUserRole(appUserRole)"></i>
-                                            </li>
-                                            <li class="list-inline-item">
-                                              <i class="fa fa-trash" (click)="deleteAppUserRole(appUserRole.Id)"></i>
-                                            </li>
-                                          </ul> -->
                       <ul class="list-inline m-0">
                         <li class="list-inline-item" [class.disabled]="!isUpdate"
                           (click)="isUpdate && editAppUserRole(appUserRole)">
@@ -213,4 +207,9 @@
       </div>
     </div>
   </section>
+</div>
+<div class="content-wrapper" *ngIf="!isView">
+  <div class="alert alert-danger text-center">
+    {{ pageDisplayMessage }}
+  </div>
 </div>

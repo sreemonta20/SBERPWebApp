@@ -69,12 +69,16 @@ export const MessageConstants = {
   GENERAL_WARNING_MSG: 'Warning!!',
   GENERAL_ERROR_TITLE: 'Error',
   GENERAL_ERROR_MSG: 'Error!!',
+  GENERAL_PERMISSION_DENIED_TITLE: 'Permission Denied',
+  GENERAL_PERMISSION_DENIED_MSG: 'Permission Denied!!',
   ///--------------------Common Error-------------------------------------------------
   INTERNAL_ERROR_MEG: 'We are experiencing an internal error! Please try again later.',
 
   ///--------------------Home---------------------------------------------------------
   HOME_DASHBOARD_TITLE: "Dashboard:Home",
 
+  FETCH_DATA_FAILED_MSG: 'Failed to fetch data',
+  PAGE_DISPLAY_PROHIBITION_MSG: 'You do not have permission to view this page.',
   ///--------------------App User Role------------------------------------------------
   APP_USER_ROLE_TITLE: "App User Role",
   APP_USER_ROLE_FOUND_MEG: 'User role found',
@@ -86,7 +90,13 @@ export const MessageConstants = {
   APP_USER_ROLE_MENU_INITIAL_DATA_NOT_FOUND_MEG: 'There is no initial data found.',
   APP_USER_MENU_NOT_FOUND_MEG: 'There is no user menu found.',
   APP_USER_MENU_NOT_FOUND_TO_UPDATE_MEG: 'There is no user menu to update.',
-  APP_USER_MENU_DELETE_CONFIRMATION_MSG: 'Are you sure you want to delete this menu?'
+  APP_USER_MENU_DELETE_CONFIRMATION_MSG: 'Are you sure you want to delete this menu?',
+
+  // ==========================ROLE MENU================================================
+  APP_USER_ROLE_NOT_SELECTED_MEG: 'No role selected. Please select a valid role!',
+  APP_USER_ROLE_MENU_NO_CHANGE_TO_SAVE_MEG: 'No changes to save.',
+  APP_USER_ROLE_MENU_NO_CREATE_PERMISSION_MSG: 'You do not have permission to create role menu records.',
+  APP_USER_ROLE_MENU_NO_UPDATE_PERMISSION_MSG: 'You do not have permission to update role menu records.',
   
 };
 
@@ -104,7 +114,9 @@ export const Common = {
   RETURN_URL: 'returnUrl',
   HOME_TEXT: 'Home',
   APPCONFIG_TEXT: 'App Configuration',
-  PAGE_SIZE_ARRAY: [5, 10, 20, 50, 100]
+  PAGE_SIZE_ARRAY: [5, 10, 20, 50, 100],
+  ACTION_NAME_SAVE: 'Save',
+  ACTION_NAME_UPDATE: 'Update'
 };
 
 export const ErrorCode = {
