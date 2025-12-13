@@ -109,9 +109,7 @@ export class LoginComponent implements OnInit, AfterViewInit, OnDestroy {
     const loginSub = this.authService.login(loginModelRequest).subscribe({
       next: async (response: DataResponse) => {
         this.loadingService.setLoading(false);
-
         if (response.ResponseCode === 200) {
-          debugger
           this.tokenResponse = response.Result;
           this.isLoggedIn = true;
 
@@ -153,7 +151,7 @@ export class LoginComponent implements OnInit, AfterViewInit, OnDestroy {
       error: (error) => {
         this.loadingService.setLoading(false);
         this.notifyService.showError(
-          error?.error,
+          error?.error.Message,
           MessageConstants.GENERAL_ERROR_TITLE
         );
       },
