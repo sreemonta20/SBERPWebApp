@@ -93,7 +93,7 @@ export const EncryptDecryptAuthInterceptor: HttpInterceptorFn = (
     '/api/v1/RoleMenu/getRoleMenusPagingWithSearch',
     '/api/v1/RoleMenu/saveUpdateRoleMenuBulk',
     '/api/v1/User/createUpdateAppUser',
-    '/api/v1/User/getAllAppUserProfile',
+    '/api/v1/User/getAllAppUserProfilePagingWithSearch',
     '/api/v1/User/getAppUserProfileById',
     '/api/v1/User/createUpdateAppUserProfile',
     '/api/v1/User/deleteAppUserProfile'

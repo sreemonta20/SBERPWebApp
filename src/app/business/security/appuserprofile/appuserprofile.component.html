@@ -1,0 +1,182 @@
+<!-- Content Wrapper. Contains page content -->
+<ngx-spinner size="medium" type="ball-clip-rotate-pulse">
+    <p class="text-white">Please Wait..</p>
+</ngx-spinner>
+<div class="content-wrapper" *ngIf="isView">
+    <!-- Content Header (Page header) -->
+    <section class="content-header">
+        <div class="container-fluid">
+            <div class="row mb-2">
+                <div class="col-sm-6">
+                    <h1>User Profile Management</h1>
+                </div>
+                <div class="col-sm-6">
+                    <ol class="breadcrumb float-sm-right">
+                        <li class="breadcrumb-item"><a href="#" [routerLink]="['/business/home']">Home</a></li>
+                        <li class="breadcrumb-item active">User Profile</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="content">
+        <div class="container-fluid">
+            <div class="card card-default">
+                <div class="card-header">
+                    <h3 class="card-title">Create/Edit/Delete User Profile</h3>
+
+                    <div class="card-tools">
+                        <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                            <i class="fas fa-minus"></i>
+                        </button>
+                        <button type="button" class="btn btn-tool" data-card-widget="remove">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                </div>
+                <form [formGroup]="appUserProfileForm" (ngSubmit)="createUpdateAppUserMenu(appUserProfileForm.value)">
+                    <div class="card-body">
+                        <div class="row">
+                            <input type="hidden" formControlName="Id" />
+                            <input type="hidden" formControlName="CreateUpdateBy" />
+                            <div class="col-md-3 col-sm-3 col-lg-3">
+                                <div class="form-group">
+                                    <label for="txtFullName">Full Name<label
+                                            style="color: red; margin-bottom: 0rem;">*</label></label>
+                                    <input type="text" id="txtFullName" name="FullName" formControlName="FullName"
+                                        class="form-control" />
+                                    <div *ngIf="appUserProfileForm.get('FullName').touched && appUserProfileForm.get('FullName').invalid"
+                                        class="error-message">
+                                        <div *ngIf="appUserProfileForm.get('FullName').errors?.required"
+                                            class="text-danger">Full Name is
+                                            required.</div>
+                                        <div *ngIf="appUserProfileForm.get('FullName').errors?.englishText"
+                                            class="text-danger">{{
+                                            appUserProfileForm.get('FullName').errors?.englishText }}</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-md-3 col-sm-3 col-lg-3">
+                                <div class="form-group">
+                                    <label for="txtEmail">Email<label
+                                            style="color: red; margin-bottom: 0rem;">*</label></label>
+                                    <input type="text" id="txtEmail" name="Email" formControlName="Email"
+                                        class="form-control" />
+                                    <div *ngIf="appUserProfileForm.get('Email').touched && appUserProfileForm.get('Email').invalid"
+                                        class="error-message">
+                                        <div *ngIf="appUserProfileForm.get('Email').errors?.required"
+                                            class="text-danger">Email is
+                                            required.</div>
+                                        <div *ngIf="appUserProfileForm.get('Email').errors?.englishText"
+                                            class="text-danger">{{
+                                            appUserProfileForm.get('Email').errors?.englishText }}</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-md-3 col-sm-3 col-lg-3">
+                                <div class="form-group">
+                                    <label for="ddlAppUserRoleId">User Role</label>
+                                    <select name="select" class="form-control" id="ddlAppUserRoleId"
+                                        name="AppUserRoleId" formControlName="AppUserRoleId">
+                                        <option value="" disabled selected>Please select</option>
+                                        <option *ngFor="let userRole of userRolesList" value={{userRole.Id}}>
+                                            {{userRole.Name}}
+                                        </option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="col-md-3 col-sm-3 col-lg-3">
+                                <div class="form-group form-check">
+                                    <input type="checkbox" id="chkIsActive" name="IsActive"
+                                        formControlName="IsActive" class="form-check-input" />
+                                    <label for="chkIsActive" class="form-check-label" style="font-weight: bold;">Is
+                                        Active</label>
+                                </div>
+                            </div>
+
+                        </div>
+                        <div class="row">
+                            <div class="col-12  col-sm-12 col-lg-12">
+                                <div class="form-group">
+                                    <label for="txtAddress">Address</label>
+                                    <textarea id="txtAddress" name="Address" formControlName="Address"
+                                        class="form-control" rows="5" resize="false"></textarea>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-footer text-right">
+                        <button type="submit" [disabled]="isEdit? !isUpdate:!isCreate"
+                            class="btn btn-sm btn-primary mr-1">{{isEdit?
+                            'Update':'Save'}}</button>
+                        <button type="button" [disabled]="isEdit? !isUpdate:!isCreate" class="btn btn-sm btn-warning"
+                            (click)="resetForm();">Clear</button>
+                    </div>
+                </form>
+
+            </div>
+            <!-- Datatable Div Starts -->
+            <div class="row">
+                <div class="col-12">
+                    <div class="card">
+                        <!-- Loading indicator -->
+                        <div *ngIf="loading" class="overlay">
+                            <i class="fas fa-spinner fa-spin"></i>
+                        </div>
+
+                        <!-- Error message -->
+                        <div *ngIf="error_message" class="alert alert-danger m-2">
+                            {{ error_message }}
+                        </div>
+
+                        <div class="card-body table-responsive p-2">
+                            <table id="appUserMenuTable" class="table table-hover text-nowrap" width="100%">
+                                <thead>
+                                    <tr>
+                                        <th>Full Name</th>
+                                        <th>Email</th>
+                                        <th>Role</th>
+                                        <th>Active</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr *ngFor="let profile of profileList">
+                                        <td>{{ profile.FullName }}</td>
+                                        <td>{{ profile.Email}}</td>
+                                        <td>{{ profile.RoleName}}</td>
+                                        <td>{{ profile.IsActive ? 'Yes' : 'No' }}</td>
+                                        <td>
+                                            <ul class="list-inline m-0">
+                                                <li class="list-inline-item">
+                                                    <i class="fa fa-edit" [ngClass]="{ 'disabled-icon': !isUpdate }"
+                                                        [style.cursor]="isUpdate ? 'pointer' : 'not-allowed'"
+                                                        (click)="isUpdate && editAppUserProfile(profile)" title="Edit"></i>
+                                                </li>
+                                                <li class="list-inline-item">
+                                                    <i class="fa fa-trash" [ngClass]="{ 'disabled-icon': !isDelete }"
+                                                        [style.cursor]="isDelete ? 'pointer' : 'not-allowed'"
+                                                        (click)="isDelete && deleteAppUserProfile(profile.Id)"
+                                                        title="Delete"></i>
+                                                </li>
+                                            </ul>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+<div class="content-wrapper" *ngIf="!isView">
+    <div class="alert alert-danger text-center">
+        {{ pageDisplayMessage }}
+    </div>
+</div>

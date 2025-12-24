@@ -12,11 +12,13 @@ export * from './models/paging.result';
 
 export * from './request/app.user.menu.request';
 export * from './request/app.user.role.request';
+export * from './request/app.user.profile.register.request';
 export * from './request/user.requests';
 export * from './request/revoke.request';
 
 export * from './response/app.user.menu.response';
 export * from './response/app.user.role.response';
+export * from './response/app.user.profile.response';
 export * from './response/data.responses';
 export * from './response/initial.data.response';
 export * from './response/token.response';

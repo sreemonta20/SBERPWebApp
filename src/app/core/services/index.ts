@@ -5,4 +5,5 @@ export * from './session.service';
 export * from './security.service';
 export * from './validation-forms.service';
 export * from './auth.service';
-export * from './common.service'
+export * from './common.service';
+export * from './api.service';

@@ -49,10 +49,14 @@ export const APIConstants = {
   API_GET_APP_USER_ROLE_MENU_INITIAL_DATA_URL: '/api/v1/RoleMenu/getAppUserRoleMenuInitialData',
   API_GET_ALL_APP_USER_ROLE_MENU_PAGING_SEARCH_URL: '/api/v1/RoleMenu/getAllAppUserRoleMenusPagingWithSearch',
   API_CREATE_UPDATE_APP_USER_URL:'/api/v1/User/createUpdateAppUser',
-  API_GET_ALL_APP_USER_PROFILE_URL:'/api/v1/User/getAllAppUserProfile',
-  API_GET_APP_USER_PROFILE_BY_ID_URL: '/api/v1/User/getAppUserProfileById',
-  API_CREATE_UPDATE_APP_USER_PROFILE_URL: '/api/v1/User/createUpdateAppUserProfile',
-  API_DELETE_APP_USER_PROFILE_URL: '/api/v1/User/deleteAppUserProfile',
+  // API_GET_ALL_APP_USER_PROFILE_URL:'/api/v1/User/getAllAppUserProfile',
+  // API_GET_APP_USER_PROFILE_BY_ID_URL: '/api/v1/User/getAppUserProfileById',
+  // API_CREATE_UPDATE_APP_USER_PROFILE_URL: '/api/v1/User/createUpdateAppUserProfile',
+  // API_DELETE_APP_USER_PROFILE_URL: '/api/v1/User/deleteAppUserProfile',
+  API_GET_ALL_USER_PROFILE_PAGING_WITH_SEARCH_URL: '/api/v1/User/getAllAppUserProfilePagingWithSearch',
+  API_GET_USER_PROFILE_BY_PROFILE_ID_URL: '/api/v1/User/getAppUserProfileById',
+  API_POST_SAVE_UPDATE_USER_PROFILE_URL: '/api/v1/User/createUpdateAppUserProfile',
+  API_DELETE_USER_PROFILE_URL: '/api/v1/User/deleteAppUserProfile',
 
   API_GET_ALL_APP_USER_ROLE_MENU_INITIAL_DATA_URL: '/api/v1/RoleMenu/getAppUserRoleMenuInitialData',
   API_GET_ALL_APP_USER_MENU_PAGING_WITH_SEARCH_TERM_URL: '/api/v1/RoleMenu/getAllAppUserMenuPagingWithSearch',
@@ -60,6 +64,8 @@ export const APIConstants = {
   API_POST_SAVE_UPDATE_USER_MENU_URL: '/api/v1/RoleMenu/createUpdateAppUserMenu',
   API_DELETE_USER_MENU_URL: '/api/v1/RoleMenu/deleteAppUserMenu',
   API_GET_ALL_ROLE_MENU_PAGING_WITH_SEARCH_URL: '/api/v1/RoleMenu/getRoleMenusPagingWithSearch',API_SAVE_UPDATE_ROLE_MENU_URL: '/api/v1/RoleMenu/saveUpdateRoleMenuBulk'
+  
+
 }
 
 export const MessageConstants = {
@@ -97,6 +103,14 @@ export const MessageConstants = {
   APP_USER_ROLE_MENU_NO_CHANGE_TO_SAVE_MEG: 'No changes to save.',
   APP_USER_ROLE_MENU_NO_CREATE_PERMISSION_MSG: 'You do not have permission to create role menu records.',
   APP_USER_ROLE_MENU_NO_UPDATE_PERMISSION_MSG: 'You do not have permission to update role menu records.',
+
+  // ==========================APP USER PROFILE================================================
+  APP_USER_PROFILE_TITLE: "App User Profile",
+  APP_USER_PROFILE_INITIAL_DATA_NOT_FOUND_MEG: 'There is no user role found.',
+  APP_USER_PROFILE_FOUND_MEG: 'User profile found',
+  APP_USER_PROFILE_NOT_FOUND_MEG: 'There is no user profile found.',
+  APP_USER_PROFILE_NOT_FOUND_TO_UPDATE_MEG: 'There is no user profile to update.',
+  APP_USER_PROFILE_DELETE_CONFIRMATION_MSG: 'Are you sure you want to delete this user profile?',
   
 };
 

@@ -8,6 +8,7 @@ import {
   SaveUpdateRequest,
   RoleSaveUpdateRequest,
   AppUserMenuRequest,
+  AppUserProfileRegisterRequest,
 } from '@app/core/class/index';
 import { MenuItem, PagingSearchFilter } from '@app/core/interface/index';
 import { securityApiUrl } from 'src/environments/environment';
@@ -221,15 +222,29 @@ export class SecurityService {
 
   ///---------------------------------------------AppUserMenu ends---------------------------------
 
-  getAllAppUserProfile(
+  ///---------------------------------------------AppUserProfile starts----------------------------
+  getAllAppUserProfilePagingWithSearch(
+    searchTerm: string,
+    sortColumnName: string,
+    sortColumnDirection: string,
     pageNumber: number,
     pageSize: number
   ): Observable<DataResponse | undefined> {
-    const params = new HttpParams()
-      .set('pageNumber', pageNumber)
-      .set('pageSize', pageSize);
+    // Create the request object as expected by the API
+    const param = {
+      SearchTerm: searchTerm,
+      SortColumnName: sortColumnName,
+      SortColumnDirection: sortColumnDirection,
+      PageNumber: pageNumber,
+      PageSize: pageSize,
+    };
+    const params = new HttpParams().set('param', JSON.stringify(param));
+    // Send the request object as a query parameter
     return this.apiService
-      .getAll(APIConstants.API_GET_ALL_APP_USER_PROFILE_URL, params)
+      .getAll(
+        APIConstants.API_GET_ALL_USER_PROFILE_PAGING_WITH_SEARCH_URL,
+        params
+      )
       .pipe(
         map((response: DataResponse) => {
           if (response) {
@@ -242,7 +257,7 @@ export class SecurityService {
   getAppUserProfileById(id: string): Observable<DataResponse | undefined> {
     const params = new HttpParams().set('id', id);
     return this.apiService
-      .getById(APIConstants.API_GET_APP_USER_PROFILE_BY_ID_URL, params)
+      .getById(APIConstants.API_GET_USER_PROFILE_BY_PROFILE_ID_URL, params)
       .pipe(
         map((response: DataResponse) => {
           if (response) {
@@ -253,31 +268,37 @@ export class SecurityService {
   }
 
   createUpdateAppUserProfile(
-    user: SaveUpdateRequest
+    appUserProfileRegRequest: AppUserProfileRegisterRequest
   ): Observable<DataResponse> {
-    return this.http.post<DataResponse>(
-      APIConstants.API_CREATE_UPDATE_APP_USER_PROFILE_URL,
-      user
-    );
+    return this.apiService
+      .post(
+        APIConstants.API_POST_SAVE_UPDATE_USER_PROFILE_URL,
+        appUserProfileRegRequest
+      )
+      .pipe(
+        map((response: DataResponse) => {
+          if (response) {
+            return response;
+          }
+        })
+      );
   }
 
   deleteAppUserProfile(id: string): Observable<DataResponse> {
     const params = new HttpParams().set('id', id);
-    return this.http.delete<DataResponse>(
-      APIConstants.API_DELETE_APP_USER_PROFILE_URL,
-      {
-        params,
-      }
-    );
+    return this.apiService
+      .delete(APIConstants.API_DELETE_USER_PROFILE_URL, params)
+      .pipe(
+        map((response: DataResponse) => {
+          if (response) {
+            return response;
+          }
+        })
+      );
   }
+  ///---------------------------------------------AppUserProfile ends----------------------------
 
-  // Role Menu Service Methods
-  // getAllAppUserRoles(): Observable<DataResponse> {
-  //   return this.apiService
-  //     .getAll(APIConstants.API_GET_ALL_APP_USER_ROLES)
-  //     .pipe(map((response: DataResponse) => response));
-  // }
-
+  ///---------------------------------------------AppUserRoleMenu starts-------------------------
   getRoleMenusPagingWithSearch(
     roleId: string,
     filter: PagingSearchFilter
@@ -296,4 +317,5 @@ export class SecurityService {
       .post(APIConstants.API_SAVE_UPDATE_ROLE_MENU_URL, payload)
       .pipe(map((res: DataResponse) => res));
   }
+  ///---------------------------------------------AppUserRoleMenu ends----------------------------
 }
