@@ -3,8 +3,9 @@ export class AppUserProfileResponse {
   FullName!: string;
   Address!: string;
   Email!: string;
-  AppUserRoleId!: string;
+  AppUserRoleId!: string | null;
   RoleName!: string;
+  UserName?: string; // Added, optional
   CreatedBy!: string;
   CreatedDate!: Date;
   UpdatedBy!: string;

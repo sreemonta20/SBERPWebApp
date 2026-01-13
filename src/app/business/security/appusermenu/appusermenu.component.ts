@@ -8,6 +8,7 @@ import {
   OnDestroy,
   OnInit,
   Renderer2,
+  ViewChild,
 } from '@angular/core';
 import {
   FormBuilder,
@@ -38,6 +39,7 @@ import {
 import { isCommonErrorShow } from '@environments/environment';
 declare var $: any;
 import { Subject, Subscription, takeUntil } from 'rxjs';
+import { ConfirmDialogComponent } from '@app/shared/confirm-dialog/confirm-dialog.component';
 
 @Component({
   selector: 'app-appusermenu',
@@ -98,6 +100,10 @@ export class AppUserMenuComponent implements OnInit, AfterViewInit, OnDestroy {
   public error_message: any;
 
   // dtMainOptions: DataTables.Settings = {};
+  @ViewChild('confirmDialog') confirmDialog!: ConfirmDialogComponent;
+  deleteConfirmationMessage =
+    MessageConstants.APP_USER_MENU_DELETE_CONFIRMATION_MSG;
+  private itemIdToDelete: string | null = null;
 
   constructor(
     @Inject(DOCUMENT) private document: Document,
@@ -467,38 +473,82 @@ export class AppUserMenuComponent implements OnInit, AfterViewInit, OnDestroy {
     }
   }
 
-  deleteAppUserMenu(roleId: string): void {
-    if (confirm(MessageConstants.APP_USER_MENU_DELETE_CONFIRMATION_MSG)) {
-      this.loadingService.setLoading(true);
+  // deleteAppUserMenu(roleId: string): void {
+  //   if (confirm(MessageConstants.APP_USER_MENU_DELETE_CONFIRMATION_MSG)) {
+  //     this.loadingService.setLoading(true);
 
-      this.securityService.deleteAppUserMenu(roleId).subscribe({
-        next: (response: DataResponse) => {
-          this.loadingService.setLoading(false);
-          if (response.Success) {
-            this.notifyService.showSuccess(
-              response.Message,
-              MessageConstants.GENERAL_SUCCESS_TITLE
-            );
-            this.getAllAppUserMenuPagingWithSearch();
-          } else {
-            this.notifyService.showError(
-              response.Message,
-              MessageConstants.GENERAL_ERROR_TITLE
-            );
-          }
-        },
-        error: (error) => {
-          this.loadingService.setLoading(false);
-          this.error_message = error.error;
+  //     this.securityService.deleteAppUserMenu(roleId).subscribe({
+  //       next: (response: DataResponse) => {
+  //         this.loadingService.setLoading(false);
+  //         if (response.Success) {
+  //           this.notifyService.showSuccess(
+  //             response.Message,
+  //             MessageConstants.GENERAL_SUCCESS_TITLE
+  //           );
+  //           this.getAllAppUserMenuPagingWithSearch();
+  //         } else {
+  //           this.notifyService.showError(
+  //             response.Message,
+  //             MessageConstants.GENERAL_ERROR_TITLE
+  //           );
+  //         }
+  //       },
+  //       error: (error) => {
+  //         this.loadingService.setLoading(false);
+  //         this.error_message = error.error;
+  //         this.notifyService.showError(
+  //           isCommonErrorShow
+  //             ? MessageConstants.INTERNAL_ERROR_MEG
+  //             : this.error_message,
+  //           MessageConstants.GENERAL_ERROR_TITLE
+  //         );
+  //       },
+  //     });
+  //   }
+  // }
+
+  deleteAppUserMenu(roleId: string): void {
+    this.itemIdToDelete = roleId;
+    this.confirmDialog.open();
+  }
+
+  executeDelete(): void {
+    if (!this.itemIdToDelete) return;
+
+    this.loadingService.setLoading(true);
+
+    this.securityService.deleteAppUserMenu(this.itemIdToDelete).subscribe({
+      next: (response: DataResponse) => {
+        this.loadingService.setLoading(false);
+        if (response.Success) {
+          this.notifyService.showSuccess(
+            response.Message,
+            MessageConstants.GENERAL_SUCCESS_TITLE
+          );
+          // this.dataTable?.ajax.reload(null, false);
+          this.getAllAppUserMenuPagingWithSearch();
+        } else {
           this.notifyService.showError(
-            isCommonErrorShow
-              ? MessageConstants.INTERNAL_ERROR_MEG
-              : this.error_message,
+            response.Message,
             MessageConstants.GENERAL_ERROR_TITLE
           );
-        },
-      });
-    }
+        }
+      },
+      error: (error) => {
+        this.loadingService.setLoading(false);
+        this.error_message = error.error;
+        this.notifyService.showError(
+          isCommonErrorShow
+            ? MessageConstants.INTERNAL_ERROR_MEG
+            : this.error_message,
+          MessageConstants.GENERAL_ERROR_TITLE
+        );
+      },
+      complete: () => {
+        this.loadingService.setLoading(false);
+        this.itemIdToDelete = null;
+      },
+    });
   }
 
   resetForm(): void {

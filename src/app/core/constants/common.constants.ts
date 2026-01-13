@@ -111,6 +111,7 @@ export const MessageConstants = {
   APP_USER_PROFILE_NOT_FOUND_MEG: 'There is no user profile found.',
   APP_USER_PROFILE_NOT_FOUND_TO_UPDATE_MEG: 'There is no user profile to update.',
   APP_USER_PROFILE_DELETE_CONFIRMATION_MSG: 'Are you sure you want to delete this user profile?',
+  APP_USER_ROLE_DELETE_CONFIRMATION_MSG: 'Are you sure you want to delete this user role?',
   
 };
 

@@ -7,6 +7,7 @@ import { AppUserRoleComponent } from './appuserrole/appuserrole.component';
 import { AppUserProfileComponent } from './appuserprofile/appuserprofile.component';
 import { AppUserMenuComponent } from './appusermenu/appusermenu.component';
 import { RoleMenuComponent } from './role-menu/role-menu.component';
+import { ConfirmDialogComponent } from "@app/shared/confirm-dialog/confirm-dialog.component";
 
 @NgModule({
   declarations: [
@@ -21,6 +22,7 @@ import { RoleMenuComponent } from './role-menu/role-menu.component';
     ReactiveFormsModule,
     FormsModule,
     NgxSpinnerModule,
-  ]
+    ConfirmDialogComponent
+]
 })
 export class SecurityModule { }

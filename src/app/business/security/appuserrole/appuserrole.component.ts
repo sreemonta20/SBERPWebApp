@@ -8,6 +8,7 @@ import {
   OnDestroy,
   OnInit,
   Renderer2,
+  ViewChild,
 } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Title } from '@angular/platform-browser';
@@ -30,7 +31,7 @@ import {
 import { isCommonErrorShow } from '@environments/environment';
 declare var $: any;
 import { Subscription } from 'rxjs';
-
+import { ConfirmDialogComponent } from '@app/shared/confirm-dialog/confirm-dialog.component';
 @Component({
   selector: 'app-appuserrole',
   standalone: false,
@@ -62,11 +63,15 @@ export class AppUserRoleComponent implements OnInit, AfterViewInit, OnDestroy {
   // Form Details
   public appUserRoleForm: FormGroup;
   public isEdit: boolean = false;
-  
+
   // Response related
   public appUserRoleList: AppUserRoleResponse[] = [];
   public error_message: any;
   private subscription: Subscription = new Subscription();
+  @ViewChild('confirmDialog') confirmDialog!: ConfirmDialogComponent;
+  deleteConfirmationMessage =
+    MessageConstants.APP_USER_ROLE_DELETE_CONFIRMATION_MSG;
+  private itemIdToDelete: string | null = null;
   constructor(
     @Inject(DOCUMENT) private document: Document,
     private elementRef: ElementRef,
@@ -80,10 +85,10 @@ export class AppUserRoleComponent implements OnInit, AfterViewInit, OnDestroy {
     private titleService: Title
   ) {
     this.subscription = this.commonService
-              .GetLoggedInUser()
-              .subscribe((userInformation: User) => {
-                this.appUserProfileId = userInformation.Id;
-              });
+      .GetLoggedInUser()
+      .subscribe((userInformation: User) => {
+        this.appUserProfileId = userInformation.Id;
+      });
     this.loadPermission(this.router.url);
   }
 
@@ -98,7 +103,7 @@ export class AppUserRoleComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   loadPermission(url: any): void {
-    console.log("Execution from AppUserRole");
+    console.log('Execution from AppUserRole');
     const permissionModel = this.commonService.getMenuPermission(url);
     this.isView = permissionModel.IsView;
     this.isCreate = permissionModel.IsCreate;
@@ -107,7 +112,7 @@ export class AppUserRoleComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   // ===============================================================================================================
-  // FORM & DATA INITIALIZATION   
+  // FORM & DATA INITIALIZATION
   // ===============================================================================================================
   createForm() {
     this.appUserRoleForm = this.formBuilder.group({
@@ -124,7 +129,7 @@ export class AppUserRoleComponent implements OnInit, AfterViewInit, OnDestroy {
       IsActive: [true],
     });
   }
-  
+
   getAllAppUserRolesPagination(pageNumber: number, pageSize: number) {
     this.loadingService.setLoading(true);
     this.securityService
@@ -185,7 +190,7 @@ export class AppUserRoleComponent implements OnInit, AfterViewInit, OnDestroy {
       this.renderer.appendChild(document.body, script);
     }
   }
-  
+
   // ===============================================================================================================
   // CREATE UPDATE & DELETE
   // ===============================================================================================================
@@ -213,7 +218,6 @@ export class AppUserRoleComponent implements OnInit, AfterViewInit, OnDestroy {
       roleRequest.IsActive = appUserRole['IsActive'];
     }
 
-    
     this.securityService.createUpdateAppUserRole(roleRequest).subscribe({
       next: (response: DataResponse) => {
         this.loadingService.setLoading(false);
@@ -235,11 +239,11 @@ export class AppUserRoleComponent implements OnInit, AfterViewInit, OnDestroy {
         this.loadingService.setLoading(false);
         this.error_message = error.error;
         this.notifyService.showError(
-            isCommonErrorShow
-              ? MessageConstants.INTERNAL_ERROR_MEG
-              : this.error_message,
-            MessageConstants.GENERAL_ERROR_TITLE
-          );
+          isCommonErrorShow
+            ? MessageConstants.INTERNAL_ERROR_MEG
+            : this.error_message,
+          MessageConstants.GENERAL_ERROR_TITLE
+        );
       },
     });
   }
@@ -262,38 +266,81 @@ export class AppUserRoleComponent implements OnInit, AfterViewInit, OnDestroy {
     }
   }
 
-  deleteAppUserRole(roleId: string): void {
-    if (confirm('Are you sure you want to delete this role?')) {
-      this.loadingService.setLoading(true);
+  // deleteAppUserRole(roleId: string): void {
+  //   if (confirm('Are you sure you want to delete this role?')) {
+  //     this.loadingService.setLoading(true);
 
-      this.securityService.deleteAppUserRole(roleId).subscribe({
-        next: (response: DataResponse) => {
-          this.loadingService.setLoading(false);
-          if (response.Success) {
-            this.notifyService.showSuccess(
-              response.Message,
-              MessageConstants.GENERAL_SUCCESS_TITLE
-            );
-            this.getAllAppUserRolesPagination(this.currentPage, this.pageSize);
-          } else {
-            this.notifyService.showError(
-              response.Message,
-              MessageConstants.GENERAL_ERROR_TITLE
-            );
-          }
-        },
-        error: (error) => {
-          this.loadingService.setLoading(false);
-          this.error_message = error.error;
+  //     this.securityService.deleteAppUserRole(roleId).subscribe({
+  //       next: (response: DataResponse) => {
+  //         this.loadingService.setLoading(false);
+  //         if (response.Success) {
+  //           this.notifyService.showSuccess(
+  //             response.Message,
+  //             MessageConstants.GENERAL_SUCCESS_TITLE
+  //           );
+  //           this.getAllAppUserRolesPagination(this.currentPage, this.pageSize);
+  //         } else {
+  //           this.notifyService.showError(
+  //             response.Message,
+  //             MessageConstants.GENERAL_ERROR_TITLE
+  //           );
+  //         }
+  //       },
+  //       error: (error) => {
+  //         this.loadingService.setLoading(false);
+  //         this.error_message = error.error;
+  //         this.notifyService.showError(
+  //                     isCommonErrorShow
+  //                       ? MessageConstants.INTERNAL_ERROR_MEG
+  //                       : this.error_message,
+  //                     MessageConstants.GENERAL_ERROR_TITLE
+  //                   );
+  //       },
+  //     });
+  //   }
+  // }
+
+  deleteAppUserRole(roleId: string): void {
+    this.itemIdToDelete = roleId;
+    this.confirmDialog.open();
+  }
+
+  executeDelete(): void {
+    if (!this.itemIdToDelete) return;
+
+    this.loadingService.setLoading(true);
+
+    this.securityService.deleteAppUserRole(this.itemIdToDelete).subscribe({
+      next: (response: DataResponse) => {
+        this.loadingService.setLoading(false);
+        if (response.Success) {
+          this.notifyService.showSuccess(
+            response.Message,
+            MessageConstants.GENERAL_SUCCESS_TITLE
+          );
+          this.getAllAppUserRolesPagination(this.currentPage, this.pageSize);
+        } else {
           this.notifyService.showError(
-                      isCommonErrorShow
-                        ? MessageConstants.INTERNAL_ERROR_MEG
-                        : this.error_message,
-                      MessageConstants.GENERAL_ERROR_TITLE
-                    );
-        },
-      });
-    }
+            response.Message,
+            MessageConstants.GENERAL_ERROR_TITLE
+          );
+        }
+      },
+      error: (error) => {
+        this.loadingService.setLoading(false);
+        this.error_message = error.error;
+        this.notifyService.showError(
+          isCommonErrorShow
+            ? MessageConstants.INTERNAL_ERROR_MEG
+            : this.error_message,
+          MessageConstants.GENERAL_ERROR_TITLE
+        );
+      },
+      complete: () => {
+        this.loadingService.setLoading(false);
+        this.itemIdToDelete = null;
+      },
+    });
   }
 
   resetForm(): void {
@@ -307,7 +354,7 @@ export class AppUserRoleComponent implements OnInit, AfterViewInit, OnDestroy {
       IsActive: true,
     });
   }
-  
+
   ngOnDestroy(): void {
     if (this.subscription) {
       this.subscription.unsubscribe();

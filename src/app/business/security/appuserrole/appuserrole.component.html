@@ -213,3 +213,7 @@
     {{ pageDisplayMessage }}
   </div>
 </div>
+
+<app-confirm-dialog #confirmDialog [title]="'Confirm Deletion'" [message]="deleteConfirmationMessage"
+    [confirmButtonText]="'Delete'" [confirmButtonClass]="'btn-danger'" (confirmed)="executeDelete()">
+</app-confirm-dialog>

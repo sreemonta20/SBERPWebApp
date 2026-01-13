@@ -8,7 +8,6 @@ import {
   OnInit,
   Renderer2,
   ChangeDetectorRef,
-  ViewChild,
 } from '@angular/core';
 import {
   FormBuilder,
@@ -38,7 +37,6 @@ import { MessageConstants, Common } from '@app/core/constants/index';
 import { isCommonErrorShow } from '@environments/environment';
 declare var $: any;
 import { Subject, Subscription, takeUntil } from 'rxjs';
-import { ConfirmDialogComponent } from '@app/shared/confirm-dialog/confirm-dialog.component';
 
 @Component({
   selector: 'app-appuserprofile',
@@ -76,11 +74,6 @@ export class AppUserProfileComponent
   public totalPages: number = 0;
 
   public initialDataResponse: InitialDataResponse;
-  @ViewChild('confirmDialog') confirmDialog!: ConfirmDialogComponent;
-  deleteConfirmationMessage =
-    MessageConstants.APP_USER_PROFILE_DELETE_CONFIRMATION_MSG;
-  private itemIdToDelete: string | null = null;
-
   constructor(
     private formBuilder: FormBuilder,
     public router: Router,
@@ -104,11 +97,11 @@ export class AppUserProfileComponent
     this.titleService.setTitle(MessageConstants.APP_USER_PROFILE_TITLE);
     this.initializeForm();
     this.initializeFormData();
+    this.getAllAppUserProfilePagingWithSearch();
   }
 
   ngAfterViewInit(): void {
     // $('#userRoleSelect').select2();
-    this.getAllAppUserProfilePagingWithSearch();
   }
 
   loadPermission(url: any): void {
@@ -148,7 +141,7 @@ export class AppUserProfileComponent
       : { mismatch: true };
   }
 
-  // =============== INITIAL DATA (ROLE DROPDOWN) ==================
+  // ---------------- INITIAL DATA (ROLE DROPDOWN) ----------------
   initializeFormData(): void {
     this.securityService.getAppUserRoleMenuInitialData().subscribe({
       next: (response: DataResponse) => {
@@ -174,126 +167,62 @@ export class AppUserProfileComponent
   // ===============================================================================================================
   // LIST & PAGINATION
   // ===============================================================================================================
-
+  
   getAllAppUserProfilePagingWithSearch(): void {
-    if (this.dataTable) {
-      this.dataTable.destroy();
-    }
+    this.loadingService.setLoading(true);
 
-    this.dataTable = $('#appUserProfileTable').DataTable({
-      processing: true,
-      serverSide: true,
-      ajax: (dtParams: any, callback) => {
-        const orderColumn = dtParams.order[0];
-        const sortColumnIndex = orderColumn ? orderColumn.column : 0;
-        const sortDirection = orderColumn
-          ? orderColumn.dir.toUpperCase()
-          : 'ASC';
-        const sortColumnName = dtParams.columns[sortColumnIndex].data || '';
-        const searchTerm = dtParams.search.value || '';
-        const pageNumber = dtParams.start / dtParams.length + 1;
-        const pageSize = dtParams.length;
+    this.securityService
+      .getAllAppUserProfilePagingWithSearch('', '', '', 1, 1000) // Adjust page size if needed
+      .subscribe({
+        next: (response: DataResponse | undefined) => {
+          this.loadingService.setLoading(false);
+          const ok = response?.ResponseCode === 200 || response?.Success === true;
+          // this.profileList = [];
+          if (ok) {
+            const result =
+              response.Result as PagingResult<AppUserProfileResponse>;
+            this.profileList = result.Items;
 
-        this.securityService
-          .getAllAppUserProfilePagingWithSearch(
-            searchTerm,
-            sortColumnName,
-            sortDirection,
-            pageNumber,
-            pageSize
-          )
-          .subscribe({
-            next: (response: DataResponse) => {
-              console.log('DataTable Response:', response);
-              if (response.ResponseCode === 302) {
-                const result =
-                  response.Result as PagingResult<AppUserProfileResponse>;
-                callback({
-                  draw: dtParams.draw,
-                  recordsTotal: result.RowCount,
-                  recordsFiltered: result.RowCount,
-                  data: result.Items,
-                });
-              } else {
-                callback({
-                  draw: dtParams.draw,
-                  recordsTotal: 0,
-                  recordsFiltered: 0,
-                  data: [],
-                });
-                this.notifyService.showError(
-                  response.Message || MessageConstants.FETCH_DATA_FAILED_MSG,
-                  MessageConstants.GENERAL_ERROR_TITLE
-                );
+            // Allow Angular time to render rows before initializing DataTables
+            setTimeout(() => {
+              if (this.dataTable) {
+                this.dataTable.destroy(); 
               }
-            },
-            error: (error) => {
-              callback({
-                draw: dtParams.draw,
-                recordsTotal: 0,
-                recordsFiltered: 0,
-                data: [],
+
+              this.dataTable = $('#appUserProfileTable').DataTable({
+                pagingType: 'full_numbers',
+                lengthChange: true,
+                lengthMenu: this.pageSizeList,
+                pageLength: 5,
+                ordering: true,
+                searching: true,
+                responsive: true,
+                destroy: true,
               });
-              this.notifyService.showError(
-                isCommonErrorShow
-                  ? MessageConstants.INTERNAL_ERROR_MEG
-                  : error.error,
-                MessageConstants.GENERAL_ERROR_TITLE
-              );
-            },
-          });
-      },
-      columns: [
-        { data: 'FullName' },
-        { data: 'Email' },
-        { data: 'RoleName' },
-        {
-          data: 'UserName',
-          render: (data) => data || 'N/A',
-        },
-        {
-          data: 'IsActive',
-          render: (data, type, row) =>
-            `<span class="badge ${
-              row.IsActive ? 'badge-success' : 'badge-danger'
-            }">${row.IsActive ? 'Yes' : 'No'}</span>`,
-        },
-        {
-          data: null,
-          render: (data, type, row) => {
-            const editDisabled = this.isUpdate ? '' : 'disabled';
-            const deleteDisabled = this.isDelete ? '' : 'disabled';
-            return `<div class="btn-group btn-group-sm">
-                      <button type="button" class="btn btn-info" ${editDisabled} title="Edit"><i class="fas fa-edit"></i></button>
-                      <button type="button" class="btn btn-danger ml-1" ${deleteDisabled} title="Delete"><i class="fas fa-trash"></i></button>
-                    </div>`;
-          },
-          orderable: false,
-        },
-      ],
-      pagingType: 'full_numbers',
-      lengthChange: true,
-      lengthMenu: this.pageSizeList,
-      pageLength: 5,
-      ordering: true,
-      searching: true,
-      responsive: true,
-      destroy: true,
-    });
+            }, 0);
+          } else {
+            this.error_message =
+              response?.Message || MessageConstants.FETCH_DATA_FAILED_MSG;
+            this.notifyService.showError(
+              this.error_message,
+              MessageConstants.GENERAL_ERROR_TITLE
+            );
 
-    this.dataTable.on('click', '.btn-info', (e) => {
-      const tr = $(e.target).closest('tr');
-      const row = this.dataTable.row(tr);
-      const rowData = row.data();
-      this.editAppUserProfile(rowData);
-    });
-
-    this.dataTable.on('click', '.btn-danger', (e) => {
-      const tr = $(e.target).closest('tr');
-      const row = this.dataTable.row(tr);
-      const rowData = row.data();
-      this.deleteAppUserProfile(rowData.Id);
-    });
+            // this.profileList = [];
+          }
+        },
+        error: (error) => {
+          this.loadingService.setLoading(false);
+          this.error_message = error.error;
+          this.notifyService.showError(
+            isCommonErrorShow
+              ? MessageConstants.INTERNAL_ERROR_MEG
+              : this.error_message,
+            MessageConstants.GENERAL_ERROR_TITLE
+          );
+          // this.profileList = [];
+        },
+      });
   }
 
   loadScripts(urls: string[]) {
@@ -309,6 +238,7 @@ export class AppUserProfileComponent
   // CREATE UPDATE & DELETE
   // ===============================================================================================================
   createUpdateAppUserProfile(formValue: any): void {
+    // console.log('Form Value:', formValue.AppUserRoleId);
     this.loadingService.setLoading(true);
     if (this.appUserProfileForm.invalid) {
       this.loadingService.setLoading(false);
@@ -340,7 +270,7 @@ export class AppUserProfileComponent
             MessageConstants.GENERAL_SUCCESS_TITLE
           );
           this.resetForm();
-          this.dataTable.ajax.reload(null, false);
+          this.getAllAppUserProfilePagingWithSearch();
         } else {
           this.notifyService.showError(
             response.Message,
@@ -387,81 +317,38 @@ export class AppUserProfileComponent
     }
   }
 
-  // deleteAppUserProfile(userProfileId: string): void {
-  //   if (confirm(MessageConstants.APP_USER_PROFILE_DELETE_CONFIRMATION_MSG)) {
-  //     this.loadingService.setLoading(true);
-
-  //     this.securityService.deleteAppUserProfile(userProfileId).subscribe({
-  //       next: (response: DataResponse) => {
-  //         this.loadingService.setLoading(false);
-  //         if (response.Success) {
-  //           this.notifyService.showSuccess(
-  //             response.Message,
-  //             MessageConstants.GENERAL_SUCCESS_TITLE
-  //           );
-  //           this.dataTable.ajax.reload(null, false);
-  //         } else {
-  //           this.notifyService.showError(
-  //             response.Message,
-  //             MessageConstants.GENERAL_ERROR_TITLE
-  //           );
-  //         }
-  //       },
-  //       error: (error) => {
-  //         this.loadingService.setLoading(false);
-  //         this.error_message = error.error;
-  //         this.notifyService.showError(
-  //           isCommonErrorShow
-  //             ? MessageConstants.INTERNAL_ERROR_MEG
-  //             : this.error_message,
-  //           MessageConstants.GENERAL_ERROR_TITLE
-  //         );
-  //       },
-  //     });
-  //   }
-  // }
-
   deleteAppUserProfile(userProfileId: string): void {
-    this.itemIdToDelete = userProfileId;
-    this.confirmDialog.open();
-  }
+    if (confirm(MessageConstants.APP_USER_PROFILE_DELETE_CONFIRMATION_MSG)) {
+      this.loadingService.setLoading(true);
 
-  executeDelete(): void {
-    if (!this.itemIdToDelete) return;
-
-    this.loadingService.setLoading(true);
-
-    this.securityService.deleteAppUserProfile(this.itemIdToDelete).subscribe({
-      next: (response: DataResponse) => {
-        this.loadingService.setLoading(false);
-        if (response.Success) {
-          this.notifyService.showSuccess(
-            response.Message,
-            MessageConstants.GENERAL_SUCCESS_TITLE
-          );
-          this.dataTable?.ajax.reload(null, false);
-        } else {
+      this.securityService.deleteAppUserProfile(userProfileId).subscribe({
+        next: (response: DataResponse) => {
+          this.loadingService.setLoading(false);
+          if (response.Success) {
+            this.notifyService.showSuccess(
+              response.Message,
+              MessageConstants.GENERAL_SUCCESS_TITLE
+            );
+            this.getAllAppUserProfilePagingWithSearch();
+          } else {
+            this.notifyService.showError(
+              response.Message,
+              MessageConstants.GENERAL_ERROR_TITLE
+            );
+          }
+        },
+        error: (error) => {
+          this.loadingService.setLoading(false);
+          this.error_message = error.error;
           this.notifyService.showError(
-            response.Message,
+            isCommonErrorShow
+              ? MessageConstants.INTERNAL_ERROR_MEG
+              : this.error_message,
             MessageConstants.GENERAL_ERROR_TITLE
           );
-        }
-      },
-      error: (error) => {
-        this.loadingService.setLoading(false);
-        this.error_message = error.error;
-        this.notifyService.showError(
-          isCommonErrorShow
-            ? MessageConstants.INTERNAL_ERROR_MEG
-            : this.error_message,
-          MessageConstants.GENERAL_ERROR_TITLE
-        );
-      },
-      complete: () => {
-        this.loadingService.setLoading(false);
-        this.itemIdToDelete = null;
-      },
-    });
+        },
+      });
+    }
   }
 
   resetForm(): void {
