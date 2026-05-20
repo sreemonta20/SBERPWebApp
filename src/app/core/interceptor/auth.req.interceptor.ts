@@ -95,10 +95,14 @@ export const AuthReqInterceptor: HttpInterceptorFn = (
 
   // Don’t attach tokens / refresh on auth endpoints themselves
   const lowerUrl = req.url.toLowerCase();
+  // const isAuthUrl =
+  //   lowerUrl.includes('/Auth/authenticateUser') ||
+  //   lowerUrl.includes('/Auth/refreshToken') ||
+  //   lowerUrl.includes('/Auth/revoke');
   const isAuthUrl =
-    lowerUrl.includes('/Auth/authenticateUser') ||
-    lowerUrl.includes('/Auth/refreshToken') ||
-    lowerUrl.includes('/Auth/revoke');
+    lowerUrl.includes('/gateway/auth/authenticateUser') ||
+    lowerUrl.includes('/gateway/auth/refreshToken') ||
+    lowerUrl.includes('/gateway/auth/revoke');
 
   if (isAuthUrl) {
     return next(req);

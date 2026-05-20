@@ -13,7 +13,7 @@ import { ToastrModule } from 'ngx-toastr';
 
 import {
   AuthReqInterceptor,
-  EncryptDecryptAuthInterceptor,
+  EncryptDecryptAuthInterceptor
 } from '@app/core/interceptor';
 import { SessionStorageService } from '@app/core/services';
 import { JwtModule } from '@auth0/angular-jwt';
@@ -66,7 +66,7 @@ export function tokenGetter() {
     provideHttpClient(
       withInterceptors([
         AuthReqInterceptor,
-        EncryptDecryptAuthInterceptor,
+        EncryptDecryptAuthInterceptor
       ])
     ),
     DatePipe
