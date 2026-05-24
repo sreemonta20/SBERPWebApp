@@ -6,7 +6,7 @@ import {
   RefreshTokenRequest
 } from '@app/core/class';
 import { MenuItem } from '@app/core/interface/common';
-import { securityApiUrl } from 'src/environments/environment';
+import { securityApiUrl } from '@environments/environment';
 import { APIConstants } from '@app/core/constants';
 import { CommonService, SessionStorageService } from '@app/core/services';
 import { ApiService } from './api.service';

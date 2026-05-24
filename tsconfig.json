@@ -4,14 +4,14 @@
   "compileOnSave": false,
   "compilerOptions": {
     "rootDir": "./src",
-    "baseUrl": "./",
+    // "baseUrl": "./",
     // Silences the 'baseUrl' deprecation warning from TS 5.5+.
     // 'baseUrl' is still required when 'paths' contains non-alias bare specifiers
     // like "src/environments/*". This option tells TypeScript we are aware of the
     // deprecation and have explicitly chosen to keep it for compatibility.
     // Remove both 'baseUrl' and 'ignoreDeprecations' once all service imports
     // are updated to use '@environments/*' and '@app/*' aliases instead.
-    "ignoreDeprecations": "5.0",
+    // "ignoreDeprecations": "6.0",
     "outDir": "./dist/out-tsc",
     "forceConsistentCasingInFileNames": true,
     "strict": false,
@@ -33,9 +33,7 @@
     ],
     "paths": {
       "@app/*": ["./src/app/*"],
-      "@environments/*": ["./src/environments/*"],
-      "src/app/*": ["./src/app/*"],
-      "src/environments/*": ["./src/environments/*"]
+      "@environments/*": ["./src/environments/*"]
     },
     "strictPropertyInitialization": false
   },
