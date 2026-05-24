@@ -1,5 +1,4 @@
 import { DOCUMENT } from '@angular/common';
-import { HttpClient } from '@angular/common/http';
 import {
   AfterViewInit,
   Component,
@@ -12,8 +11,7 @@ import {
 import { Title } from '@angular/platform-browser';
 import { Router } from '@angular/router';
 import { User } from '@app/core/class';
-import { MenuPermission } from '@app/core/class';
-import { MessageConstants, SessionConstants } from '@app/core/constants';
+import { MessageConstants } from '@app/core/constants';
 import {
   CommonService,
   LoaderService,
@@ -22,7 +20,7 @@ import {
   ValidationFormsService,
 } from '@app/core/services/index';
 import { NgxSpinnerService } from 'ngx-spinner';
-import { Subject, Subscription, filter, take, takeUntil, tap } from 'rxjs';
+import { Subject, filter, take, takeUntil, tap } from 'rxjs';
 declare var $: any;
 
 @Component({

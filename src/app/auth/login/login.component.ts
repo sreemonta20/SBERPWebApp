@@ -22,8 +22,8 @@ import {
   TokenResponse,
   ProfileMenuResponse,
 } from '@app/core/class';
-import { MessageConstants, RouteConstants } from '@app/core/constants/index';
-import { MenuItem } from '@app/core/interface';
+import { MessageConstants, RouteConstants } from '@app/core/constants';
+import { MenuItem } from '@app/core/interface/common';
 import {
   AuthService,
   CommonService,

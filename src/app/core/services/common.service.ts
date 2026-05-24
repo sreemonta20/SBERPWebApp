@@ -1,11 +1,11 @@
 import { Injectable } from '@angular/core';
 import { Router } from '@angular/router';
-import { User, ProfileMenuResponse } from '@app/core/class';
+import { User } from '@app/core/class';
 import { Common, RouteConstants, SessionConstants } from '@app/core/constants';
-import { MenuItem } from '@app/core/interface';
+import { MenuItem } from '@app/core/interface/common';
 import { SessionStorageService } from '@app/core/services';
 import { BehaviorSubject, Observable } from 'rxjs';
-import { MenuPermission } from '../class/models/menu.permission';
+import { MenuPermission } from '@app/core/class';
 
 @Injectable({
   providedIn: 'root',

@@ -1,0 +1,57 @@
+import { EmployeeAddress } from './employee-address.interface';
+import { EmployeeEducation } from './employee-education.interface';
+import { EmployeeExperience } from './employee-experience.interface';
+import { EmployeeSkill } from './employee-skill.interface';
+import { EmployeeTraining } from './employee-training.interface';
+import { EmployeeCertification } from './employee-certification.interface';
+import { EmployeeDocument } from './employee-document.interface';
+import { EmployeeEmergencyContact } from './employee-emergency-contact.interface';
+import { EmployeeBank } from './employee-bank.interface';
+
+export interface EmployeeDetail {
+  id?: string;
+  employeeCode: string;
+  appUserId?: string;
+  officialEmail?: string;
+  firstName: string;
+  middleName?: string;
+  lastName: string;
+  fullName?: string;
+  dateOfBirth?: string;
+  gender?: number;
+  maritalStatus?: number;
+  bloodGroup?: number;
+  nationality?: string;
+  religion?: string;
+  nationalId?: string;
+  passportNumber?: string;
+  passportExpiryDate?: string;
+  personalEmail?: string;
+  mobileNumber?: string;
+  alternatePhoneNumber?: string;
+  departmentId?: string;
+  designationId?: string;
+  reportingManagerId?: string;
+  dateOfJoining?: string;
+  probationEndDate?: string;
+  confirmationDate?: string;
+  dateOfLeaving?: string;
+  employmentType?: number;
+  employmentStatus?: number;
+  workLocation?: string;
+  basicSalary?: number;
+  salaryCurrency?: string;
+  photoUrl?: string;
+  signatureUrl?: string;
+  isActive?: boolean;
+
+  addresses?: EmployeeAddress[];
+  educations?: EmployeeEducation[];
+  experiences?: EmployeeExperience[];
+  skills?: EmployeeSkill[];
+  trainings?: EmployeeTraining[];
+  certifications?: EmployeeCertification[];
+  documents?: EmployeeDocument[];
+  emergencyContacts?: EmployeeEmergencyContact[];
+  bankInfo?: EmployeeBank;
+}

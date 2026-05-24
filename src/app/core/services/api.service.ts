@@ -1,7 +1,7 @@
 import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable, lastValueFrom } from 'rxjs';
-import { SessionStorageService } from '../services/session.service';
+import { SessionStorageService } from '@app/core/services';
 
 @Injectable({
   providedIn: 'root',

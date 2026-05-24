@@ -1,5 +1,4 @@
-// import { AppUserRole } from './../../../core/class/models/app.user.role';
-import { DOCUMENT, DatePipe } from '@angular/common';
+import { DOCUMENT } from '@angular/common';
 import {
   AfterViewInit,
   Component,
@@ -21,7 +20,6 @@ import {
   User,
 } from '@app/core/class';
 import { MessageConstants } from '@app/core/constants';
-import { MenuItem } from '@app/core/interface';
 import {
   CommonService,
   LoaderService,

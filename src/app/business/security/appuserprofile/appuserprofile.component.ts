@@ -1,4 +1,3 @@
-import { DOCUMENT, DatePipe } from '@angular/common';
 import {
   AfterViewInit,
   Component,
@@ -13,8 +12,7 @@ import {
 import {
   FormBuilder,
   FormGroup,
-  Validators,
-  FormControl,
+  Validators
 } from '@angular/forms';
 import { Title } from '@angular/platform-browser';
 import { Router } from '@angular/router';
@@ -25,9 +23,8 @@ import {
   InitialDataResponse,
   AppUserRoleMenuInitialData,
   DataResponse,
-  User,
-  CustomValidators,
-} from '@app/core/class/index';
+  User
+} from '@app/core/class';
 import {
   SecurityService,
   NotificationService,
@@ -37,7 +34,7 @@ import {
 import { MessageConstants, Common } from '@app/core/constants/index';
 import { isCommonErrorShow } from '@environments/environment';
 declare var $: any;
-import { Subject, Subscription, takeUntil } from 'rxjs';
+import { Subject, Subscription } from 'rxjs';
 import { ConfirmDialogComponent } from '@app/shared/confirm-dialog/confirm-dialog.component';
 
 @Component({

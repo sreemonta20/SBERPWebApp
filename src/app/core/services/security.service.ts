@@ -3,18 +3,14 @@ import { Injectable } from '@angular/core';
 import { Observable, map } from 'rxjs';
 import {
   DataResponse,
-  LoginRequest,
-  RefreshTokenRequest,
-  SaveUpdateRequest,
   RoleSaveUpdateRequest,
   AppUserMenuRequest,
   AppUserProfileRegisterRequest,
-} from '@app/core/class/index';
-import { MenuItem, PagingSearchFilter } from '@app/core/interface/index';
+} from '@app/core/class';
+import { PagingSearchFilter } from '@app/core/interface/common';
 import { securityApiUrl } from 'src/environments/environment';
-import { APIConstants, SessionConstants } from '../constants/common.constants';
-import { CommonService } from './common.service';
-import { SessionStorageService } from './session.service';
+import { APIConstants } from '@app/core/constants';
+import { CommonService, SessionStorageService } from '@app/core/services';
 import { ApiService } from './api.service';
 
 @Injectable({

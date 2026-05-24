@@ -1,4 +1,6 @@
-﻿export class conversion {
+﻿declare var $: any;
+
+export class conversion {
     constructor() { }
 
     JsonStringify(models: any): string {

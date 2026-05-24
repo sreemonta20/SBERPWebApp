@@ -11,7 +11,7 @@ import {
 } from '@angular/core';
 import { Router } from '@angular/router';
 import { SessionConstants } from '@app/core/constants';
-import { MenuItem } from '@app/core/interface';
+import { MenuItem } from '@app/core/interface/common/index';
 import { CommonService, SessionStorageService } from '@app/core/services';
 import { Subscription } from 'rxjs';
 declare var $: any;

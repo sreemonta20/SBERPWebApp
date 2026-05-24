@@ -1,4 +1,3 @@
-import { DOCUMENT, DatePipe } from '@angular/common';
 import {
   AfterViewInit,
   Component,
@@ -24,19 +23,18 @@ import {
   InitialDataResponse,
   AppUserRoleMenuInitialData,
   DataResponse,
-  User,
-  CustomValidators,
-} from '@app/core/class/index';
+  User
+} from '@app/core/class';
 import {
   SecurityService,
   NotificationService,
   LoaderService,
   CommonService,
 } from '@app/core/services/index';
-import { MessageConstants, Common } from '@app/core/constants/index';
+import { MessageConstants, Common } from '@app/core/constants';
 import { isCommonErrorShow } from '@environments/environment';
 declare var $: any;
-import { Subject, Subscription, takeUntil } from 'rxjs';
+import { Subject, Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-appuserprofile',

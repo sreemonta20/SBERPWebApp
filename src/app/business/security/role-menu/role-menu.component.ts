@@ -8,7 +8,7 @@ import {
 } from '@app/core/services';
 
 import { DataResponse, User, AppUserRole } from '@app/core/class';
-import { PagingSearchFilter } from '@app/core/interface/index';
+import { PagingSearchFilter } from '@app/core/interface/common';
 import { Router } from '@angular/router';
 import { MessageConstants } from '@app/core/constants';
 import { isCommonErrorShow } from '@environments/environment';

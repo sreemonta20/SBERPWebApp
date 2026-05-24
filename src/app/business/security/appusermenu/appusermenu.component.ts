@@ -1,4 +1,3 @@
-// import { AppUserRole } from './../../../core/class/models/app.user.role';
 import { DOCUMENT, DatePipe } from '@angular/common';
 import {
   AfterViewInit,
@@ -29,7 +28,6 @@ import {
   PagingResult,
 } from '@app/core/class';
 import { MessageConstants, Common } from '@app/core/constants';
-import { MenuItem } from '@app/core/interface';
 import {
   CommonService,
   LoaderService,
@@ -38,7 +36,7 @@ import {
 } from '@app/core/services';
 import { isCommonErrorShow } from '@environments/environment';
 declare var $: any;
-import { Subject, Subscription, takeUntil } from 'rxjs';
+import { Subject, Subscription } from 'rxjs';
 import { ConfirmDialogComponent } from '@app/shared/confirm-dialog/confirm-dialog.component';
 
 @Component({
