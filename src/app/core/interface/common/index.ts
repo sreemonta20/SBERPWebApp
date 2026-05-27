@@ -30,3 +30,6 @@ export * from '../hr/designation.interface';
 export * from '../hr/hr-settings.interface';
 export * from '../hr/lookup-item.interface';
 export * from '../hr/employee-initial-data.interface';
+export * from '../hr/employee-request.interface';
+export * from '../hr/department-request.interface';
+export * from '../hr/designation-request.interface';

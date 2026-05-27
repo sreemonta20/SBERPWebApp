@@ -6,7 +6,7 @@ import {
   RefreshTokenRequest
 } from '@app/core/class';
 import { MenuItem } from '@app/core/interface/common';
-import { securityApiUrl } from '@environments/environment';
+import { gatewayUrl } from '@environments/environment';
 import { APIConstants } from '@app/core/constants';
 import { CommonService, SessionStorageService } from '@app/core/services';
 import { ApiService } from './api.service';
@@ -21,7 +21,7 @@ export class AuthService {
     private apiService: ApiService<DataResponse>,
     private sessionService: SessionStorageService
   ) {
-    this.apiService.initializeBaseURL(securityApiUrl);
+    this.apiService.initializeBaseURL(gatewayUrl);
   }
 
   login(user: LoginRequest): Observable<DataResponse | undefined> {

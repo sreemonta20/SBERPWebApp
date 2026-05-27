@@ -60,6 +60,9 @@ export const APIConstants = {
   // API_POST_SAVE_UPDATE_USER_MENU_URL: '/api/v1/RoleMenu/createUpdateAppUserMenu',
   // API_DELETE_USER_MENU_URL: '/api/v1/RoleMenu/deleteAppUserMenu',
 
+  // =====================================================================
+  // Security
+  // =====================================================================
   API_USER_LOGIN_URL: '/gateway/auth/authenticateUser',
   API_USER_PROFILE_MENU_URL: '/gateway/auth/getAppUserProfileMenu',
   API_REFRESH_TOKEN_URL: '/gateway/auth/refreshToken',
@@ -89,7 +92,29 @@ export const APIConstants = {
   API_GET_ALL_MENU_BY_USER_ID_URL: '/gateway/rolemenu/getAllAppUserMenuByUserId',
   API_POST_SAVE_UPDATE_USER_MENU_URL: '/gateway/rolemenu/createUpdateAppUserMenu',
   API_DELETE_USER_MENU_URL: '/gateway/rolemenu/deleteAppUserMenu',
-  
+
+  // =====================================================================
+  // HumanResources
+  // =====================================================================
+
+  API_GET_EMPLOYEE_INITIAL_DATA_URL: '/gateway/hr/employee/getEmployeeInitialData',
+  API_GET_ALL_EMPLOYEES_PAGING_URL: '/gateway/hr/employee/getAllEmployeesPagingWithSearch',
+  API_GET_EMPLOYEE_BY_ID_URL: '/gateway/hr/employee/getEmployeeById',
+  API_CREATE_EMPLOYEE_URL: '/gateway/hr/employee/createEmployee',
+  API_UPDATE_EMPLOYEE_URL: '/gateway/hr/employee/updateEmployee',
+  API_DELETE_EMPLOYEE_URL: '/gateway/hr/employee/deleteEmployee',
+  API_GET_ALL_DEPARTMENTS_URL: '/gateway/hr/department/getAllDepartments',
+  API_GET_ALL_DEPARTMENTS_PAGING_URL: '/gateway/hr/department/getAllDepartmentsPagingWithSearch',
+  API_GET_DEPARTMENT_BY_ID_URL: '/gateway/hr/department/getDepartmentById',
+  API_SAVE_UPDATE_DEPARTMENT_URL: '/gateway/hr/department/createUpdateDepartment',
+  API_DELETE_DEPARTMENT_URL: '/gateway/hr/department/deleteDepartment',
+  API_GET_ALL_DESIGNATIONS_URL: '/gateway/hr/designation/getAllDesignations',
+  API_GET_ALL_DESIGNATIONS_PAGING_URL: '/gateway/hr/designation/getAllDesignationsPagingWithSearch',
+  API_SAVE_UPDATE_DESIGNATION_URL: '/gateway/hr/designation/createUpdateDesignation',
+  API_DELETE_DESIGNATION_URL: '/gateway/hr/designation/deleteDesignation',
+  API_GET_HR_SETTINGS_URL: '/gateway/hr/settings/getHRSettings',
+  API_SAVE_UPDATE_HR_SETTINGS_URL: '/gateway/hr/settings/saveUpdateHRSettings',
+  API_UPLOAD_ATTENDANCE_EXCEL_URL: '/gateway/hr/settings/uploadAttendanceExcel'
 }
 
 export const MessageConstants = {

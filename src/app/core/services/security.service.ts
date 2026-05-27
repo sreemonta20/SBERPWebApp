@@ -8,10 +8,10 @@ import {
   AppUserProfileRegisterRequest,
 } from '@app/core/class';
 import { PagingSearchFilter } from '@app/core/interface/common';
-import { securityApiUrl } from '@environments/environment';
+// import { securityApiUrl } from '@environments/environment';
+import { gatewayUrl } from '@environments/environment';
 import { APIConstants } from '@app/core/constants';
-import { CommonService, SessionStorageService } from '@app/core/services';
-import { ApiService } from './api.service';
+import { CommonService, SessionStorageService, ApiService } from '@app/core/services';
 
 @Injectable({
   providedIn: 'root',
@@ -25,7 +25,7 @@ export class SecurityService {
     private apiService: ApiService<DataResponse>,
     private sessionService: SessionStorageService
   ) {
-    this.apiService.initializeBaseURL(securityApiUrl);
+    this.apiService.initializeBaseURL(gatewayUrl);
   }
 
   ///-----------------------------------------------------AppUserRole start-----------------------------------------------

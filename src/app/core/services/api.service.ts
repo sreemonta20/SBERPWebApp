@@ -12,7 +12,7 @@ export class ApiService<T> {
 
   constructor(
     private http: HttpClient,
-    private sessionService: SessionStorageService
+    private sessionService: SessionStorageService,
   ) {}
 
   initializeBaseURL(inputUrl: string) {
@@ -53,7 +53,7 @@ export class ApiService<T> {
     const headers = this.getHeaders();
     const url = `${this.baseUrl}${endpoint}`;
     const response = await lastValueFrom(
-      this.http.post<T>(url, body, { headers })
+      this.http.post<T>(url, body, { headers }),
     );
     return response;
   }
@@ -62,7 +62,7 @@ export class ApiService<T> {
     const headers = this.getHeaders();
     const url = `${this.baseUrl}${endpoint}`;
     const response = await lastValueFrom(
-      this.http.post<T>(url, body, { headers })
+      this.http.post<T>(url, body, { headers }),
     );
     return response;
   }
@@ -88,9 +88,7 @@ export class ApiService<T> {
   public async getAllWithoutParamsAsync(endpoint: string): Promise<T> {
     const headers = this.getHeaders();
     const url = `${this.baseUrl}${endpoint}`;
-    const response = await lastValueFrom(
-      this.http.get<T>(url, { headers })
-    );
+    const response = await lastValueFrom(this.http.get<T>(url, { headers }));
     return response;
   }
 
@@ -111,6 +109,12 @@ export class ApiService<T> {
     return this.http.put<T>(url, body, { headers });
   }
 
+  public update(endpoint: string, body: any): Observable<T> {
+    const headers = this.getHeaders();
+    const url = `${this.baseUrl}${endpoint}`;
+    return this.http.put<T>(url, body, { headers });
+  }
+
   public deleteExtn(id: number, endpoint: string): Observable<any> {
     const headers = this.getHeaders();
     const url = `${this.baseUrl}/${endpoint}/${id}`;
@@ -123,12 +127,19 @@ export class ApiService<T> {
     return this.http.post<T>(url, params, { headers });
   }
 
-  public postWithParamsAndModel<T>(endpoint: string, params: any, bodyModel: any): Observable<T> {
+  public postWithParamsAndModel<T>(
+    endpoint: string,
+    params: any,
+    bodyModel: any,
+  ): Observable<T> {
     const headers = this.getHeaders();
     const url = `${this.baseUrl}/${endpoint}`;
     const httpParams = new HttpParams({ fromObject: params });
 
     return this.http.post<T>(url, bodyModel, { headers, params: httpParams });
+  }
 
+  public postFormData(endpoint: string, formData: FormData): Observable<T> {
+    return this.http.post<T>(endpoint, formData);
   }
 }
