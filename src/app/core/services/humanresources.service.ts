@@ -90,8 +90,8 @@ export class HumanResourcesService {
       );
   }
 
-  deleteEmployee(id: string, hard = false): Observable<DataResponse> {
-    const params = new HttpParams().set('id', id).set('hard', hard);
+  deleteEmployee(id: string): Observable<DataResponse> {
+    const params = new HttpParams().set('id', id);
     return this.apiService
       .delete(APIConstants.API_DELETE_EMPLOYEE_URL, params)
       .pipe(
@@ -152,8 +152,8 @@ export class HumanResourcesService {
       );
   }
 
-  deleteDepartment(id: string, hard = false): Observable<DataResponse> {
-    const params = new HttpParams().set('id', id).set('hard', hard);
+  deleteDepartment(id: string): Observable<DataResponse> {
+    const params = new HttpParams().set('id', id);
     return this.apiService
       .delete(APIConstants.API_DELETE_DEPARTMENT_URL, params)
       .pipe(
@@ -203,8 +203,8 @@ export class HumanResourcesService {
       );
   }
 
-  deleteDesignation(id: string, hard = false): Observable<DataResponse> {
-    const params = new HttpParams().set('id', id).set('hard', hard);
+  deleteDesignation(id: string): Observable<DataResponse> {
+    const params = new HttpParams().set('id', id);
     return this.apiService
       .delete(APIConstants.API_DELETE_DESIGNATION_URL, params)
       .pipe(

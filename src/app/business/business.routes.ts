@@ -20,19 +20,28 @@ const routes: Routes = [
       {
         path: 'appsettings',
         loadChildren: () =>
-          import('./appsettings/appsettings.module').then((m) => m.AppsettingsModule),
+          import('./appsettings/appsettings.module').then(
+            (m) => m.AppsettingsModule,
+          ),
       },
       {
         path: 'security',
         loadChildren: () =>
           import('./security/security.module').then((m) => m.SecurityModule),
       },
+      {
+        path: 'humanresources',
+        loadChildren: () =>
+          import('./humanresources/humanresources.module').then(
+            (m) => m.HumanResourcesModule,
+          ),
+      },
     ],
-  }
+  },
 ];
 
 @NgModule({
   imports: [RouterModule.forChild(routes)],
-  exports: [RouterModule]
+  exports: [RouterModule],
 })
-export class BusinessRoutingModule { }
+export class BusinessRoutingModule {}

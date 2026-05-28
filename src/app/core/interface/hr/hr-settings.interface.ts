@@ -16,4 +16,5 @@ export interface HRSettings {
   autoProcessTime?: string;
   autoProcessEnabled?: boolean;
   isActive?: boolean;
+  isHardDelete?: boolean;
 }

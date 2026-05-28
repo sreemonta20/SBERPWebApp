@@ -1,0 +1,73 @@
+/* ==========================================================
+   DEPARTMENT - CUSTOM COMPONENT STYLING
+   AdminLTE 3.2.0 + Bootstrap 4.6
+   ========================================================== */
+
+/* Table headers */
+.table thead th {
+    background: #f4f6f9 !important;
+    font-size: 14px;
+    font-weight: 600;
+    white-space: nowrap;
+    border-bottom: 2px solid #dee2e6;
+}
+
+.table tbody td {
+    font-size: 14px;
+    vertical-align: middle;
+}
+
+.table-hover tbody tr:hover {
+    background-color: #f7f7f7;
+}
+
+.table-responsive {
+    max-height: 560px;
+    overflow-y: auto;
+    overflow-x: auto;
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+}
+
+.table-responsive::-webkit-scrollbar {
+    height: 8px;
+    width: 8px;
+}
+
+.table-responsive::-webkit-scrollbar-thumb {
+    background: #c7c7c7;
+    border-radius: 4px;
+}
+
+/* Action icons inside the table */
+.action-icon {
+    cursor: pointer;
+    padding: 4px 6px;
+    color: #495057;
+}
+
+.action-icon:hover {
+    color: #007bff;
+}
+
+.action-icon.disabled {
+    cursor: not-allowed;
+    opacity: 0.4;
+    pointer-events: none;
+}
+
+/* Pagination */
+.page-link {
+    cursor: pointer;
+}
+
+/* Card footer buttons */
+.card-footer button {
+    min-width: 110px;
+    font-size: 14px;
+}
+
+/* Breadcrumb anchor cursor */
+.breadcrumb-item a {
+    cursor: pointer;
+}

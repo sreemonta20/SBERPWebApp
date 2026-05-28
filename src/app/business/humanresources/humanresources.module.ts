@@ -1,0 +1,36 @@
+import { NgModule } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { NgxSpinnerModule } from 'ngx-spinner';
+
+import { HumanResourcesRoutingModule } from './humanresources.routes';
+import { EmployeeComponent } from './employee/employee.component';
+import { DepartmentComponent } from './department/department.component';
+import { DesignationComponent } from './designation/designation.component';
+import { HrSettingsComponent } from './hr-settings/hr-settings.component';
+import { ConfirmDialogComponent } from '@app/shared/confirm-dialog/confirm-dialog.component';
+
+
+/**
+ * HumanResources business module — mirrors SecurityModule in shape.
+ * Each screen (Employee, Department, Designation, HR Settings) is a single
+ * component that hosts both list and form views, switched by an internal
+ * viewMode flag. No more separate -list / -form components.
+ */
+@NgModule({
+  declarations: [
+    EmployeeComponent,
+    DepartmentComponent,
+    DesignationComponent,
+    HrSettingsComponent
+  ],
+  imports: [
+    CommonModule,
+    HumanResourcesRoutingModule,
+    ReactiveFormsModule,
+    FormsModule,
+    NgxSpinnerModule,
+    ConfirmDialogComponent
+  ]
+})
+export class HumanResourcesModule { }
