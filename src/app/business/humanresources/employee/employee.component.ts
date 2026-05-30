@@ -86,6 +86,7 @@ export class EmployeeComponent implements OnInit, AfterViewInit {
   private pendingDeleteId: string = '';
 
   public error_message: any;
+  public dateFormat: string = '';
 
   @ViewChild('confirmDialog') confirmDialog!: ConfirmDialogComponent;
 
@@ -98,6 +99,7 @@ export class EmployeeComponent implements OnInit, AfterViewInit {
   ) {}
 
   ngOnInit(): void {
+    this.dateFormat = this.commonService.getDateFormat();
     this.commonService.GetLoggedInUser().subscribe((user: User) => {
       this.appUserProfileId = user?.Id || '';
     });
@@ -204,6 +206,41 @@ export class EmployeeComponent implements OnInit, AfterViewInit {
         if (response?.success && response.result) {
           const detail = response.result as EmployeeDetail;
           // Make sure all the array fields exist so the tabs render cleanly.
+          detail.dateOfBirth = this.commonService.toDateInput(
+            detail.dateOfBirth,
+          );
+          detail.passportExpiryDate = this.commonService.toDateInput(
+            detail.passportExpiryDate,
+          );
+          detail.dateOfJoining = this.commonService.toDateInput(
+            detail.dateOfJoining,
+          );
+          detail.probationEndDate = this.commonService.toDateInput(
+            detail.probationEndDate,
+          );
+          detail.confirmationDate = this.commonService.toDateInput(
+            detail.confirmationDate,
+          );
+          detail.dateOfLeaving = this.commonService.toDateInput(
+            detail.dateOfLeaving,
+          );
+
+          detail.experiences?.forEach((x) => {
+            x.startDate = this.commonService.toDateInput(x.startDate);
+            x.endDate = this.commonService.toDateInput(x.endDate);
+          });
+          detail.trainings?.forEach((t) => {
+            t.startDate = this.commonService.toDateInput(t.startDate);
+            t.endDate = this.commonService.toDateInput(t.endDate);
+          });
+          detail.certifications?.forEach((c) => {
+            c.issueDate = this.commonService.toDateInput(c.issueDate);
+            c.expiryDate = this.commonService.toDateInput(c.expiryDate);
+          });
+          detail.documents?.forEach((d) => {
+            d.issueDate = this.commonService.toDateInput(d.issueDate);
+            d.expiryDate = this.commonService.toDateInput(d.expiryDate);
+          });
           detail.addresses ||= [];
           detail.educations ||= [];
           detail.experiences ||= [];
@@ -213,6 +250,7 @@ export class EmployeeComponent implements OnInit, AfterViewInit {
           detail.documents ||= [];
           detail.emergencyContacts ||= [];
           detail.bankInfo ||= {} as EmployeeBank;
+          debugger
           this.model = detail;
           this.viewMode = 'form';
         } else {
@@ -276,6 +314,18 @@ export class EmployeeComponent implements OnInit, AfterViewInit {
 
     const payload: EmployeeRequest = {
       ...this.model,
+      dateOfBirth: this.commonService.toSaveDate(this.model.dateOfBirth),
+      passportExpiryDate: this.commonService.toSaveDate(
+        this.model.passportExpiryDate,
+      ),
+      dateOfJoining: this.commonService.toSaveDate(this.model.dateOfJoining),
+      probationEndDate: this.commonService.toSaveDate(
+        this.model.probationEndDate,
+      ),
+      confirmationDate: this.commonService.toSaveDate(
+        this.model.confirmationDate,
+      ),
+      dateOfLeaving: this.commonService.toSaveDate(this.model.dateOfLeaving),
       actionName: this.isEdit ? 'Update' : 'Save',
       createUpdateBy: this.appUserProfileId,
     } as EmployeeRequest;

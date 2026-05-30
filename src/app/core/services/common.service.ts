@@ -6,6 +6,7 @@ import { MenuItem } from '@app/core/interface/common';
 import { SessionStorageService } from '@app/core/services';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { MenuPermission } from '@app/core/class';
+import { formatDate } from '@angular/common';
 
 @Injectable({
   providedIn: 'root',
@@ -31,10 +32,12 @@ export class CommonService {
 
   private serializedUserMenus: BehaviorSubject<MenuItem[]>;
   public serializedUserMenus$: Observable<MenuItem[]>;
+  // Cached so we don't recompute on every call
+  private _dateFormat: string | null = null;
 
   constructor(
     private sessionService: SessionStorageService,
-    private router: Router
+    private router: Router,
   ) {
     const sessionIsLoggedIn =
       this.sessionService.get(SessionConstants.IS_LOGGED_IN) || false;
@@ -52,7 +55,7 @@ export class CommonService {
       this.sessionService.get(SessionConstants.USER_MENU) || [];
 
     const sessionSerializedMenus = this.sessionService.get(
-      SessionConstants.SERIALIZED_MENU
+      SessionConstants.SERIALIZED_MENU,
     ) as MenuItem[];
 
     this.isLoggedIn = new BehaviorSubject<boolean>(sessionIsLoggedIn);
@@ -71,7 +74,7 @@ export class CommonService {
     this.userMenus$ = this.userMenus.asObservable();
 
     this.serializedUserMenus = new BehaviorSubject<MenuItem[]>(
-      sessionSerializedMenus
+      sessionSerializedMenus,
     );
     this.serializedUserMenus$ = this.serializedUserMenus.asObservable();
   }
@@ -161,7 +164,7 @@ export class CommonService {
       this.serializedUserMenus$.subscribe((serializedMenus) => {
         if (!this.isInvalidObject(serializedMenus)) {
           const matchedMenu = serializedMenus.find((element: MenuItem) =>
-            element.RouteLink.includes(url)
+            element.RouteLink.includes(url),
           );
           resolve(!!matchedMenu);
         } else {
@@ -189,7 +192,7 @@ export class CommonService {
     this.serializedUserMenus$.subscribe((serializedMenus) => {
       if (!this.isInvalidObject(serializedMenus)) {
         const matchedMenu = serializedMenus.find((element: MenuItem) =>
-          element.RouteLink.includes(url)
+          element.RouteLink.includes(url),
         );
 
         if (matchedMenu) {
@@ -258,7 +261,7 @@ export class CommonService {
         const r = (Math.random() * 16) | 0;
         const v = c === 'x' ? r : (r & 0x3) | 0x8;
         return v.toString(16);
-      }
+      },
     );
   }
 
@@ -279,5 +282,45 @@ export class CommonService {
       console.error('Failed to parse menu:', error);
       return [];
     }
+  }
+
+  /** 1. Browser-locale date format, e.g. 'dd/MM/yyyy' or 'MM/dd/yyyy'. */
+  public getDateFormat(): string {
+    if (!this._dateFormat) {
+      const locale = navigator.language || 'en-US';
+      try {
+        const parts = new Intl.DateTimeFormat(locale).formatToParts(
+          new Date(2000, 0, 2),
+        );
+        const order = parts
+          .filter(
+            (p) => p.type === 'day' || p.type === 'month' || p.type === 'year',
+          )
+          .map((p) => p.type);
+        this._dateFormat =
+          order.length === 3
+            ? order
+                .map((t) =>
+                  t === 'day' ? 'dd' : t === 'month' ? 'MM' : 'yyyy',
+                )
+                .join('/')
+            : 'dd/MM/yyyy';
+      } catch {
+        this._dateFormat = 'dd/MM/yyyy';
+      }
+    }
+    return this._dateFormat;
+  }
+
+  /** 2. ISO datetime -> 'yyyy-MM-dd' for <input type="date"> (edit load). */
+  public toDateInput(value: string | null | undefined): string | null {
+    if (!value) return null;
+    return value.substring(0, 10);
+  }
+
+  /** 3. Prepare a date-input value for saving ('' -> null). */
+  public toSaveDate(value: string | null | undefined): string | null {
+    if (!value || value.trim() === '') return null;
+    return value;
   }
 }

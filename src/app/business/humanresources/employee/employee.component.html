@@ -92,7 +92,7 @@
                                     <td data-label="Email">{{ e.officialEmail }}</td>
                                     <td data-label="Department">{{ e.departmentName }}</td>
                                     <td data-label="Designation">{{ e.designationName }}</td>
-                                    <td data-label="Joined">{{ e.dateOfJoining | date:'mediumDate' }}</td>
+                                    <td data-label="Joined">{{ e.dateOfJoining | date: dateFormat }}</td>
                                     <td data-label="Status" class="text-center">
                                         <span class="badge" [ngClass]="statusBadgeClass(e.employmentStatus)">
                                             {{ e.employmentStatusName || '—' }}
