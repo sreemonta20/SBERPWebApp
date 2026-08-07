@@ -2,6 +2,8 @@ import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 import { AuthGuard } from '@app/core/guards/auth.guard';
 
+import { CompanyComponent } from './company/company.component';
+import { BranchComponent } from './branch/branch.component';
 import { EmployeeComponent } from './employee/employee.component';
 import { DepartmentComponent } from './department/department.component';
 import { DesignationComponent } from './designation/designation.component';
@@ -24,7 +26,9 @@ const routes: Routes = [
   { path: 'employee',    component: EmployeeComponent,    canActivate: [AuthGuard] },
   { path: 'department',  component: DepartmentComponent,  canActivate: [AuthGuard] },
   { path: 'designation', component: DesignationComponent, canActivate: [AuthGuard] },
-  { path: 'settings',    component: HrSettingsComponent,  canActivate: [AuthGuard] }
+  { path: 'settings',    component: HrSettingsComponent,  canActivate: [AuthGuard] },
+  { path: 'company',     component: CompanyComponent,     canActivate: [AuthGuard] },  // NEW
+  { path: 'branch',      component: BranchComponent,      canActivate: [AuthGuard] }
 ];
 
 @NgModule({

@@ -4,6 +4,8 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { NgxSpinnerModule } from 'ngx-spinner';
 
 import { HumanResourcesRoutingModule } from './humanresources.routes';
+import { CompanyComponent } from './company/company.component';
+import { BranchComponent } from './branch/branch.component';
 import { EmployeeComponent } from './employee/employee.component';
 import { DepartmentComponent } from './department/department.component';
 import { DesignationComponent } from './designation/designation.component';
@@ -19,6 +21,8 @@ import { ConfirmDialogComponent } from '@app/shared/confirm-dialog/confirm-dialo
  */
 @NgModule({
   declarations: [
+    CompanyComponent,   // NEW
+    BranchComponent,
     EmployeeComponent,
     DepartmentComponent,
     DesignationComponent,

@@ -114,7 +114,21 @@ export const APIConstants = {
   API_DELETE_DESIGNATION_URL: '/gateway/hr/designation/deleteDesignation',
   API_GET_HR_SETTINGS_URL: '/gateway/hr/settings/getHRSettings',
   API_SAVE_UPDATE_HR_SETTINGS_URL: '/gateway/hr/settings/saveUpdateHRSettings',
-  API_UPLOAD_ATTENDANCE_EXCEL_URL: '/gateway/hr/settings/uploadAttendanceExcel'
+  API_UPLOAD_ATTENDANCE_EXCEL_URL: '/gateway/hr/settings/uploadAttendanceExcel',
+
+  // === ORGANIZATION SETUP (Module 0) ===
+  API_GET_ALL_COMPANIES_URL: '/gateway/hr/organizationsetup/company/getAllCompanies',
+  API_GET_ALL_COMPANIES_PAGING_URL: '/gateway/hr/organizationsetup/company/getAllCompaniesPagingWithSearch',
+  API_GET_COMPANY_BY_ID_URL: '/gateway/hr/organizationsetup/company/getCompanyById',
+  API_SAVE_UPDATE_COMPANY_URL: '/gateway/hr/organizationsetup/company/saveUpdateCompany',
+  API_DELETE_COMPANY_URL: '/gateway/hr/organizationsetup/company/deleteCompany',
+
+  API_GET_ALL_BRANCHES_URL: '/gateway/hr/organizationsetup/branch/getAllBranches',
+  API_GET_ALL_BRANCHES_BY_COMPANY_URL: '/gateway/hr/organizationsetup/branch/getAllBranchesByCompanyId',
+  API_GET_ALL_BRANCHES_PAGING_URL: '/gateway/hr/organizationsetup/branch/getAllBranchesPagingWithSearch',
+  API_GET_BRANCH_BY_ID_URL: '/gateway/hr/organizationsetup/branch/getBranchById',
+  API_SAVE_UPDATE_BRANCH_URL: '/gateway/hr/organizationsetup/branch/saveUpdateBranch',
+  API_DELETE_BRANCH_URL: '/gateway/hr/organizationsetup/branch/deleteBranch',
 }
 
 export const MessageConstants = {
@@ -126,15 +140,17 @@ export const MessageConstants = {
   GENERAL_ERROR_MSG: 'Error!!',
   GENERAL_PERMISSION_DENIED_TITLE: 'Permission Denied',
   GENERAL_PERMISSION_DENIED_MSG: 'Permission Denied!!',
-  ///--------------------Common Error-------------------------------------------------
+
+  // ==========================COMMON ERROR================================================
   INTERNAL_ERROR_MEG: 'We are experiencing an internal error! Please try again later.',
 
-  ///--------------------Home---------------------------------------------------------
+  // ==========================HOME================================================
   HOME_DASHBOARD_TITLE: "Dashboard:Home",
 
   FETCH_DATA_FAILED_MSG: 'Failed to fetch data',
   PAGE_DISPLAY_PROHIBITION_MSG: 'You do not have permission to view this page.',
-  ///--------------------App User Role------------------------------------------------
+
+  // ==========================APP USER ROLE================================================
   APP_USER_ROLE_TITLE: "App User Role",
   APP_USER_ROLE_FOUND_MEG: 'User role found',
   APP_USER_ROLE_NOT_FOUND_MEG: 'There is no user role found.',

@@ -6,6 +6,8 @@ export interface DepartmentRequest {
   description?: string;
   parentDepartmentId?: string;
   headEmployeeId?: string;
+  companyId: string; // [Required] server-side
+  branchId?: string;
   createUpdateBy?: string | null;
   isActive?: boolean;
 }

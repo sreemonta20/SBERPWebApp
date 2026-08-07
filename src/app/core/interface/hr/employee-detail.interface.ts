@@ -29,6 +29,10 @@ export interface EmployeeDetail {
   personalEmail?: string;
   mobileNumber?: string;
   alternatePhoneNumber?: string;
+  companyId?: string;
+  companyName?: string;
+  branchId?: string;
+  branchName?: string;
   departmentId?: string;
   designationId?: string;
   reportingManagerId?: string;

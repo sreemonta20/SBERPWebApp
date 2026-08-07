@@ -14,6 +14,10 @@ export * from '../security/app.user.role.menu.response';
 export * from '../security/role.menu.permission.request';
 
 // ----- hr -----
+export * from '../hr/company.interface';
+export * from '../hr/company.request.interface';
+export * from '../hr/branch.interface';
+export * from '../hr/branch.request.interface';
 export * from '../hr/employee-list-item.interface';
 export * from '../hr/employee-detail.interface';
 export * from '../hr/employee-address.interface';

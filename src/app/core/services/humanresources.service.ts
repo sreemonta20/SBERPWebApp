@@ -251,4 +251,143 @@ export class HumanResourcesService {
       formData,
     );
   }
+
+  // =====================================================================
+  // COMPANY (Module 0)
+  // =====================================================================
+  getAllCompanies(): Observable<DataResponse | undefined> {
+    return this.apiService
+      .getAllWithoutParams(APIConstants.API_GET_ALL_COMPANIES_URL)
+      .pipe(
+        map((response: DataResponse) => {
+          if (response) {
+            return response;
+          }
+        }),
+      );
+  }
+
+  getAllCompaniesPagingWithSearch(
+    filter: PagingSearchFilter,
+  ): Observable<DataResponse> {
+    const params = new HttpParams().set('param', JSON.stringify(filter));
+    return this.apiService
+      .getAll(APIConstants.API_GET_ALL_COMPANIES_PAGING_URL, params)
+      .pipe(map((res: DataResponse) => res));
+  }
+
+  getCompanyById(id: string): Observable<DataResponse | undefined> {
+    const params = new HttpParams().set('id', id);
+    return this.apiService
+      .getById(APIConstants.API_GET_COMPANY_BY_ID_URL, params)
+      .pipe(
+        map((response: DataResponse) => {
+          if (response) {
+            return response;
+          }
+        }),
+      );
+  }
+
+  createUpdateCompany(request: any): Observable<DataResponse> {
+    return this.apiService
+      .post(APIConstants.API_SAVE_UPDATE_COMPANY_URL, request)
+      .pipe(
+        map((response: DataResponse) => {
+          if (response) {
+            return response;
+          }
+        }),
+      );
+  }
+
+  deleteCompany(id: string): Observable<DataResponse> {
+    const params = new HttpParams().set('id', id);
+    return this.apiService
+      .delete(APIConstants.API_DELETE_COMPANY_URL, params)
+      .pipe(
+        map((response: DataResponse) => {
+          if (response) {
+            return response;
+          }
+        }),
+      );
+  }
+
+  // =====================================================================
+  // BRANCH (Module 0)
+  // =====================================================================
+  getAllBranches(): Observable<DataResponse | undefined> {
+    return this.apiService
+      .getAllWithoutParams(APIConstants.API_GET_ALL_BRANCHES_URL)
+      .pipe(
+        map((response: DataResponse) => {
+          if (response) {
+            return response;
+          }
+        }),
+      );
+  }
+
+  getAllBranchesByCompanyId(
+    companyId: string,
+  ): Observable<DataResponse | undefined> {
+    const params = new HttpParams().set('companyId', companyId);
+    return this.apiService
+      .getById(APIConstants.API_GET_ALL_BRANCHES_BY_COMPANY_URL, params)
+      .pipe(
+        map((response: DataResponse) => {
+          if (response) {
+            return response;
+          }
+        }),
+      );
+  }
+
+  getAllBranchesPagingWithSearch(
+    filter: PagingSearchFilter,
+  ): Observable<DataResponse> {
+    const params = new HttpParams().set('param', JSON.stringify(filter));
+    return this.apiService
+      .getAll(APIConstants.API_GET_ALL_BRANCHES_PAGING_URL, params)
+      .pipe(map((res: DataResponse) => res));
+  }
+
+  getBranchById(id: string): Observable<DataResponse | undefined> {
+    const params = new HttpParams().set('id', id);
+    return this.apiService
+      .getById(APIConstants.API_GET_BRANCH_BY_ID_URL, params)
+      .pipe(
+        map((response: DataResponse) => {
+          if (response) {
+            return response;
+          }
+        }),
+      );
+  }
+
+  createUpdateBranch(request: any): Observable<DataResponse> {
+    return this.apiService
+      .post(APIConstants.API_SAVE_UPDATE_BRANCH_URL, request)
+      .pipe(
+        map((response: DataResponse) => {
+          if (response) {
+            return response;
+          }
+        }),
+      );
+  }
+
+  deleteBranch(id: string): Observable<DataResponse> {
+    const params = new HttpParams().set('id', id);
+    return this.apiService
+      .delete(APIConstants.API_DELETE_BRANCH_URL, params)
+      .pipe(
+        map((response: DataResponse) => {
+          if (response) {
+            return response;
+          }
+        }),
+      );
+  }
 }

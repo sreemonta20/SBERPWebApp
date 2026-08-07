@@ -37,6 +37,9 @@ export interface EmployeeRequest {
   mobileNumber?: string | null;
   alternatePhoneNumber?: string | null;
 
+  companyId: string; // [Required] server-side
+  branchId?: string | null;
+
   departmentId?: string | null;
   designationId?: string | null;
   reportingManagerId?: string | null;

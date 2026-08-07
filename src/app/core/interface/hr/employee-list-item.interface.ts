@@ -3,6 +3,8 @@ export interface EmployeeListItem {
   employeeCode: string;
   fullName: string;
   officialEmail?: string;
+  companyName?: string;
+  branchName?: string;
   mobileNumber?: string;
   departmentName?: string;
   designationName?: string;
