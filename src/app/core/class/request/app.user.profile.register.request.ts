@@ -5,6 +5,8 @@ export class AppUserProfileRegisterRequest {
   Address: string | null;
   Email: string | null;
   AppUserRoleId: string | null;
+  /** Role name / designation / position shown beside the name (free text, not the user role). */
+  JobTitle?: string | null;
   CreateUpdateBy: string | null;
   IsActive: boolean | null;
   UserName?: string | null;

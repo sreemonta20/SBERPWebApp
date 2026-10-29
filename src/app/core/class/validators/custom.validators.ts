@@ -37,6 +37,23 @@ export class CustomValidators {
     };
   }
 
+  /** Menu captions: letters, digits, spaces and & / - ( ) . , ' (e.g. "Time & Attendance", "Loan / Advance"). */
+  static menuName(minLength: number, maxLength: number): ValidatorFn {
+    return (control: AbstractControl): { [key: string]: any } | null => {
+      const value: string = control.value ?? '';
+      if (!value.trim()) {
+        return { 'englishText': 'Input is empty or whitespace' };
+      }
+      if (!/^[A-Za-z0-9 &\/\-().,']+$/.test(value)) {
+        return { 'englishText': "Only letters, numbers, spaces and & / - ( ) . , ' are allowed" };
+      }
+      if (value.length < minLength || value.length > maxLength) {
+        return { 'englishText': `Input must be between ${minLength} and ${maxLength} characters` };
+      }
+      return null;
+    };
+  }
+
   static number(minLength: number, maxLength: number): ValidatorFn {
     return (control: AbstractControl): { [key: string]: any } | null => {
       const value = control.value;

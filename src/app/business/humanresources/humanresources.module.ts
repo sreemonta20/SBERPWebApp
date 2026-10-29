@@ -11,6 +11,7 @@ import { DepartmentComponent } from './department/department.component';
 import { DesignationComponent } from './designation/designation.component';
 import { HrSettingsComponent } from './hr-settings/hr-settings.component';
 import { ConfirmDialogComponent } from '@app/shared/confirm-dialog/confirm-dialog.component';
+import { PhotoThumbComponent } from '@app/shared/photo-thumb/photo-thumb.component';
 
 
 /**
@@ -34,7 +35,8 @@ import { ConfirmDialogComponent } from '@app/shared/confirm-dialog/confirm-dialo
     ReactiveFormsModule,
     FormsModule,
     NgxSpinnerModule,
-    ConfirmDialogComponent
+    ConfirmDialogComponent,
+    PhotoThumbComponent
   ]
 })
 export class HumanResourcesModule { }

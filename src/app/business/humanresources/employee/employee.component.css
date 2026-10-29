@@ -117,3 +117,11 @@
 .breadcrumb-item a {
     cursor: pointer;
 }
+
+/* employee photo: round crop of any uploaded aspect ratio */
+.employee-photo {
+  width: 96px;
+  height: 96px;
+  object-fit: cover;
+  background: #d2d6de;
+}

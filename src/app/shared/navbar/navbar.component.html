@@ -1,7 +1,7 @@
 <!-- Main Sidebar Container -->
 <aside class="main-sidebar sidebar-dark-primary elevation-4">
   <!-- Brand Logo -->
-  <a href="index3.html" class="brand-link bg-lightblue">
+  <a routerLink="/business/home" class="brand-link bg-lightblue">
     <img src="assets/img/AdminLTELogo.png" alt="AdminLTE Logo" class="brand-image img-circle elevation-3"
       style="opacity: .8">
     <span class="brand-text font-weight-light">SB Web</span>
@@ -12,10 +12,11 @@
     <!-- Sidebar user panel (optional) -->
     <div class="user-panel mt-3 pb-3 mb-3 d-flex">
       <div class="image">
-        <img src="assets/img/user2-160x160.jpg" class="img-circle elevation-2" alt="User Image">
+        <img [src]="card.photoUrl" class="img-circle elevation-2 user-panel-photo" alt="User Image">
       </div>
       <div class="info">
-        <a href="#" class="d-block">Alexander Pierce</a>
+        <a routerLink="/business/security/appuserprofile" [queryParams]="{ profile: card.profileId }" class="d-block"
+           [title]="card.title">{{ card.fullName }}</a>
       </div>
     </div>
 
@@ -31,35 +32,24 @@
       </div>
     </div>
 
-    <!-- Sidebar Menu -->
+    <!-- Sidebar Menu
+         Rendered recursively, so any depth works: Header > Module > (Sub Module >)* Component.
+         Open/active state is driven by the router (see navbar.component.ts), not by AdminLTE's
+         jQuery Treeview, so the treeview data-widget is intentionally not used here. -->
     <nav class="mt-2">
-      <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false"
-        *ngIf="menuList?.length">
-        <ng-container *ngFor="let item of menuList || []; index as i;">
-          <li *ngIf="item.IsHeader && !item.IsModule && !item.IsComponent && item.Children.length > 0"
-            class="{{item.CssClass}}">{{ item.Name }}
-          </li>
-          <ng-container *ngFor="let child of item.Children">
-            <li *ngIf="!child.IsHeader && child.IsModule && !child.IsComponent" class="{{child.CssClass}}">
-              <a href="#" [routerLink]="[child.RouteLink]" class="{{child.RouteLinkClass}}">
-                <i class="{{child.Icon}}"></i>
-                <p>{{child.Name}}
-                  <i *ngIf="child.Children && child.Children.length > 0" class="fas fa-angle-left right"></i>
-                </p>
-              </a>
-              <ul class="nav nav-treeview" *ngIf="child.Children && child.Children.length > 0">
-                <ng-container *ngFor="let childOfChild of child.Children">
-                  <li *ngIf="!childOfChild.IsHeader && !childOfChild.IsModule && childOfChild.IsComponent"
-                    class="{{childOfChild.CssClass}}">
-                    <a href="#" [routerLink]="[childOfChild.RouteLink]" class="{{childOfChild.RouteLinkClass}}">
-                      <i class="{{childOfChild.Icon}}"></i>
-                      <p>{{childOfChild.Name}}</p>
-                    </a>
-                  </li>
-                </ng-container>
-              </ul>
-            </li>
+      <ul class="nav nav-pills nav-sidebar flex-column sb-menu" role="menu" *ngIf="menuList?.length">
+        <ng-container *ngFor="let item of menuList; trackBy: trackById">
+          <ng-container *ngIf="item.IsHeader; else rootItem">
+            <li *ngIf="hasVisibleChildren(item)" class="nav-header">{{ item.Name }}</li>
+            <ng-container
+              *ngTemplateOutlet="menuItems; context: { $implicit: item.Children, siblings: item.Children, level: 1 }">
+            </ng-container>
           </ng-container>
+          <ng-template #rootItem>
+            <ng-container
+              *ngTemplateOutlet="menuItems; context: { $implicit: [item], siblings: menuList, level: 1 }">
+            </ng-container>
+          </ng-template>
         </ng-container>
       </ul>
     </nav>
@@ -67,3 +57,33 @@
   </div>
   <!-- /.sidebar -->
 </aside>
+
+<!-- One level of the menu tree; calls itself for the children of every group -->
+<ng-template #menuItems let-items let-siblings="siblings" let-level="level">
+  <ng-container *ngFor="let item of items; trackBy: trackById">
+    <!-- Module / Sub Module with children: expandable group -->
+    <li *ngIf="isGroup(item)" [ngClass]="itemClass(item)" [class.menu-open]="isOpen(item)"
+      [class.sb-active-branch]="isActive(item)" [attr.data-level]="level">
+      <a href="#" [ngClass]="linkClass(item)" [class.active]="isActive(item)" [attr.aria-expanded]="isOpen(item)"
+        (click)="toggleMenu(item, siblings, $event)">
+        <i class="{{ item.Icon }}"></i>
+        <p>{{ item.Name }}
+          <i class="{{ item.DropdownIcon || 'fas fa-angle-left right' }}"></i>
+        </p>
+      </a>
+      <ul class="nav nav-treeview">
+        <ng-container
+          *ngTemplateOutlet="menuItems; context: { $implicit: item.Children, siblings: item.Children, level: level + 1 }">
+        </ng-container>
+      </ul>
+    </li>
+    <!-- Routed screen (Component, or a Module that is itself a link such as Dashboard) -->
+    <li *ngIf="isLink(item)" [ngClass]="itemClass(item)" [attr.data-level]="level">
+      <a [routerLink]="[item.RouteLink]" [ngClass]="linkClass(item)" [class.active]="isActive(item)"
+        (click)="onLinkClick($event)">
+        <i class="{{ item.Icon }}"></i>
+        <p>{{ item.Name }}</p>
+      </a>
+    </li>
+  </ng-container>
+</ng-template>

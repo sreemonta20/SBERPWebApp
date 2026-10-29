@@ -15,7 +15,7 @@ import {
   Validators
 } from '@angular/forms';
 import { Title } from '@angular/platform-browser';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import {
   AppUserProfileResponse,
   AppUserProfileRegisterRequest,
@@ -31,10 +31,17 @@ import {
   LoaderService,
   CommonService,
 } from '@app/core/services/index';
+import {
+  DEFAULT_AVATAR_URL,
+  PHOTO_ACCEPT,
+  PHOTO_MAX_SIZE_KB,
+  PhotoResult,
+  PhotoService,
+} from '@app/core/services/photo.service';
 import { MessageConstants, Common } from '@app/core/constants/index';
 import { isCommonErrorShow } from '@environments/environment';
 declare var $: any;
-import { Subject, Subscription } from 'rxjs';
+import { Observable, Subject, Subscription, of, take } from 'rxjs';
 import { ConfirmDialogComponent } from '@app/shared/confirm-dialog/confirm-dialog.component';
 
 @Component({
@@ -78,6 +85,17 @@ export class AppUserProfileComponent
     MessageConstants.APP_USER_PROFILE_DELETE_CONFIRMATION_MSG;
   private itemIdToDelete: string | null = null;
 
+  // Profile photo (optional). 'pending' / 'remove' are applied after the profile is saved.
+  public photoAccept = PHOTO_ACCEPT;
+  public photoMaxSizeMB = PHOTO_MAX_SIZE_KB / 1024;
+  public photoPreviewUrl: string = DEFAULT_AVATAR_URL;
+  public photoStatus: 'none' | 'uploaded' | 'pending' | 'remove' = 'none';
+  public editingEmployeeId: string | null = null;
+  private photoFile: File | null = null;
+  private savedPhotoUrl: string = DEFAULT_AVATAR_URL;
+  private localPreviewUrl: string | null = null;
+  private photoLoad?: Subscription;
+
   constructor(
     private formBuilder: FormBuilder,
     public router: Router,
@@ -87,14 +105,16 @@ export class AppUserProfileComponent
     private loadingService: LoaderService,
     private commonService: CommonService,
     private titleService: Title,
-    private cdRef: ChangeDetectorRef
+    private cdRef: ChangeDetectorRef,
+    private photoService: PhotoService,
+    private route: ActivatedRoute
   ) {
     this.subscription = this.commonService
       .GetLoggedInUser()
       .subscribe((userInformation: User) => {
         this.appUserProfileId = userInformation.Id;
       });
-    this.loadPermission(this.router.url);
+    this.loadPermission(this.router.url.split('?')[0]);
   }
 
   ngOnInit(): void {
@@ -106,6 +126,15 @@ export class AppUserProfileComponent
   ngAfterViewInit(): void {
     // $('#userRoleSelect').select2();
     this.getAllAppUserProfilePagingWithSearch();
+    // "Profile" in the top bar user card / sidebar opens this screen with ?profile={id}
+    this.subscription.add(
+      this.route.queryParamMap.subscribe((params) => {
+        const profileId = params.get('profile');
+        if (profileId && this.isView) {
+          this.loadAppUserProfileForEdit(profileId);
+        }
+      })
+    );
   }
 
   loadPermission(url: any): void {
@@ -124,8 +153,9 @@ export class AppUserProfileComponent
       {
         Id: [null],
         FullName: ['', Validators.required],
-        Address: ['', Validators.required],
-        Email: ['', Validators.required],
+        JobTitle: ['', Validators.maxLength(100)],
+        Address: [''],
+        Email: ['', [Validators.required, Validators.email]],
         AppUserRoleId: [null, Validators.required],
         CreateUpdateBy: this.appUserProfileId,
         IsActive: [true],
@@ -241,7 +271,19 @@ export class AppUserProfileComponent
           });
       },
       columns: [
+        {
+          data: 'ProfilePhotoId',
+          orderable: false,
+          searchable: false,
+          render: (data, type, row) =>
+            `<img src="${DEFAULT_AVATAR_URL}" class="img-circle elevation-1 dt-photo" alt="Photo"
+                  data-photo-id="${row.Id}" data-photo-key="${row.ProfilePhotoId ?? ''}">`,
+        },
         { data: 'FullName' },
+        {
+          data: 'JobTitle',
+          render: (data) => (data ? $('<div>').text(data).html() : '<span class="text-muted">—</span>'),
+        },
         { data: 'Email' },
         { data: 'RoleName' },
         {
@@ -268,6 +310,8 @@ export class AppUserProfileComponent
           orderable: false,
         },
       ],
+      order: [[1, 'asc']],
+      drawCallback: () => this.loadGridPhotos(),
       pagingType: 'full_numbers',
       lengthChange: true,
       lengthMenu: this.pageSizeList,
@@ -310,6 +354,10 @@ export class AppUserProfileComponent
     if (this.appUserProfileForm.invalid) {
       this.loadingService.setLoading(false);
       this.appUserProfileForm.markAllAsTouched();
+      this.notifyService.showWarning(
+        `Please check: ${this.invalidFieldNames().join(', ')}.`,
+        MessageConstants.GENERAL_WARNING_TITLE
+      );
       return;
     }
     const request: AppUserProfileRegisterRequest = {
@@ -318,6 +366,7 @@ export class AppUserProfileComponent
         ? Common.ACTION_NAME_UPDATE
         : Common.ACTION_NAME_SAVE,
       FullName: formValue.FullName,
+      JobTitle: formValue.JobTitle?.trim() || null,
       Address: formValue.Address,
       Email: formValue.Email,
       AppUserRoleId: formValue.AppUserRoleId,
@@ -336,8 +385,17 @@ export class AppUserProfileComponent
             response.Message,
             MessageConstants.GENERAL_SUCCESS_TITLE
           );
-          this.resetForm();
-          this.dataTable.ajax.reload(null, false);
+          const savedId: string = response.Result?.Id || request.Id;
+          this.refreshSignedInUser(savedId, request);
+          this.applyPhotoChange(savedId).subscribe((photoResult) => {
+            if (photoResult) {
+              photoResult.success
+                ? this.notifyService.showSuccess(photoResult.message, MessageConstants.GENERAL_SUCCESS_TITLE)
+                : this.notifyService.showWarning(photoResult.message, MessageConstants.GENERAL_WARNING_TITLE);
+            }
+            this.resetForm();
+            this.dataTable.ajax.reload(null, false);
+          });
         } else {
           this.notifyService.showError(
             response.Message,
@@ -358,15 +416,53 @@ export class AppUserProfileComponent
     });
   }
 
+  /** Human names of the invalid controls (the Save / Update button stays enabled and explains instead). */
+  invalidFieldNames(): string[] {
+    const labels: { [key: string]: string } = {
+      FullName: 'Full Name',
+      JobTitle: 'Role Name (max 100 characters)',
+      Email: 'Email (a valid address)',
+      AppUserRoleId: 'User Role',
+      UserName: 'User Name',
+    };
+    const names = Object.keys(labels).filter((key) => this.appUserProfileForm.get(key)?.invalid).map((key) => labels[key]);
+    if (this.appUserProfileForm.hasError('mismatch')) {
+      names.push('Password and Confirm Password must match (clear Password to keep the current one)');
+    }
+    return names;
+  }
+
+  /** When the signed-in user edits their own profile, update the session user so the top bar / sidebar follow. */
+  private refreshSignedInUser(savedId: string, request: AppUserProfileRegisterRequest): void {
+    if (!savedId || String(savedId).toLowerCase() !== String(this.appUserProfileId ?? '').toLowerCase()) {
+      return;
+    }
+    this.commonService
+      .GetLoggedInUser()
+      .pipe(take(1))
+      .subscribe((user: User) => {
+        if (user) {
+          this.commonService.UpdateLoggedInUser({
+            ...user,
+            FullName: request.FullName ?? user.FullName,
+            Email: request.Email ?? user.Email,
+            JobTitle: request.JobTitle ?? undefined,
+          });
+        }
+      });
+  }
+
   editAppUserProfile(appUserProfile: AppUserProfileResponse): void {
     this.isEdit = true;
     if (!this.commonService.isInvalidObject(appUserProfile)) {
+      this.showSavedPhoto(appUserProfile);
       const roleIdLower = appUserProfile.AppUserRoleId
         ? String(appUserProfile.AppUserRoleId).toUpperCase()
         : null;
       this.appUserProfileForm.reset({
         Id: appUserProfile.Id,
         FullName: appUserProfile.FullName ?? '',
+        JobTitle: appUserProfile.JobTitle ?? '',
         Address: appUserProfile.Address ?? '',
         Email: appUserProfile.Email ?? '',
         AppUserRoleId: roleIdLower,
@@ -463,12 +559,14 @@ export class AppUserProfileComponent
 
   resetForm(): void {
     this.isEdit = false;
+    this.clearPhotoState();
     this.appUserProfileForm = this.formBuilder.group(
       {
         Id: [null],
         FullName: ['', Validators.required],
-        Address: ['', Validators.required],
-        Email: ['', Validators.required],
+        JobTitle: ['', Validators.maxLength(100)],
+        Address: [''],
+        Email: ['', [Validators.required, Validators.email]],
         AppUserRoleId: [null, Validators.required],
         CreateUpdateBy: this.appUserProfileId,
         IsActive: [true],
@@ -481,6 +579,7 @@ export class AppUserProfileComponent
     this.appUserProfileForm.reset({
       Id: null,
       FullName: '',
+      JobTitle: '',
       Address: '',
       Email: '',
       AppUserRoleId: null,
@@ -493,7 +592,129 @@ export class AppUserProfileComponent
     this.initializeFormData();
   }
 
+  // ===============================================================================================================
+  // PROFILE PHOTO
+  // ===============================================================================================================
+
+  /** Open a profile in the form by id (Profile link of the top bar card / sidebar). */
+  private loadAppUserProfileForEdit(profileId: string): void {
+    this.securityService.getAppUserProfileById(profileId).subscribe({
+      next: (response: DataResponse) => {
+        if (response?.Success && response.Result) {
+          const profile: AppUserProfileResponse =
+            typeof response.Result === 'string' ? JSON.parse(response.Result) : response.Result;
+          this.editAppUserProfile(profile);
+        }
+      },
+      error: () => {
+        /* the list is still usable */
+      },
+    });
+  }
+
+  onPhotoSelected(event: Event): void {
+    const file = (event.target as HTMLInputElement).files?.[0];
+    const error = this.photoService.validate(file);
+    if (error) {
+      this.notifyService.showWarning(error, MessageConstants.GENERAL_WARNING_TITLE);
+      return;
+    }
+    this.revokeLocalPreview();
+    this.photoFile = file!;
+    this.localPreviewUrl = URL.createObjectURL(file!);
+    this.photoPreviewUrl = this.localPreviewUrl;
+    this.photoStatus = 'pending';
+  }
+
+  removePhoto(): void {
+    if (this.photoStatus === 'pending') {
+      // drop the chosen file, back to what is saved
+      this.revokeLocalPreview();
+      this.photoFile = null;
+      this.photoPreviewUrl = this.savedPhotoUrl;
+      this.photoStatus = this.savedPhotoUrl === DEFAULT_AVATAR_URL ? 'none' : 'uploaded';
+      return;
+    }
+    this.photoPreviewUrl = DEFAULT_AVATAR_URL;
+    this.photoStatus = 'remove';
+  }
+
+  /** Upload / remove the photo of the saved profile; emits null when there was nothing to do. */
+  private applyPhotoChange(profileId: string): Observable<PhotoResult | null> {
+    if (!profileId) {
+      return of(null);
+    }
+    const by = this.appUserProfileId;
+    let action$: Observable<PhotoResult> | null = null;
+    if (this.photoStatus === 'pending' && this.photoFile) {
+      action$ = this.photoService.upload('user', profileId, this.photoFile, by);
+    } else if (this.photoStatus === 'remove') {
+      action$ = this.photoService.remove('user', profileId, by);
+    }
+    if (!action$) {
+      return of(null);
+    }
+    return new Observable<PhotoResult | null>((subscriber) => {
+      action$!.subscribe({
+        next: (result) => subscriber.next(result),
+        error: (error) =>
+          subscriber.next({
+            success: false,
+            message: error?.error?.Message || error?.error?.title || MessageConstants.INTERNAL_ERROR_MEG,
+          }),
+        complete: () => subscriber.complete(),
+      });
+    });
+  }
+
+  private showSavedPhoto(profile: AppUserProfileResponse): void {
+    this.clearPhotoState();
+    this.editingEmployeeId = profile.EmployeeId ?? null;
+    if (!profile.ProfilePhotoId) {
+      return;
+    }
+    this.photoLoad = this.photoService
+      .photoUrl('user', profile.Id, profile.ProfilePhotoId)
+      .subscribe((url) => {
+        this.savedPhotoUrl = url;
+        if (this.photoStatus === 'none' || this.photoStatus === 'uploaded') {
+          this.photoPreviewUrl = url;
+          this.photoStatus = url === DEFAULT_AVATAR_URL ? 'none' : 'uploaded';
+        }
+      });
+  }
+
+  private clearPhotoState(): void {
+    this.photoLoad?.unsubscribe();
+    this.revokeLocalPreview();
+    this.photoFile = null;
+    this.savedPhotoUrl = DEFAULT_AVATAR_URL;
+    this.photoPreviewUrl = DEFAULT_AVATAR_URL;
+    this.photoStatus = 'none';
+    this.editingEmployeeId = null;
+  }
+
+  private revokeLocalPreview(): void {
+    if (this.localPreviewUrl) {
+      URL.revokeObjectURL(this.localPreviewUrl);
+      this.localPreviewUrl = null;
+    }
+  }
+
+  /** The grid is rendered by DataTables (plain HTML): load each row photo after a draw. */
+  private loadGridPhotos(): void {
+    $('#appUserProfileTable img.dt-photo[data-photo-key!=""]').each((_: number, img: HTMLImageElement) => {
+      const id = img.getAttribute('data-photo-id');
+      const key = img.getAttribute('data-photo-key');
+      this.photoService
+        .photoUrl('user', id, key)
+        .pipe(take(1))
+        .subscribe((url) => (img.src = url));
+    });
+  }
+
   ngOnDestroy(): void {
+    this.clearPhotoState();
     this.destroy$.next();
     this.destroy$.complete();
     if (this.subscription) this.subscription.unsubscribe();

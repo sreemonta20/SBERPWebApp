@@ -3,6 +3,7 @@ export class AppUserMenu {
     public Name?: string | null;
     public IsHeader?: boolean;
     public IsModule?: boolean;
+    public IsSubModule?: boolean;
     public IsComponent?: boolean;
     public CssClass?: string | null;
     public RouteLink?: string | null;

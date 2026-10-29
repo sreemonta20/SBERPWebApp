@@ -482,6 +482,7 @@ import {
   AfterViewInit,
   Component,
   Inject,
+  OnDestroy,
   OnInit,
   ViewChild,
 } from '@angular/core';
@@ -507,6 +508,14 @@ import {
 } from '@app/core/interface/common';
 import { isCommonErrorShow } from '@environments/environment';
 import { ConfirmDialogComponent } from '@app/shared/confirm-dialog/confirm-dialog.component';
+import {
+  DEFAULT_AVATAR_URL,
+  PHOTO_ACCEPT,
+  PHOTO_MAX_SIZE_KB,
+  PhotoResult,
+  PhotoService,
+} from '@app/core/services/photo.service';
+import { Observable, Subscription, catchError, of } from 'rxjs';
 
 @Component({
   selector: 'app-employee',
@@ -514,7 +523,7 @@ import { ConfirmDialogComponent } from '@app/shared/confirm-dialog/confirm-dialo
   templateUrl: './employee.component.html',
   styleUrls: ['./employee.component.css'],
 })
-export class EmployeeComponent implements OnInit, AfterViewInit {
+export class EmployeeComponent implements OnInit, AfterViewInit, OnDestroy {
   // Current user
   public appUserProfileId: string = '';
 
@@ -571,12 +580,23 @@ export class EmployeeComponent implements OnInit, AfterViewInit {
 
   @ViewChild('confirmDialog') confirmDialog!: ConfirmDialogComponent;
 
+  // Employee photo (optional). 'pending' / 'remove' are applied after the employee is saved.
+  public photoAccept = PHOTO_ACCEPT;
+  public photoMaxSizeMB = PHOTO_MAX_SIZE_KB / 1024;
+  public photoPreviewUrl: string = DEFAULT_AVATAR_URL;
+  public photoStatus: 'none' | 'uploaded' | 'pending' | 'remove' = 'none';
+  private photoFile: File | null = null;
+  private savedPhotoUrl: string = DEFAULT_AVATAR_URL;
+  private localPreviewUrl: string | null = null;
+  private photoLoad?: Subscription;
+
   constructor(
     public router: Router,
     private hrService: HumanResourcesService,
     private notifyService: NotificationService,
     private loadingService: LoaderService,
     private commonService: CommonService,
+    private photoService: PhotoService,
   ) {}
 
   ngOnInit(): void {
@@ -589,6 +609,10 @@ export class EmployeeComponent implements OnInit, AfterViewInit {
   }
 
   ngAfterViewInit(): void {}
+
+  ngOnDestroy(): void {
+    this.clearPhotoState();
+  }
 
   loadPermission(url: any): void {
     const permissionModel = this.commonService.getMenuPermission(url);
@@ -670,6 +694,7 @@ export class EmployeeComponent implements OnInit, AfterViewInit {
     this.isEdit = false;
     this.activeTab = 0;
     this.model = this.emptyEmployee();
+    this.clearPhotoState();
     this.loadInitialData(/* newEmployee = */ true);
     this.viewMode = 'form';
   }
@@ -731,8 +756,8 @@ export class EmployeeComponent implements OnInit, AfterViewInit {
           detail.documents ||= [];
           detail.emergencyContacts ||= [];
           detail.bankInfo ||= {} as EmployeeBank;
-          debugger
           this.model = detail;
+          this.showSavedPhoto(detail.id, detail.photoId);
           this.viewMode = 'form';
         } else {
           this.notifyService.showWarning(
@@ -797,6 +822,7 @@ export class EmployeeComponent implements OnInit, AfterViewInit {
   }
 
   cancelForm(): void {
+    this.clearPhotoState();
     this.viewMode = 'list';
     this.isEdit = false;
     this.activeTab = 0;
@@ -862,9 +888,19 @@ export class EmployeeComponent implements OnInit, AfterViewInit {
             response.message || 'Employee saved',
             MessageConstants.GENERAL_SUCCESS_TITLE,
           );
-          this.viewMode = 'list';
-          this.isEdit = false;
-          this.loadEmployeesPaging();
+          // create returns the new employee id; then upload / remove the photo
+          const savedId: string = (this.isEdit ? this.model.id : response.result) || this.model.id || '';
+          this.applyPhotoChange(savedId).subscribe((photoResult) => {
+            if (photoResult) {
+              photoResult.success
+                ? this.notifyService.showSuccess(photoResult.message, MessageConstants.GENERAL_SUCCESS_TITLE)
+                : this.notifyService.showWarning(photoResult.message, MessageConstants.GENERAL_WARNING_TITLE);
+            }
+            this.clearPhotoState();
+            this.viewMode = 'list';
+            this.isEdit = false;
+            this.loadEmployeesPaging();
+          });
         } else {
           this.notifyService.showWarning(
             response?.message || 'Save failed',
@@ -884,6 +920,87 @@ export class EmployeeComponent implements OnInit, AfterViewInit {
         );
       },
     });
+  }
+
+  // ============================================================
+  // PHOTO
+  // ============================================================
+  onPhotoSelected(event: Event): void {
+    const file = (event.target as HTMLInputElement).files?.[0];
+    const error = this.photoService.validate(file);
+    if (error) {
+      this.notifyService.showWarning(error, MessageConstants.GENERAL_WARNING_TITLE);
+      return;
+    }
+    this.revokeLocalPreview();
+    this.photoFile = file!;
+    this.localPreviewUrl = URL.createObjectURL(file!);
+    this.photoPreviewUrl = this.localPreviewUrl;
+    this.photoStatus = 'pending';
+  }
+
+  removePhoto(): void {
+    if (this.photoStatus === 'pending') {
+      // drop the chosen file, back to what is saved
+      this.revokeLocalPreview();
+      this.photoFile = null;
+      this.photoPreviewUrl = this.savedPhotoUrl;
+      this.photoStatus = this.savedPhotoUrl === DEFAULT_AVATAR_URL ? 'none' : 'uploaded';
+      return;
+    }
+    this.photoPreviewUrl = DEFAULT_AVATAR_URL;
+    this.photoStatus = 'remove';
+  }
+
+  /** Upload / remove the photo of the saved employee; emits null when there was nothing to do. */
+  private applyPhotoChange(employeeId: string): Observable<PhotoResult | null> {
+    let action$: Observable<PhotoResult> | null = null;
+    if (employeeId && this.photoStatus === 'pending' && this.photoFile) {
+      action$ = this.photoService.upload('employee', employeeId, this.photoFile, this.appUserProfileId);
+    } else if (employeeId && this.photoStatus === 'remove') {
+      action$ = this.photoService.remove('employee', employeeId, this.appUserProfileId);
+    }
+    if (!action$) {
+      return of(null);
+    }
+    return action$.pipe(
+      catchError((error) =>
+        of({
+          success: false,
+          message: error?.error?.message || error?.error?.title || MessageConstants.INTERNAL_ERROR_MEG,
+        } as PhotoResult),
+      ),
+    );
+  }
+
+  private showSavedPhoto(employeeId: string | undefined, photoId: string | null | undefined): void {
+    this.clearPhotoState();
+    if (!employeeId || !photoId) {
+      return;
+    }
+    this.photoLoad = this.photoService.photoUrl('employee', employeeId, photoId).subscribe((url) => {
+      this.savedPhotoUrl = url;
+      if (this.photoStatus === 'none' || this.photoStatus === 'uploaded') {
+        this.photoPreviewUrl = url;
+        this.photoStatus = url === DEFAULT_AVATAR_URL ? 'none' : 'uploaded';
+      }
+    });
+  }
+
+  private clearPhotoState(): void {
+    this.photoLoad?.unsubscribe();
+    this.revokeLocalPreview();
+    this.photoFile = null;
+    this.savedPhotoUrl = DEFAULT_AVATAR_URL;
+    this.photoPreviewUrl = DEFAULT_AVATAR_URL;
+    this.photoStatus = 'none';
+  }
+
+  private revokeLocalPreview(): void {
+    if (this.localPreviewUrl) {
+      URL.revokeObjectURL(this.localPreviewUrl);
+      this.localPreviewUrl = null;
+    }
   }
 
   // ============================================================

@@ -39,3 +39,49 @@
     opacity: 0.5;
   }
 
+
+
+/* ===== HR sub-module list screens (Org Setup → Separation) — shared list/table styles ===== */
+.list-table thead th { background:#f8f9fa; font-size:.82rem; text-transform:uppercase; letter-spacing:.02em; }
+.list-table td { vertical-align: middle; font-size:.88rem; }
+.action-icons a { cursor:pointer; margin:0 6px; }
+.bc-link { cursor:pointer; }
+
+/* List-table + action-icon styling — consistent with the Department/Employee
+   screens. Each component css imports nothing; copy these rules into
+   requisition.component.css / position.component.css / job-posting.component.css
+   or move to a shared stylesheet. */
+.list-table thead th { background:#f8f9fa; font-size:.82rem; text-transform:uppercase; letter-spacing:.02em; }
+.list-table td { vertical-align: middle; font-size:.88rem; }
+.action-icons a { cursor:pointer; margin:0 6px; }
+.bc-link { cursor:pointer; }
+
+/* Shared list/table styling used across the separation screens. Mirrors the
+   pattern from the earlier modules (.list-table / .action-icons / .bc-link). */
+.list-table th { background: #f4f6f9; font-size: .85rem; text-transform: uppercase; letter-spacing: .02em; color: #495057; }
+.list-table td { vertical-align: middle; font-size: .9rem; }
+.bc-link { cursor: pointer; color: #007bff; }
+.action-icons a { cursor: pointer; margin: 0 .35rem; font-size: 1rem; }
+.action-icons a:hover { opacity: .7; }
+
+/* Shared list/table styling used across the performance screens. Matches the
+   pattern established in the Attendance module (.list-table / .action-icons /
+   .bc-link / .balance-strip). */
+.list-table th { background: #f4f6f9; font-size: .85rem; text-transform: uppercase; letter-spacing: .02em; color: #495057; }
+.list-table td { vertical-align: middle; font-size: .9rem; }
+.bc-link { cursor: pointer; color: #007bff; }
+.action-icons a { cursor: pointer; margin: 0 .35rem; font-size: 1rem; }
+.action-icons a:hover { opacity: .7; }
+
+.balance-strip { display: flex; gap: 1rem; flex-wrap: wrap; background: #f8f9fa; border: 1px solid #e9ecef; border-radius: .4rem; padding: .6rem .9rem; }
+.balance-strip .bs-item { display: flex; flex-direction: column; min-width: 120px; }
+.balance-strip .bs-label { font-size: .72rem; text-transform: uppercase; letter-spacing: .03em; color: #6c757d; }
+.balance-strip .bs-value { font-size: 1.25rem; font-weight: 600; color: #343a40; }
+
+.list-table thead th { background:#f8f9fa; font-size:.82rem; text-transform:uppercase; letter-spacing:.02em; }
+.list-table td { vertical-align: middle; font-size:.88rem; }
+.action-icons a { cursor:pointer; margin:0 6px; }
+.bc-link { cursor:pointer; }
+.dot { display:inline-block; width:10px; height:10px; border-radius:50%; margin-right:6px; vertical-align:middle; }
+.grant-year { width:80px; display:inline-block; }
+

@@ -44,6 +44,13 @@ export class HumanResourcesService {
       );
   }
 
+  /** Active employees for picker dropdowns (id, employeeCode, fullName, …). */
+  getAllEmployees(): Observable<DataResponse> {
+    return this.apiService
+      .getAllWithoutParams(APIConstants.API_GET_ALL_EMPLOYEES_URL)
+      .pipe(map((res: DataResponse) => res));
+  }
+
   getAllEmployeesPagingWithSearch(
     filter: PagingSearchFilter,
   ): Observable<DataResponse> {

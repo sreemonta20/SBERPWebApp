@@ -1,0 +1,66 @@
+/*
+ * Sidebar menu states (overrides AdminLTE 3.2, which paints hover, focus and "menu-open" with the
+ * same grey as the selected item, so an unselected item under the mouse looked selected).
+ *
+ *   selected screen ............ grey  (#6c757d), white text
+ *   module holding it .......... blue  (#007bff), white text
+ *   sub module holding it ...... light blue, white text
+ *   anything else .............. no background; hover / focus only brightens the text
+ */
+
+.sb-menu .nav-link {
+  color: #c2c7d0;
+  background-color: transparent;
+  box-shadow: none;
+}
+
+/* hover / focus / expanded but not selected: never look like the selected item */
+.sb-menu .nav-item > .nav-link:not(.active):hover,
+.sb-menu .nav-item > .nav-link:not(.active):focus,
+.sb-menu .nav-item.menu-open > .nav-link:not(.active) {
+  color: #fff;
+  background-color: transparent;
+  box-shadow: none;
+}
+
+/* selected screen (component, or a module that is a link such as Dashboard) */
+.sb-menu .nav-item > .nav-link.active,
+.sb-menu .nav-item > .nav-link.active:hover,
+.sb-menu .nav-item > .nav-link.active:focus {
+  color: #fff;
+  background-color: #6c757d;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
+}
+
+/* module that contains the selected screen */
+.sb-menu > .nav-item.sb-active-branch > .nav-link.active,
+.sb-menu > .nav-item.sb-active-branch > .nav-link.active:hover,
+.sb-menu > .nav-item.sb-active-branch > .nav-link.active:focus {
+  color: #fff;
+  background-color: #007bff;
+}
+
+/* sub module (any deeper level) that contains the selected screen */
+.sb-menu .nav-treeview > .nav-item.sb-active-branch > .nav-link.active,
+.sb-menu .nav-treeview > .nav-item.sb-active-branch > .nav-link.active:hover,
+.sb-menu .nav-treeview > .nav-item.sb-active-branch > .nav-link.active:focus {
+  color: #fff;
+  background-color: rgba(0, 123, 255, 0.45);
+  box-shadow: none;
+}
+
+/* indent each level below a sub module so the depth is visible */
+.sb-menu .nav-treeview .nav-treeview > .nav-item > .nav-link {
+  padding-left: 1.5rem;
+}
+
+.sb-menu .nav-treeview .nav-treeview .nav-treeview > .nav-item > .nav-link {
+  padding-left: 2.5rem;
+}
+
+/* sidebar user panel: square crop of any uploaded photo */
+.user-panel .user-panel-photo {
+  width: 2.1rem;
+  height: 2.1rem;
+  object-fit: cover;
+}

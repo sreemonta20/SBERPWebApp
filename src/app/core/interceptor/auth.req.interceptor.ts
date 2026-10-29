@@ -48,27 +48,16 @@ import {
   HttpInterceptorFn,
   HttpErrorResponse
 } from '@angular/common/http';
-import {
-  BehaviorSubject,
-  Observable,
-  throwError,
-  combineLatest,
-  from
-} from 'rxjs';
-import {
-  catchError,
-  filter,
-  switchMap,
-  take
-} from 'rxjs/operators';
+import { Observable, throwError, from } from 'rxjs';
+import { catchError, switchMap, take } from 'rxjs/operators';
 
-import { CommonService } from '../services/common.service';      // adjust if needed
-import { AuthService } from '../services/auth.service';          // adjust if needed
-import { RefreshTokenRequest } from '@app/core/class';
+import { CommonService } from '../services/common.service';
+import { AuthService } from '../services/auth.service';
 
-// ---- global flags to coordinate refresh ----
-let isRefreshing = false;
-const refreshTokenSubject = new BehaviorSubject<string | null>(null);
+// Anonymous auth endpoints, in lower case: they are compared with the lower-cased request URL.
+const LOGIN_URL = '/gateway/auth/authenticateuser';
+const REFRESH_URL = '/gateway/auth/refreshtoken';
+const REVOKE_URL = '/gateway/auth/revoke';
 
 // helper: add Authorization header if we have a token
 function addAuthHeader(
@@ -86,6 +75,13 @@ function addAuthHeader(
   });
 }
 
+/**
+ * Adds the access token to every API call. When a call fails because the access token expired
+ * (401 + "Token-Expired" header from the gateway / service), the token is refreshed once and the
+ * call is retried. Refreshing is single-flight in AuthService: the server rotates the refresh
+ * token, so parallel refreshes would present an already used token and end the session.
+ * Any other 401 (token revoked, user signed out elsewhere) logs the user out.
+ */
 export const AuthReqInterceptor: HttpInterceptorFn = (
   req: HttpRequest<any>,
   next: HttpHandlerFn
@@ -93,102 +89,47 @@ export const AuthReqInterceptor: HttpInterceptorFn = (
   const commonService = inject(CommonService);
   const authService = inject(AuthService);
 
-  // Don’t attach tokens / refresh on auth endpoints themselves
   const lowerUrl = req.url.toLowerCase();
-  // const isAuthUrl =
-  //   lowerUrl.includes('/Auth/authenticateUser') ||
-  //   lowerUrl.includes('/Auth/refreshToken') ||
-  //   lowerUrl.includes('/Auth/revoke');
-  const isAuthUrl =
-    lowerUrl.includes('/gateway/auth/authenticateUser') ||
-    lowerUrl.includes('/gateway/auth/refreshToken') ||
-    lowerUrl.includes('/gateway/auth/revoke');
 
-  if (isAuthUrl) {
+  // login / refresh: no token, and never a refresh because of them
+  if (lowerUrl.includes(LOGIN_URL) || lowerUrl.includes(REFRESH_URL)) {
     return next(req);
   }
 
-  // Get current access + refresh tokens (one-time emission)
-  return combineLatest([
-    commonService.GetAccessToken(),
-    commonService.GetRefreshToken()
-  ]).pipe(
+  return commonService.GetAccessToken().pipe(
     take(1),
-    switchMap(([accessToken, refreshToken]) => {
-      debugger
-      console.log(accessToken);
-      console.log(refreshToken);
+    switchMap((accessToken) => {
       const authReq = addAuthHeader(req, accessToken);
+
+      // logout: send the access token so the server blacklists it, but do not refresh for it
+      if (lowerUrl.includes(REVOKE_URL)) {
+        return next(authReq);
+      }
 
       return next(authReq).pipe(
         catchError((error: HttpErrorResponse) => {
-          debugger
-          // If it’s not 401, just propagate
-          console.log(error.status);
-          if (error.status !== 401) { 
+          if (error.status !== 401) {
             return throwError(() => error);
           }
-          debugger
-          // Check if this 401 is due to an expired token
-          console.log(error.headers?.get('Token-Expired'));
-          const tokenExpiredHeader = error.headers?.get('Token-Expired') ?? '';
+
           const isTokenExpired =
-            tokenExpiredHeader === 'true' ||
+            error.headers?.get('Token-Expired') === 'true' ||
             error.error?.error === 'invalid_token';
 
-          if (!isTokenExpired || !refreshToken) {
-            // No refresh token or not an expiry -> logout
+          if (!isTokenExpired) {
             authService.logout();
             return throwError(() => error);
           }
 
-          // ---- handle refresh flow ----
-          if (!isRefreshing) {
-            isRefreshing = true;
-            refreshTokenSubject.next(null);
-
-            const refreshReq: RefreshTokenRequest = {
-              Access_Token: accessToken,
-              Refresh_Token: refreshToken
-            };
-
-            // Use your existing async refresh method (it updates CommonService)
-            return from(authService.refreshTokenAsync(refreshReq)).pipe(
-              switchMap((success: boolean) => {
-                isRefreshing = false;
-
-                if (!success) {
-                  authService.logout();
-                  return throwError(() => error);
-                }
-
-                // Wait for CommonService to publish the new access token
-                return commonService.GetAccessToken().pipe(
-                  take(1),
-                  switchMap((newAccessToken) => {
-                    refreshTokenSubject.next(newAccessToken);
-                    const retryReq = addAuthHeader(req, newAccessToken);
-                    return next(retryReq);
-                  })
-                );
-              }),
-              catchError((refreshErr) => {
-                isRefreshing = false;
+          return from(authService.getFreshAccessToken(accessToken)).pipe(
+            switchMap((newAccessToken) => {
+              if (!newAccessToken) {
                 authService.logout();
-                return throwError(() => refreshErr);
-              })
-            );
-          } else {
-            // A refresh is already in progress: wait for it to complete
-            return refreshTokenSubject.pipe(
-              filter((token) => token != null),
-              take(1),
-              switchMap((newToken) => {
-                const retryReq = addAuthHeader(req, newToken);
-                return next(retryReq);
-              })
-            );
-          }
+                return throwError(() => error);
+              }
+              return next(addAuthHeader(req, newAccessToken));
+            })
+          );
         })
       );
     })

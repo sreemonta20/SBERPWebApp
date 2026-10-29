@@ -1,0 +1,6 @@
+.list-table thead th { background:#f8f9fa; font-size:.82rem; text-transform:uppercase; letter-spacing:.02em; }
+.list-table td { vertical-align: middle; font-size:.88rem; }
+.action-icons a { cursor:pointer; margin:0 6px; }
+.bc-link { cursor:pointer; }
+.dot { display:inline-block; width:10px; height:10px; border-radius:50%; margin-right:6px; vertical-align:middle; }
+.grant-year { width:80px; display:inline-block; }

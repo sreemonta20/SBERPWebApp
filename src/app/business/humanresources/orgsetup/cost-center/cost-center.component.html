@@ -1,0 +1,88 @@
+<div class="card" *ngIf="isView; else noAccess">
+  <ng-container *ngIf="viewMode === 'list'">
+    <div class="card-header d-flex justify-content-between align-items-center">
+      <h3 class="card-title mb-0">Cost Centers</h3>
+      <button class="btn btn-primary btn-sm" *ngIf="isCreate" (click)="openCreate()"><i class="fas fa-plus mr-1"></i> New Cost Center</button>
+    </div>
+    <div class="card-body">
+      <div class="row mb-3">
+        <div class="col-md-4">
+          <div class="input-group">
+            <input type="text" class="form-control" placeholder="Search..." [(ngModel)]="searchTerm" (keyup.enter)="onSearch()" />
+            <div class="input-group-append"><button class="btn btn-outline-secondary" (click)="onSearch()"><i class="fas fa-search"></i></button></div>
+          </div>
+        </div>
+        <div class="col-md-8 text-right">
+          <label class="mr-2">Show</label>
+          <select [(ngModel)]="pageSize" (change)="onPageSizeChange()" class="form-control d-inline-block" style="width:auto;">
+            <option *ngFor="let s of pageSizeList" [value]="s">{{ s }}</option>
+          </select>
+        </div>
+      </div>
+      <div class="table-responsive">
+        <table class="table table-hover table-bordered">
+          <thead class="thead-light"><tr><th>Code</th><th>Name</th><th>Company</th><th>Branch</th><th>Parent</th><th>Owner</th><th class="text-center">Actions</th></tr></thead>
+          <tbody>
+            <tr *ngFor="let row of list">
+              <td>{{ row.costCenterCode }}</td><td>{{ row.name }}</td><td>{{ row.companyName || '-' }}</td>
+              <td>{{ row.branchName || '-' }}</td><td>{{ row.parentName || '-' }}</td><td>{{ row.ownerName || '-' }}</td>
+              <td class="text-center">
+                <button class="btn btn-sm btn-outline-primary mr-1" *ngIf="isUpdate" (click)="openEdit(row)"><i class="fas fa-edit"></i></button>
+                <button class="btn btn-sm btn-outline-danger" *ngIf="isDelete" (click)="confirmDelete(row)"><i class="fas fa-trash"></i></button>
+              </td>
+            </tr>
+            <tr *ngIf="list.length === 0"><td colspan="7" class="text-center text-muted">No records found.</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="d-flex justify-content-between align-items-center" *ngIf="totalRows > 0">
+        <span>Showing {{ startPage }}–{{ endPage }} of {{ totalRows }}</span>
+        <nav><ul class="pagination mb-0">
+          <li class="page-item" [class.disabled]="currentPage === 1"><a class="page-link" (click)="onPageChange(currentPage - 1)">Prev</a></li>
+          <li class="page-item disabled"><span class="page-link">{{ currentPage }} / {{ pageCount }}</span></li>
+          <li class="page-item" [class.disabled]="currentPage === pageCount"><a class="page-link" (click)="onPageChange(currentPage + 1)">Next</a></li>
+        </ul></nav>
+      </div>
+    </div>
+  </ng-container>
+
+  <ng-container *ngIf="viewMode === 'form'">
+    <div class="card-header"><h3 class="card-title mb-0">{{ isEdit ? 'Edit' : 'New' }} Cost Center</h3></div>
+    <div class="card-body">
+      <form [formGroup]="form" (ngSubmit)="save()">
+        <div class="row">
+          <div class="col-md-6 form-group"><label>Name <span class="text-danger">*</span></label><input class="form-control" formControlName="name" /></div>
+          <div class="col-md-6 form-group">
+            <label>Company</label>
+            <select class="form-control" formControlName="companyId">
+              <option [ngValue]="null">-- none --</option>
+              <option *ngFor="let c of companies" [value]="c.id">{{ c.name }}</option>
+            </select>
+          </div>
+          <div class="col-md-6 form-group">
+            <label>Branch</label>
+            <select class="form-control" formControlName="branchId">
+              <option [ngValue]="null">-- none --</option>
+              <option *ngFor="let b of branches" [value]="b.id">{{ b.name }}</option>
+            </select>
+          </div>
+          <div class="col-md-6 form-group">
+            <label>Parent Cost Center</label>
+            <select class="form-control" formControlName="parentCostCenterId">
+              <option [ngValue]="null">-- none --</option>
+              <option *ngFor="let cc of list" [value]="cc.id">{{ cc.name }}</option>
+            </select>
+          </div>
+          <div class="col-md-12 form-group"><label>Description</label><textarea class="form-control" rows="2" formControlName="description"></textarea></div>
+          <div class="col-md-12"><small class="text-muted">Owner (cost-center manager) can be assigned from the Employee master; leave blank for now if unknown.</small></div>
+        </div>
+        <div class="text-right">
+          <button type="button" class="btn btn-secondary mr-2" (click)="backToList()">Cancel</button>
+          <button type="submit" class="btn btn-primary" [disabled]="form.invalid">{{ isEdit ? 'Update' : 'Save' }}</button>
+        </div>
+      </form>
+    </div>
+  </ng-container>
+</div>
+<ng-template #noAccess><div class="alert alert-warning">{{ pageDisplayMessage }}</div></ng-template>
+<app-confirm-dialog #confirmDialog [message]="deleteConfirmationMessage" (confirmed)="onDeleteConfirmed()"></app-confirm-dialog>

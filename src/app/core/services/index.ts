@@ -8,3 +8,5 @@ export * from './validation-forms.service';
 export * from './auth.service';
 export * from './common.service';
 export * from './api.service';
+export * from './photo.service';
+export * from './user-card.service';

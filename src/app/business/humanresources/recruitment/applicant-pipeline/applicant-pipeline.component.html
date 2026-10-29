@@ -1,0 +1,85 @@
+<!-- ================================================================= -->
+<!-- Applicant Pipeline — AdminLTE 3.2.0 kanban-style board. Pick a posting, -->
+<!-- then applications appear grouped by stage; advance/reject per card.     -->
+<!-- ================================================================= -->
+<div class="content-wrapper">
+  <section class="content-header">
+    <div class="container-fluid">
+      <div class="row mb-2">
+        <div class="col-sm-6"><h1>Applicant Pipeline</h1></div>
+        <div class="col-sm-6">
+          <ol class="breadcrumb float-sm-right">
+            <li class="breadcrumb-item"><a class="bc-link">Recruitment</a></li>
+            <li class="breadcrumb-item active">Pipeline</li>
+          </ol>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="content">
+    <div class="container-fluid">
+
+      <div *ngIf="!isView" class="alert alert-warning">{{ pageDisplayMessage }}</div>
+
+      <div class="card card-outline card-primary" *ngIf="isView">
+        <div class="card-header">
+          <div class="row align-items-center">
+            <div class="col-md-6">
+              <label class="mb-0 mr-2">Job Posting</label>
+              <select class="form-control form-control-sm d-inline-block" style="width:70%"
+                      [(ngModel)]="selectedPostingId" (change)="onPostingChange()">
+                <option value="">-- Select a posting --</option>
+                <option *ngFor="let p of postings" [value]="p.id">{{ p.title }} ({{ p.postingCode }})</option>
+              </select>
+            </div>
+            <div class="col-md-6 text-right text-muted">
+              <span *ngIf="selectedPostingId">{{ applications.length }} applicant(s)</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="card-body">
+          <div *ngIf="!selectedPostingId" class="text-center text-muted py-5">
+            Choose a posting to see its applicant pipeline.
+          </div>
+
+          <div class="pipeline-board" *ngIf="selectedPostingId">
+            <div class="pipeline-col" *ngFor="let stage of stages">
+              <div class="pipeline-col-header">
+                {{ stage.name }} <span class="badge badge-pill badge-light ml-1">{{ countFor(stage.id) }}</span>
+              </div>
+
+              <div class="pipeline-col-body">
+                <div class="pipeline-card" *ngFor="let card of cardsFor(stage.id)">
+                  <div class="pc-name">{{ card.candidateName }}</div>
+                  <div class="pc-meta">
+                    <i class="fas fa-envelope mr-1"></i>{{ card.email }}
+                  </div>
+                  <div class="pc-meta" *ngIf="card.totalExperienceYears != null">
+                    <i class="fas fa-briefcase mr-1"></i>{{ card.totalExperienceYears }} yrs
+                  </div>
+                  <div class="pc-meta" *ngIf="card.expectedSalary != null">
+                    <i class="fas fa-coins mr-1"></i>{{ card.expectedSalary | number }}
+                  </div>
+                  <div class="pc-actions" *ngIf="isUpdate && stage.id < 6">
+                    <a *ngIf="card.resumeUrl" [href]="card.resumeUrl" target="_blank" title="Resume">
+                      <i class="fas fa-file-alt text-secondary"></i></a>
+                    <a title="Advance" (click)="advance(card)"><i class="fas fa-arrow-right text-success"></i></a>
+                    <a title="Reject" (click)="reject(card)"><i class="fas fa-times text-danger"></i></a>
+                  </div>
+                </div>
+
+                <div *ngIf="countFor(stage.id) === 0" class="pipeline-empty">—</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+</div>
+
+<app-confirm-dialog #confirmDialog [message]="deleteConfirmationMessage"
+                    (confirmed)="executeReject()"></app-confirm-dialog>

@@ -1,0 +1,10 @@
+
+.goal-progress { height: 18px; background: #e9ecef; border-radius: .3rem; margin-bottom: .25rem; }
+.goal-progress .progress-bar { background: #28a745; font-size: .72rem; line-height: 18px; transition: width .3s ease; }
+
+.bump-row { display: flex; gap: .35rem; }
+.bump-row a {
+  cursor: pointer; font-size: .7rem; padding: 0 .4rem; border: 1px solid #ced4da;
+  border-radius: .25rem; color: #495057; background: #fff; line-height: 1.4;
+}
+.bump-row a:hover { background: #28a745; color: #fff; border-color: #28a745; }

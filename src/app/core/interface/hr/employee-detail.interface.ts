@@ -46,6 +46,8 @@ export interface EmployeeDetail {
   basicSalary?: number;
   salaryCurrency?: string;
   photoUrl?: string;
+  /** Null when no photo was uploaded: the default avatar is shown. */
+  photoId?: string | null;
   signatureUrl?: string;
   isActive?: boolean;
 

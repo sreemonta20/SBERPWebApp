@@ -139,7 +139,7 @@ export class LoginComponent implements OnInit, AfterViewInit, OnDestroy {
               this.router.navigate([RouteConstants.BUSINESS_HOME_URL]);
             }, 500);
           } else {
-            this.commonService.RevokeSession();
+            this.authService.logout();
           }
         } else {
           this.notifyService.showError(
@@ -150,10 +150,14 @@ export class LoginComponent implements OnInit, AfterViewInit, OnDestroy {
       },
       error: (error) => {
         this.loadingService.setLoading(false);
-        this.notifyService.showError(
-          error?.error.Message,
-          MessageConstants.GENERAL_ERROR_TITLE
-        );
+        // 423 = locked after too many failed attempts (message from the server);
+        // 429 = gateway rate limit, which has no response body
+        const message =
+          error?.error?.Message ||
+          (error?.status === 429
+            ? 'Too many login attempts. Please wait a minute and try again.'
+            : 'Login failed. Please try again.');
+        this.notifyService.showError(message, MessageConstants.GENERAL_ERROR_TITLE);
       },
     });
 

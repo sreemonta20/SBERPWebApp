@@ -1,0 +1,156 @@
+<div class="content-wrapper">
+  <section class="content-header">
+    <div class="container-fluid">
+      <div class="row mb-2">
+        <div class="col-sm-6"><h1>Onboarding</h1></div>
+        <div class="col-sm-6">
+          <ol class="breadcrumb float-sm-right">
+            <li class="breadcrumb-item"><a class="bc-link">Recruitment</a></li>
+            <li class="breadcrumb-item active">Onboarding</li>
+          </ol>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="content">
+    <div class="container-fluid">
+      <div *ngIf="!isView" class="alert alert-warning">{{ pageDisplayMessage }}</div>
+
+      <!-- ============================ LIST ============================ -->
+      <div class="card card-outline card-primary" *ngIf="isView && viewMode === 'list'">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <h3 class="card-title mt-1">Onboarding List</h3>
+          <button class="btn btn-primary btn-sm" *ngIf="isCreate" (click)="openStart()">
+            <i class="fas fa-user-plus mr-1"></i> Start from Accepted Offer
+          </button>
+        </div>
+        <div class="card-body">
+          <div class="row mb-3">
+            <div class="col-md-4">
+              <div class="input-group input-group-sm">
+                <input type="text" class="form-control" placeholder="Search by code…" [(ngModel)]="searchTerm" (keyup.enter)="search()">
+                <span class="input-group-append"><button class="btn btn-default" (click)="search()"><i class="fas fa-search"></i></button></span>
+              </div>
+            </div>
+            <div class="col-md-8 text-right">
+              <label class="mr-2 mb-0">Page size</label>
+              <select class="form-control form-control-sm d-inline-block" style="width:auto" (change)="changePageSize($event)">
+                <option *ngFor="let s of pageSizeList" [value]="s">{{ s }}</option>
+              </select>
+            </div>
+          </div>
+          <div class="table-responsive">
+            <table class="table table-hover table-bordered list-table">
+              <thead>
+                <tr>
+                  <th>Code</th><th>Candidate / Employee</th><th>Department</th>
+                  <th>Joining</th><th style="width:160px">Progress</th>
+                  <th class="text-center">Status</th><th class="text-center" style="width:140px">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngIf="onboardingList.length === 0"><td colspan="7" class="text-center text-muted">No onboarding records found.</td></tr>
+                <tr *ngFor="let o of onboardingList">
+                  <td>{{ o.onboardingCode }}</td>
+                  <td>
+                    <div>{{ o.employeeName || o.candidateName }}</div>
+                    <small class="text-muted" *ngIf="o.employeeCode">{{ o.employeeCode }}</small>
+                  </td>
+                  <td>{{ o.departmentName }}</td>
+                  <td>{{ o.joiningDate | date:'mediumDate' }}</td>
+                  <td>
+                    <div class="progress" style="height:16px">
+                      <div class="progress-bar bg-success" [style.width.%]="progressPct(o)">{{ progressPct(o) }}%</div>
+                    </div>
+                    <small class="text-muted">{{ o.checklistDone }}/{{ o.checklistTotal }} tasks</small>
+                  </td>
+                  <td class="text-center"><span [class]="statusBadgeClass(o.statusId)">{{ o.statusName }}</span></td>
+                  <td class="text-center action-icons">
+                    <a title="Checklist" (click)="openChecklist(o)"><i class="fas fa-tasks text-primary"></i></a>
+                    <a title="Cancel" *ngIf="isUpdate && o.statusId < STATUS.Completed" (click)="cancel(o)"><i class="fas fa-ban text-danger"></i></a>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div class="card-footer clearfix">
+          <span class="float-left text-muted mt-1">Showing {{ startPage }}–{{ endPage }} of {{ totalRows }}</span>
+          <ul class="pagination pagination-sm m-0 float-right">
+            <li class="page-item" [class.disabled]="currentPage === 1"><a class="page-link" (click)="changePage(currentPage - 1)">«</a></li>
+            <li class="page-item" *ngFor="let x of [].constructor(pageCount); let i = index" [class.active]="currentPage === i + 1">
+              <a class="page-link" (click)="changePage(i + 1)">{{ i + 1 }}</a>
+            </li>
+            <li class="page-item" [class.disabled]="currentPage === pageCount"><a class="page-link" (click)="changePage(currentPage + 1)">»</a></li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- ========================= START PICKER ========================= -->
+      <div class="card card-outline card-primary" *ngIf="isView && viewMode === 'start'">
+        <div class="card-header"><h3 class="card-title mt-1">Start Onboarding</h3></div>
+        <div class="card-body">
+          <div class="form-group">
+            <label>Accepted Offer <span class="text-danger">*</span></label>
+            <select class="form-control" [(ngModel)]="selectedOfferId">
+              <option value="">-- Select an accepted offer awaiting onboarding --</option>
+              <option *ngFor="let o of acceptedOffers" [value]="o.id">
+                {{ o.offerCode }} — {{ o.candidateName }} ({{ o.departmentName }}, joins {{ o.joiningDate | date:'mediumDate' }})
+              </option>
+            </select>
+            <small class="text-muted">Only offers in <strong>Accepted</strong> status that haven't been onboarded appear here.</small>
+          </div>
+          <div class="row">
+            <div class="col-md-6 form-group"><label>Reporting Manager Id (optional)</label><input class="form-control" [(ngModel)]="reportingManagerId"></div>
+            <div class="col-md-6 form-group"><label>Work Location (optional)</label><input class="form-control" [(ngModel)]="workLocation"></div>
+          </div>
+          <div class="alert alert-info">
+            <i class="fas fa-info-circle mr-1"></i>
+            Starting will create the Employee record and queue an account-creation event for Security.
+          </div>
+        </div>
+        <div class="card-footer">
+          <button class="btn btn-primary" (click)="startOnboarding()"><i class="fas fa-play mr-1"></i> Start Onboarding</button>
+          <button class="btn btn-default ml-2" (click)="backToList()">Cancel</button>
+        </div>
+      </div>
+
+      <!-- ========================= CHECKLIST ========================= -->
+      <div class="card card-outline card-primary" *ngIf="isView && viewMode === 'checklist' && activeOnboarding">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <h3 class="card-title mt-1">Checklist — {{ activeOnboarding.onboardingCode }}</h3>
+          <div>
+            <button class="btn btn-success btn-sm" *ngIf="isUpdate && activeOnboarding.statusId < STATUS.Completed" (click)="complete()">
+              <i class="fas fa-flag-checkered mr-1"></i> Mark Complete
+            </button>
+            <button class="btn btn-default btn-sm ml-2" (click)="backToList()">Back</button>
+          </div>
+        </div>
+        <div class="card-body">
+          <table class="table table-bordered list-table">
+            <thead><tr><th style="width:40px">#</th><th>Task</th><th>Owner</th><th class="text-center" style="width:280px">Status</th></tr></thead>
+            <tbody>
+              <tr *ngIf="tasks.length === 0"><td colspan="4" class="text-center text-muted">No tasks.</td></tr>
+              <tr *ngFor="let t of tasks">
+                <td>{{ t.sortOrder }}</td>
+                <td>{{ t.title }}<div *ngIf="t.description"><small class="text-muted">{{ t.description }}</small></div></td>
+                <td>{{ t.ownerRole }}</td>
+                <td class="text-center">
+                  <div class="btn-group btn-group-sm" role="group">
+                    <button class="btn" [class.btn-secondary]="t.statusId===TASK.Pending" [class.btn-outline-secondary]="t.statusId!==TASK.Pending" (click)="setTaskStatus(t, TASK.Pending)">Pending</button>
+                    <button class="btn" [class.btn-warning]="t.statusId===TASK.InProgress" [class.btn-outline-warning]="t.statusId!==TASK.InProgress" (click)="setTaskStatus(t, TASK.InProgress)">In&nbsp;Progress</button>
+                    <button class="btn" [class.btn-success]="t.statusId===TASK.Done" [class.btn-outline-success]="t.statusId!==TASK.Done" (click)="setTaskStatus(t, TASK.Done)">Done</button>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+  </section>
+</div>
+
+<app-confirm-dialog #confirmDialog [message]="deleteConfirmationMessage" (confirmed)="executeCancel()"></app-confirm-dialog>

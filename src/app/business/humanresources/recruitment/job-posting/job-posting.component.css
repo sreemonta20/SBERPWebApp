@@ -1,0 +1,8 @@
+/* List-table + action-icon styling — consistent with the Department/Employee
+   screens. Each component css imports nothing; copy these rules into
+   requisition.component.css / position.component.css / job-posting.component.css
+   or move to a shared stylesheet. */
+.list-table thead th { background:#f8f9fa; font-size:.82rem; text-transform:uppercase; letter-spacing:.02em; }
+.list-table td { vertical-align: middle; font-size:.88rem; }
+.action-icons a { cursor:pointer; margin:0 6px; }
+.bc-link { cursor:pointer; }

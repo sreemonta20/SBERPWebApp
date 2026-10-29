@@ -8,6 +8,7 @@ export interface AppUserRoleMenuResponse {
   // metadata (read-only)
   IsHeader: boolean;
   IsModule: boolean;
+  IsSubModule?: boolean;
   IsComponent: boolean;
   IsRouteLink: boolean;
   Url: string;

@@ -86,6 +86,9 @@ export const APIConstants = {
   API_GET_USER_PROFILE_BY_PROFILE_ID_URL: '/gateway/user/getAppUserProfileById',
   API_POST_SAVE_UPDATE_USER_PROFILE_URL: '/gateway/user/createUpdateAppUserProfile',
   API_DELETE_USER_PROFILE_URL: '/gateway/user/deleteAppUserProfile',
+  API_UPLOAD_USER_PROFILE_PHOTO_URL: '/gateway/user/uploadAppUserProfilePhoto',
+  API_GET_USER_PROFILE_PHOTO_URL: '/gateway/user/getAppUserProfilePhoto',
+  API_REMOVE_USER_PROFILE_PHOTO_URL: '/gateway/user/removeAppUserProfilePhoto',
 
   API_GET_ALL_APP_USER_ROLE_MENU_INITIAL_DATA_URL: '/gateway/rolemenu/getAppUserRoleMenuInitialData',
   API_GET_ALL_APP_USER_MENU_PAGING_WITH_SEARCH_TERM_URL: '/gateway/rolemenu/getAllAppUserMenuPagingWithSearch',
@@ -98,11 +101,18 @@ export const APIConstants = {
   // =====================================================================
 
   API_GET_EMPLOYEE_INITIAL_DATA_URL: '/gateway/hr/employee/getEmployeeInitialData',
+
+
+  API_GET_ALL_EMPLOYEES_URL: '/gateway/hr/employee/getAllEmployees',
   API_GET_ALL_EMPLOYEES_PAGING_URL: '/gateway/hr/employee/getAllEmployeesPagingWithSearch',
   API_GET_EMPLOYEE_BY_ID_URL: '/gateway/hr/employee/getEmployeeById',
   API_CREATE_EMPLOYEE_URL: '/gateway/hr/employee/createEmployee',
   API_UPDATE_EMPLOYEE_URL: '/gateway/hr/employee/updateEmployee',
   API_DELETE_EMPLOYEE_URL: '/gateway/hr/employee/deleteEmployee',
+  API_UPLOAD_EMPLOYEE_PHOTO_URL: '/gateway/hr/employee/uploadEmployeePhoto',
+  API_GET_EMPLOYEE_PHOTO_URL: '/gateway/hr/employee/getEmployeePhoto',
+  API_REMOVE_EMPLOYEE_PHOTO_URL: '/gateway/hr/employee/removeEmployeePhoto',
+  API_GET_MY_EMPLOYEE_BRIEF_URL: '/gateway/hr/employee/getMyEmployeeBrief',
   API_GET_ALL_DEPARTMENTS_URL: '/gateway/hr/department/getAllDepartments',
   API_GET_ALL_DEPARTMENTS_PAGING_URL: '/gateway/hr/department/getAllDepartmentsPagingWithSearch',
   API_GET_DEPARTMENT_BY_ID_URL: '/gateway/hr/department/getDepartmentById',

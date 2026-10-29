@@ -1,0 +1,91 @@
+<div class="content-wrapper">
+  <section class="content-header">
+    <div class="container-fluid">
+      <div class="row mb-2">
+        <div class="col-sm-6"><h1>Competencies</h1></div>
+        <div class="col-sm-6">
+          <ol class="breadcrumb float-sm-right">
+            <li class="breadcrumb-item"><a class="bc-link">Performance</a></li>
+            <li class="breadcrumb-item active">Competencies</li>
+          </ol>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="content">
+    <div class="container-fluid">
+      <div *ngIf="!isView" class="alert alert-warning">{{ pageDisplayMessage }}</div>
+
+      <div class="card card-outline card-primary" *ngIf="isView && viewMode === 'list'">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <h3 class="card-title mt-1">Competency List</h3>
+          <button class="btn btn-primary btn-sm" *ngIf="isCreate" (click)="openCreateForm()"><i class="fas fa-plus mr-1"></i> New Competency</button>
+        </div>
+        <div class="card-body">
+          <div class="row mb-3">
+            <div class="col-md-4">
+              <div class="input-group input-group-sm">
+                <input type="text" class="form-control" placeholder="Search by code / name…" [(ngModel)]="searchTerm" (keyup.enter)="search()">
+                <span class="input-group-append"><button class="btn btn-default" (click)="search()"><i class="fas fa-search"></i></button></span>
+              </div>
+            </div>
+            <div class="col-md-8 text-right">
+              <label class="mr-2 mb-0">Page size</label>
+              <select class="form-control form-control-sm d-inline-block" style="width:auto" (change)="changePageSize($event)">
+                <option *ngFor="let s of pageSizeList" [value]="s">{{ s }}</option>
+              </select>
+            </div>
+          </div>
+          <div class="table-responsive">
+            <table class="table table-hover table-bordered list-table">
+              <thead><tr><th>Code</th><th>Name</th><th>Description</th><th class="text-center" style="width:110px">Actions</th></tr></thead>
+              <tbody>
+                <tr *ngIf="list.length === 0"><td colspan="4" class="text-center text-muted">No competencies found.</td></tr>
+                <tr *ngFor="let c of list">
+                  <td>{{ c.competencyCode }}</td>
+                  <td>{{ c.name }}</td>
+                  <td>{{ c.description }}</td>
+                  <td class="text-center action-icons">
+                    <a title="Edit" *ngIf="isUpdate" (click)="edit(c)"><i class="fas fa-edit text-primary"></i></a>
+                    <a title="Delete" *ngIf="isDelete" (click)="remove(c)"><i class="fas fa-trash text-danger"></i></a>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div class="card-footer clearfix">
+          <span class="float-left text-muted mt-1">Showing {{ startPage }}–{{ endPage }} of {{ totalRows }}</span>
+          <ul class="pagination pagination-sm m-0 float-right">
+            <li class="page-item" [class.disabled]="currentPage === 1"><a class="page-link" (click)="changePage(currentPage - 1)">«</a></li>
+            <li class="page-item" *ngFor="let x of [].constructor(pageCount); let i = index" [class.active]="currentPage === i + 1"><a class="page-link" (click)="changePage(i + 1)">{{ i + 1 }}</a></li>
+            <li class="page-item" [class.disabled]="currentPage === pageCount"><a class="page-link" (click)="changePage(currentPage + 1)">»</a></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="card card-outline card-primary" *ngIf="isView && viewMode === 'form'">
+        <div class="card-header"><h3 class="card-title mt-1">{{ isEdit ? 'Edit' : 'New' }} Competency</h3></div>
+        <form [formGroup]="form" (ngSubmit)="save()">
+          <div class="card-body">
+            <div class="row">
+              <div class="col-md-3 form-group"><label>Code <span class="text-danger">*</span></label><input class="form-control" formControlName="competencyCode"></div>
+              <div class="col-md-5 form-group"><label>Name <span class="text-danger">*</span></label><input class="form-control" formControlName="name"></div>
+              <div class="col-md-2 form-group"><label>Sort Order</label><input type="number" class="form-control" formControlName="sortOrder"></div>
+            </div>
+            <div class="row">
+              <div class="col-md-12 form-group"><label>Description</label><textarea rows="2" class="form-control" formControlName="description"></textarea></div>
+            </div>
+          </div>
+          <div class="card-footer">
+            <button type="submit" class="btn btn-primary"><i class="fas fa-save mr-1"></i> Save</button>
+            <button type="button" class="btn btn-default ml-2" (click)="cancelForm()">Cancel</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </section>
+</div>
+
+<app-confirm-dialog #confirmDialog [message]="deleteConfirmationMessage" (confirmed)="executeDelete()"></app-confirm-dialog>

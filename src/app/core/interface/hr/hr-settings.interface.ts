@@ -15,6 +15,12 @@ export interface HRSettings {
   casualLeaveDays?: number;
   autoProcessTime?: string;
   autoProcessEnabled?: boolean;
+  timeZoneId?: string;
+  attendanceDayCutoffTime?: string;   // "04:00": earlier punches belong to the previous day
+  minMinutesBetweenInOut?: number;
+  duplicatePunchMinutes?: number;
+  mobileAttendanceEnabled?: boolean;
+  requireOfficeNetwork?: boolean;
   isActive?: boolean;
   isHardDelete?: boolean;
 }

@@ -3,6 +3,7 @@ export interface MenuItem {
     Name: string;
     IsHeader: boolean;
     IsModule: boolean;
+    IsSubModule?: boolean;
     IsComponent: boolean;
     CssClass: string;
     RouteLink: string;

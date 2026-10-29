@@ -1,0 +1,182 @@
+<div class="card" *ngIf="isView; else noAccess">
+  <!-- ===== LIST ===== -->
+  <ng-container *ngIf="viewMode === 'list'">
+    <div class="card-header d-flex justify-content-between align-items-center">
+      <h3 class="card-title mb-0">Positions</h3>
+      <div>
+        <button class="btn btn-outline-info btn-sm mr-2" (click)="openTree()"><i class="fas fa-sitemap mr-1"></i> Org Tree</button>
+        <button class="btn btn-primary btn-sm" *ngIf="isCreate" (click)="openCreate()"><i class="fas fa-plus mr-1"></i> New Position</button>
+      </div>
+    </div>
+    <div class="card-body">
+      <div class="row mb-3">
+        <div class="col-md-4">
+          <div class="input-group">
+            <input type="text" class="form-control" placeholder="Search positions..." [(ngModel)]="searchTerm" (keyup.enter)="onSearch()" />
+            <div class="input-group-append"><button class="btn btn-outline-secondary" (click)="onSearch()"><i class="fas fa-search"></i></button></div>
+          </div>
+        </div>
+        <div class="col-md-8 text-right">
+          <label class="mr-2">Show</label>
+          <select [(ngModel)]="pageSize" (change)="onPageSizeChange()" class="form-control d-inline-block" style="width:auto;">
+            <option *ngFor="let s of pageSizeList" [value]="s">{{ s }}</option>
+          </select>
+        </div>
+      </div>
+      <div class="table-responsive">
+        <table class="table table-hover table-bordered align-middle">
+          <thead class="thead-light">
+            <tr>
+              <th>Code</th><th>Title</th><th>Branch</th><th>Grade</th><th>Reports To</th>
+              <th class="text-center">Head­count</th><th class="text-center">Status</th><th class="text-center">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let row of list">
+              <td>{{ row.positionCode }}</td>
+              <td>{{ row.title }}<div class="small text-muted" *ngIf="row.designationName">{{ row.designationName }}</div></td>
+              <td>{{ row.branchName || '-' }}</td>
+              <td>{{ row.gradeName || '-' }}</td>
+              <td>{{ row.reportsToTitle || '-' }}</td>
+              <td class="text-center">
+                <span [class.text-danger]="row.openHeadcount > 0">{{ row.filledHeadcount }}/{{ row.budgetedHeadcount }}</span>
+                <div class="btn-group btn-group-sm mt-1" *ngIf="isUpdate">
+                  <button class="btn btn-outline-success" title="Assign (+1)" (click)="assign(row)" [disabled]="row.filledHeadcount >= row.budgetedHeadcount"><i class="fas fa-user-plus"></i></button>
+                  <button class="btn btn-outline-warning" title="Release (-1)" (click)="release(row)" [disabled]="row.filledHeadcount <= 0"><i class="fas fa-user-minus"></i></button>
+                </div>
+              </td>
+              <td class="text-center">
+                <span class="badge" [ngClass]="statusBadgeClass(row.statusId)">{{ row.statusName }}</span>
+                <div class="dropdown mt-1" *ngIf="isUpdate">
+                  <button class="btn btn-outline-secondary btn-sm dropdown-toggle" type="button" [attr.id]="'st'+row.id" data-toggle="dropdown">Set</button>
+                  <div class="dropdown-menu">
+                    <a class="dropdown-item" *ngFor="let s of statusList" (click)="changeStatus(row, s.id)">{{ s.name }}</a>
+                  </div>
+                </div>
+              </td>
+              <td class="text-center">
+                <button class="btn btn-sm btn-outline-primary mr-1" *ngIf="isUpdate" (click)="openEdit(row)"><i class="fas fa-edit"></i></button>
+                <button class="btn btn-sm btn-outline-danger" *ngIf="isDelete" (click)="confirmDelete(row)"><i class="fas fa-trash"></i></button>
+              </td>
+            </tr>
+            <tr *ngIf="list.length === 0"><td colspan="8" class="text-center text-muted">No positions found.</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="d-flex justify-content-between align-items-center" *ngIf="totalRows > 0">
+        <span>Showing {{ startPage }}–{{ endPage }} of {{ totalRows }}</span>
+        <nav><ul class="pagination mb-0">
+          <li class="page-item" [class.disabled]="currentPage === 1"><a class="page-link" (click)="onPageChange(currentPage - 1)">Prev</a></li>
+          <li class="page-item disabled"><span class="page-link">{{ currentPage }} / {{ pageCount }}</span></li>
+          <li class="page-item" [class.disabled]="currentPage === pageCount"><a class="page-link" (click)="onPageChange(currentPage + 1)">Next</a></li>
+        </ul></nav>
+      </div>
+    </div>
+  </ng-container>
+
+  <!-- ===== FORM ===== -->
+  <ng-container *ngIf="viewMode === 'form'">
+    <div class="card-header"><h3 class="card-title mb-0">{{ isEdit ? 'Edit' : 'New' }} Position</h3></div>
+    <div class="card-body">
+      <form [formGroup]="form" (ngSubmit)="save()">
+        <div class="row">
+          <div class="col-md-6 form-group">
+            <label>Title <span class="text-danger">*</span></label>
+            <input class="form-control" formControlName="title" />
+            <small class="text-danger" *ngIf="form.get('title')?.touched && form.get('title')?.invalid">Title is required.</small>
+          </div>
+          <div class="col-md-3 form-group">
+            <label>Budgeted Headcount <span class="text-danger">*</span></label>
+            <input type="number" min="1" class="form-control" formControlName="budgetedHeadcount" />
+          </div>
+          <div class="col-md-3 form-group">
+            <label>Designation</label>
+            <select class="form-control" formControlName="designationId">
+              <option [ngValue]="null">-- none --</option>
+              <option *ngFor="let d of designations" [value]="d.id">{{ d.name }}</option>
+            </select>
+          </div>
+
+          <div class="col-md-4 form-group">
+            <label>Company</label>
+            <select class="form-control" formControlName="companyId">
+              <option [ngValue]="null">-- none --</option>
+              <option *ngFor="let c of companies" [value]="c.id">{{ c.name }}</option>
+            </select>
+          </div>
+          <div class="col-md-4 form-group">
+            <label>Branch</label>
+            <select class="form-control" formControlName="branchId">
+              <option [ngValue]="null">-- none --</option>
+              <option *ngFor="let b of branches" [value]="b.id">{{ b.name }}</option>
+            </select>
+          </div>
+          <div class="col-md-4 form-group">
+            <label>Cost Center</label>
+            <select class="form-control" formControlName="costCenterId">
+              <option [ngValue]="null">-- none --</option>
+              <option *ngFor="let cc of costCenters" [value]="cc.id">{{ cc.name }}</option>
+            </select>
+          </div>
+
+          <div class="col-md-4 form-group">
+            <label>Grade</label>
+            <select class="form-control" formControlName="jobGradeId">
+              <option [ngValue]="null">-- none --</option>
+              <option *ngFor="let g of grades" [value]="g.id">{{ g.name }}</option>
+            </select>
+          </div>
+          <div class="col-md-4 form-group">
+            <label>Department</label>
+            <select class="form-control" formControlName="departmentId">
+              <option [ngValue]="null">-- none --</option>
+              <option *ngFor="let dp of departments" [value]="dp.id">{{ dp.name }}</option>
+            </select>
+          </div>
+          <div class="col-md-4 form-group">
+            <label>Reports To (Position)</label>
+            <select class="form-control" formControlName="reportsToPositionId">
+              <option [ngValue]="null">-- none --</option>
+              <option *ngFor="let p of positions" [value]="p.id">{{ p.title }} ({{ p.positionCode }})</option>
+            </select>
+          </div>
+
+          <div class="col-md-3 form-group"><label>Effective From</label><input type="date" class="form-control" formControlName="effectiveFrom" /></div>
+          <div class="col-md-3 form-group"><label>Effective To</label><input type="date" class="form-control" formControlName="effectiveTo" /></div>
+          <div class="col-md-6 form-group"><label>Description</label><input class="form-control" formControlName="description" /></div>
+        </div>
+        <div class="text-right">
+          <button type="button" class="btn btn-secondary mr-2" (click)="backToList()">Cancel</button>
+          <button type="submit" class="btn btn-primary" [disabled]="form.invalid">{{ isEdit ? 'Update' : 'Save' }}</button>
+        </div>
+      </form>
+    </div>
+  </ng-container>
+
+  <!-- ===== ORG TREE ===== -->
+  <ng-container *ngIf="viewMode === 'tree'">
+    <div class="card-header d-flex justify-content-between align-items-center">
+      <h3 class="card-title mb-0">
+        <button class="btn btn-sm btn-outline-secondary mr-2" (click)="backToList()"><i class="fas fa-arrow-left"></i></button>
+        Position Org Tree
+      </h3>
+    </div>
+    <div class="card-body">
+      <table class="table table-sm table-hover">
+        <thead class="thead-light"><tr><th>Position</th><th>Code</th><th class="text-center">Headcount</th><th class="text-center">Status</th></tr></thead>
+        <tbody>
+          <tr *ngFor="let n of treeFlat">
+            <td><span [innerHTML]="indent(n.depth)"></span><i class="fas fa-angle-right text-muted mr-1" *ngIf="n.depth > 0"></i>{{ n.title }}</td>
+            <td>{{ n.positionCode }}</td>
+            <td class="text-center">{{ n.filledHeadcount }}/{{ n.budgetedHeadcount }}</td>
+            <td class="text-center"><span class="badge badge-light">{{ n.statusName }}</span></td>
+          </tr>
+          <tr *ngIf="treeFlat.length === 0"><td colspan="4" class="text-center text-muted">No positions to chart yet.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </ng-container>
+</div>
+
+<ng-template #noAccess><div class="alert alert-warning">{{ pageDisplayMessage }}</div></ng-template>
+<app-confirm-dialog #confirmDialog [message]="deleteConfirmationMessage" (confirmed)="onDeleteConfirmed()"></app-confirm-dialog>

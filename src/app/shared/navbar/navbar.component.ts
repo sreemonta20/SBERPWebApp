@@ -9,11 +9,11 @@ import {
   OnInit,
   Renderer2,
 } from '@angular/core';
-import { Router } from '@angular/router';
+import { NavigationEnd, Router } from '@angular/router';
 import { SessionConstants } from '@app/core/constants';
 import { MenuItem } from '@app/core/interface/common/index';
-import { CommonService, SessionStorageService } from '@app/core/services';
-import { Subscription } from 'rxjs';
+import { AuthService, CommonService, SessionStorageService, UserCard, UserCardService } from '@app/core/services';
+import { Subscription, filter } from 'rxjs';
 declare var $: any;
 
 @Component({
@@ -27,7 +27,16 @@ export class NavbarComponent implements OnInit, AfterViewInit, OnDestroy {
   isLoggedIn: boolean = false;
   menuList: MenuItem[] = [];
   private menuSubscription?: Subscription;
-  
+  private routerSubscription?: Subscription;
+  private cardSubscription?: Subscription;
+  /** Signed-in user's name and photo for the sidebar user panel. */
+  card: UserCard;
+
+  /** Ids of the groups (module / sub module) that are expanded. */
+  private openMenuIds = new Set<string>();
+  /** Ids on the path to the screen of the current route: the screen itself and all its parents. */
+  private activeMenuIds = new Set<string>();
+
   constructor(
     @Inject(DOCUMENT) private document: Document,
     private elementRef: ElementRef,
@@ -35,11 +44,17 @@ export class NavbarComponent implements OnInit, AfterViewInit, OnDestroy {
     private http: HttpClient,
     private renderer: Renderer2,
     private commonService: CommonService,
-    private sessionService: SessionStorageService
+    private sessionService: SessionStorageService,
+    private authService: AuthService,
+    private userCardService: UserCardService
   ) {}
 
   ngOnInit(): void {
+    this.cardSubscription = this.userCardService.card$.subscribe((card) => (this.card = card));
     this.initializeMenu();
+    this.routerSubscription = this.router.events
+      .pipe(filter((event) => event instanceof NavigationEnd))
+      .subscribe(() => this.syncWithRoute());
   }
 
   ngAfterViewInit() {
@@ -56,12 +71,10 @@ export class NavbarComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   initializeMenu(): void {
-    this.initTreeview(); // Optional pre-init if needed
-
     this.menuSubscription = this.commonService.GetUserMenus().subscribe({
       next: (userMenus) => {
         this.menuList = this.commonService.parseMenu(userMenus);
-        this.reinitializeTreeview(); // Initialize menu after data
+        this.syncWithRoute();
       },
       error: (err) => {
         console.error('Error loading user menus:', err);
@@ -70,57 +83,125 @@ export class NavbarComponent implements OnInit, AfterViewInit, OnDestroy {
     });
   }
 
-  
+  // ===============================================================================================================
+  // MENU TREE (any depth: Header > Module > (Sub Module >)* Component)
+  // ===============================================================================================================
 
-  // private parseMenu(userMenus: any): MenuItem[] {
-  //   try {
-  //     let parsed = userMenus;
+  trackById(_: number, item: MenuItem): string {
+    return item.Id;
+  }
 
-  //     // Handle possible double-encoded JSON
-  //     if (typeof parsed === 'string') parsed = JSON.parse(parsed);
-  //     if (Array.isArray(parsed)) {
-  //       console.log('Parsed menu with', parsed.length, 'items');
-  //       return parsed;
-  //     } else {
-  //       console.warn('Menu data is not an array:', parsed);
-  //       return [];
-  //     }
-  //   } catch (error) {
-  //     console.error('Failed to parse menu:', error);
-  //     return [];
-  //   }
-  // }
+  private children(item: MenuItem): MenuItem[] {
+    return item?.Children ?? [];
+  }
 
-  private initTreeview(): void {
-    if ($ && $('[data-widget="treeview"]').length > 0) {
-      try {
-        $('[data-widget="treeview"]').Treeview('init');
-      } catch (e) {
-        console.warn('Initial treeview init error (optional):', e);
-      }
+  /** A module / sub module that has something to show below it. */
+  isGroup(item: MenuItem): boolean {
+    return !item.IsHeader && this.children(item).some((child) => this.isGroup(child) || this.isLink(child));
+  }
+
+  /** A routed screen: a component, or a module without children that is a link itself (Dashboard). */
+  isLink(item: MenuItem): boolean {
+    return !item.IsHeader && this.children(item).length === 0 && !!item.RouteLink?.trim();
+  }
+
+  /** Headers are only drawn when the user can see at least one item under them. */
+  hasVisibleChildren(item: MenuItem): boolean {
+    return this.children(item).some((child) => this.isGroup(child) || this.isLink(child));
+  }
+
+  isOpen(item: MenuItem): boolean {
+    return this.openMenuIds.has(item.Id);
+  }
+
+  isActive(item: MenuItem): boolean {
+    return this.activeMenuIds.has(item.Id);
+  }
+
+  itemClass(item: MenuItem): string {
+    return item.CssClass?.trim() || 'nav-item';
+  }
+
+  /** RouteLinkClass from the DB, minus any stored "active": the router decides what is active. */
+  linkClass(item: MenuItem): string {
+    const classes = (item.RouteLinkClass ?? '')
+      .split(/\s+/)
+      .filter((css) => css && css !== 'active');
+    return (classes.length ? classes : ['nav-link']).join(' ');
+  }
+
+  /**
+   * Expand / collapse a group. Opening one closes its open siblings (and everything under them),
+   * so only one branch per level stays expanded.
+   */
+  toggleMenu(item: MenuItem, siblings: MenuItem[] | undefined, event: Event): void {
+    event.preventDefault();
+    (event.currentTarget as HTMLElement)?.blur();
+    if (this.isOpen(item)) {
+      this.closeBranch(item);
+      return;
+    }
+    (siblings ?? []).filter((sibling) => sibling.Id !== item.Id).forEach((sibling) => this.closeBranch(sibling));
+    this.openMenuIds.add(item.Id);
+  }
+
+  /** Drop the focus ring after a click, so a previously clicked item does not look selected. */
+  onLinkClick(event: Event): void {
+    (event.currentTarget as HTMLElement)?.blur();
+  }
+
+  private closeBranch(item: MenuItem): void {
+    this.openMenuIds.delete(item.Id);
+    this.children(item).forEach((child) => this.closeBranch(child));
+  }
+
+  /**
+   * Highlight the screen of the current URL and its parents, and keep only that branch open:
+   * selecting a screen in one microservice module collapses every other module.
+   */
+  private syncWithRoute(): void {
+    const url = this.router.url.split(/[?#;]/)[0];
+    const path = this.findActivePath(this.menuList, url);
+    this.activeMenuIds = new Set(path.map((menu) => menu.Id));
+    if (path.length) {
+      this.openMenuIds = new Set(path.filter((menu) => this.isGroup(menu)).map((menu) => menu.Id));
     }
   }
 
-  private reinitializeTreeview(): void {
-    setTimeout(() => {
-      if ($ && $('[data-widget="treeview"]').length > 0) {
-        try {
-          $('[data-widget="treeview"]').Treeview('init');
-          console.log('Treeview initialized after loading menu');
-        } catch (e) {
-          console.error('Error initializing Treeview:', e);
+  /** Path (root → screen) to the screen whose RouteLink is the longest prefix of the URL. */
+  private findActivePath(items: MenuItem[], url: string, trail: MenuItem[] = []): MenuItem[] {
+    let best: MenuItem[] = [];
+    for (const item of items ?? []) {
+      const here = item.IsHeader ? trail : [...trail, item];
+      const link = item.RouteLink?.trim();
+      if (link && (url === link || url.startsWith(link + '/'))) {
+        if (!best.length || link.length > (best[best.length - 1].RouteLink?.trim().length ?? 0)) {
+          best = here;
         }
       }
-    }, 0);
+      const deeper = this.findActivePath(this.children(item), url, here);
+      if (deeper.length) {
+        const deeperLink = deeper[deeper.length - 1].RouteLink?.trim() ?? '';
+        if (!best.length || deeperLink.length > (best[best.length - 1].RouteLink?.trim().length ?? 0)) {
+          best = deeper;
+        }
+      }
+    }
+    return best;
   }
 
+  /** Server-side sign out too: clearing the browser alone would leave the refresh token valid. */
   signOut(): void {
-    this.commonService.RevokeSession();
+    this.authService.logout();
   }
 
   ngOnDestroy(): void {
     if (this.menuSubscription) {
       this.menuSubscription.unsubscribe();
     }
+    if (this.routerSubscription) {
+      this.routerSubscription.unsubscribe();
+    }
+    this.cardSubscription?.unsubscribe();
   }
 }

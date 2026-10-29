@@ -15,7 +15,7 @@
       <a class="nav-link" data-widget="pushmenu" href="#" role="button"><i class="fas fa-bars"></i></a>
     </li>
     <li class="nav-item d-none d-sm-inline-block">
-      <a href="index3.html" class="nav-link">Home</a>
+      <a routerLink="/business/home" class="nav-link">Home</a>
     </li>
     <li class="nav-item d-none d-sm-inline-block">
       <a href="#" class="nav-link">Contact</a>
@@ -134,8 +134,8 @@
     <!-- User Account: style can be found in dropdown.less -->
     <li class="nav-item dropdown user user-menu">
       <a class="nav-link" data-toggle="dropdown" href="#">
-        <img src="assets/img/user2-160x160.jpg" class="img-size-50 user-image mr-3" alt="User Image">
-        <span class="hidden-xs">{{user.UserName}}</span>
+        <img [src]="card.photoUrl" class="user-image img-circle mr-2" alt="User Image">
+        <span class="hidden-xs">{{user?.UserName}}</span>
       </a>
 
       <!-- <div class="dropdown-menu dropdown-menu-lg dropdown-menu-right">
@@ -152,30 +152,25 @@
 
       <div class="dropdown-menu dropdown-menu-lg dropdown-menu-right">
         <li class="user-header">
-          <img src="assets/img/user2-160x160.jpg" class="img-size-50 img-circle mr-3" alt="User Image">
+          <img [src]="card.photoUrl" class="img-circle elevation-2" alt="User Image">
 
           <p>
-            {{user.FullName}} - Web Developer
-            <small>Member since {{ user.CreatedDate | date: 'MMMM yyyy' }}</small>
+            {{card.fullName}}<ng-container *ngIf="card.title"> - {{card.title}}</ng-container>
+            <small *ngIf="card.memberSince">Member since {{ card.memberSince | date: 'MMMM yyyy' }}</small>
           </p>
         </li>
-        <li class="user-body">
+        <!-- Followers / Friends removed; Sales kept hidden until there is a sales module to link to -->
+        <li class="user-body" hidden>
           <div class="row">
-            <div class="col-4 text-left">
-              <a href="#">Followers</a>
-            </div>
-            <div class="col-4 text-center">
+            <div class="col-12 text-center">
               <a href="#">Sales</a>
-            </div>
-            <div class="col-4 text-right">
-              <a href="#">Friends</a>
             </div>
           </div>
         </li>
         <li class="user-footer">
           <div class="row">
             <div class="col-6 text-left">
-              <a href="#" class="btn btn-default btn-flat">Profile</a>
+              <a routerLink="/business/security/appuserprofile" [queryParams]="{ profile: card.profileId }" class="btn btn-default btn-flat">Profile</a>
             </div>
             <!-- <div class="col-6 text-right">
               <a href="#" *ngIf="isUserAuthenticated()" (click)="signOut()" class="btn btn-default btn-flat">Sign out</a>

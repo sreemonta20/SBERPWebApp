@@ -720,6 +720,7 @@
                         <table class="table table-hover text-nowrap">
                             <thead>
                                 <tr>
+                                    <th style="width:48px">Photo</th>
                                     <th>Code</th>
                                     <th>Name</th>
                                     <th>Email</th>
@@ -734,6 +735,10 @@
                             </thead>
                             <tbody>
                                 <tr *ngFor="let e of employeeList">
+                                    <td data-label="Photo">
+                                        <app-photo-thumb owner="employee" [ownerId]="e.id" [photoId]="e.photoId ?? null"
+                                            [size]="32" [alt]="e.fullName"></app-photo-thumb>
+                                    </td>
                                     <td data-label="Code">{{ e.employeeCode }}</td>
                                     <td data-label="Name">{{ e.fullName }}</td>
                                     <td data-label="Email">{{ e.officialEmail }}</td>
@@ -821,6 +826,43 @@
 
                         <!-- ============ Tab 0: Personal ============ -->
                         <div *ngIf="activeTab === 0">
+                            <!-- Employee photo (optional): uploaded after the employee is saved -->
+                            <div class="d-flex align-items-center mb-3 employee-photo-panel">
+                                <img [src]="photoPreviewUrl" class="img-circle elevation-2 employee-photo mr-3"
+                                    alt="Employee photo">
+                                <div>
+                                    <div class="mb-1">
+                                        <span *ngIf="photoStatus === 'uploaded'" class="badge badge-success">
+                                            <i class="fas fa-check-circle"></i> Photo uploaded
+                                        </span>
+                                        <span *ngIf="photoStatus === 'pending'" class="badge badge-warning">
+                                            New photo: uploads on Save
+                                        </span>
+                                        <span *ngIf="photoStatus === 'remove'" class="badge badge-secondary">
+                                            Photo removed on Save
+                                        </span>
+                                        <span *ngIf="photoStatus === 'none'" class="badge badge-light">No photo</span>
+                                    </div>
+                                    <input #photoInput type="file" class="d-none" [accept]="photoAccept"
+                                        (change)="onPhotoSelected($event)">
+                                    <div class="btn-group btn-group-sm">
+                                        <button type="button" class="btn btn-outline-primary"
+                                            (click)="photoInput.value = ''; photoInput.click()"
+                                            [disabled]="isEdit ? !isUpdate : !isCreate">
+                                            <i class="fas fa-camera"></i> {{ photoStatus === 'none' ? 'Upload photo' : 'Change photo' }}
+                                        </button>
+                                        <button type="button" class="btn btn-outline-danger" title="Remove photo"
+                                            *ngIf="photoStatus === 'uploaded' || photoStatus === 'pending'"
+                                            (click)="removePhoto()" [disabled]="isEdit ? !isUpdate : !isCreate">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                    <small class="form-text text-muted">
+                                        Optional. JPG or PNG, max {{ photoMaxSizeMB }} MB. When this employee has a
+                                        login, this photo is shown in the top bar and sidebar.
+                                    </small>
+                                </div>
+                            </div>
                             <div class="row">
                                 <div class="form-group col-md-3">
                                     <label>Employee Code <span class="text-danger">*</span></label>

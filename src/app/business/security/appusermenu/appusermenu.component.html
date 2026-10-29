@@ -85,7 +85,7 @@
                   </datalist>
                   <div *ngIf="appUserMenuForm.get('RouteLink').invalid && appUserMenuForm.get('RouteLink').touched"
                     class="text-danger">
-                    Route Link is required.
+                    Route Link is required for a component or a routed module.
                   </div>
                 </div>
               </div>
@@ -124,19 +124,25 @@
               </div>
               <div class="col-md-3 col-sm-3 col-lg-3">
                 <div class="form-group">
-                  <label for="ddlParentId">Parent Menu</label>
-                  <select name="select" class="form-control" id="ddlParentId" name="ParentId"
-                    formControlName="ParentId">
-                    <option value="" disabled selected>Please select</option>
-                    <option *ngFor="let parentMenu of parentMenuList" value={{parentMenu.Id}}>
+                  <label for="ddlParentId">Parent Menu<span *ngIf="!appUserMenuForm.get('IsHeader').value"
+                      style="color: red;"> *</span></label>
+                  <select class="form-control" id="ddlParentId" name="ParentId" formControlName="ParentId">
+                    <option value="" disabled selected>{{ appUserMenuForm.get('IsHeader').value ? 'No parent (top level)' :
+                      'Please select' }}</option>
+                    <option *ngFor="let parentMenu of filteredParentMenuList" value={{parentMenu.Id}}>
                       {{parentMenu.Name}}
                     </option>
                   </select>
+                  <div *ngIf="appUserMenuForm.get('ParentId').invalid && appUserMenuForm.get('ParentId').touched"
+                    class="text-danger">
+                    Parent Menu is required.
+                  </div>
+                  <small class="form-text text-muted">{{ parentMenuHint }}</small>
                 </div>
               </div>
               <div class="col-md-3 col-sm-3 col-lg-3">
                 <div class="form-group">
-                  <label for="txtDropdownIcon">Icon</label>
+                  <label for="txtDropdownIcon">Dropdown Icon</label>
                   <input type="text" class="form-control" id="txtDropdownIcon" formControlName="DropdownIcon"
                     list="dropdownIconOptions" (input)="onDropdownIconInput($event)" />
                   <datalist id="dropdownIconOptions">
@@ -161,28 +167,36 @@
                   </div>
                 </div>
               </div>
-              <div class="col-md-3 col-sm-3 col-lg-3">
-                <div class="form-group form-check">
+              <!-- Menu type: exactly one of Header > Module > Sub Module > Component -->
+              <div class="col-md-9 col-sm-9 col-lg-9">
+                <label class="d-block">Menu Type <span style="color: red;">*</span></label>
+                <div class="form-check form-check-inline">
                   <input type="checkbox" id="chkIsHeader" name="IsHeader" formControlName="IsHeader"
-                    class="form-check-input" />
+                    class="form-check-input" (change)="onMenuTypeChange('IsHeader')" />
                   <label for="chkIsHeader" class="form-check-label" style="font-weight: bold;">Is Header</label>
                 </div>
-              </div>
-
-              <div class="col-md-3 col-sm-3 col-lg-3">
-                <div class="form-group form-check">
+                <div class="form-check form-check-inline">
                   <input type="checkbox" id="chkIsModule" name="IsModule" formControlName="IsModule"
-                    class="form-check-input" />
+                    class="form-check-input" (change)="onMenuTypeChange('IsModule')" />
                   <label for="chkIsModule" class="form-check-label" style="font-weight: bold;">Is Module</label>
                 </div>
-              </div>
-
-              <div class="col-md-3 col-sm-3 col-lg-3">
-                <div class="form-group form-check">
+                <div class="form-check form-check-inline">
+                  <input type="checkbox" id="chkIsSubModule" name="IsSubModule" formControlName="IsSubModule"
+                    class="form-check-input" (change)="onMenuTypeChange('IsSubModule')" />
+                  <label for="chkIsSubModule" class="form-check-label" style="font-weight: bold;">Is Sub Module</label>
+                </div>
+                <div class="form-check form-check-inline">
                   <input type="checkbox" id="chkIsComponent" name="IsComponent" formControlName="IsComponent"
-                    class="form-check-input" />
+                    class="form-check-input" (change)="onMenuTypeChange('IsComponent')" />
                   <label for="chkIsComponent" class="form-check-label" style="font-weight: bold;">Is Component</label>
                 </div>
+                <div *ngIf="appUserMenuForm.errors?.menuType && appUserMenuForm.touched" class="text-danger">
+                  Select one menu type.
+                </div>
+                <small class="form-text text-muted">
+                  Header: sidebar section &middot; Module: a microservice (e.g. Security, Human Resources) &middot;
+                  Sub Module: a group inside a module (e.g. Recruitment) &middot; Component: a screen with a route link.
+                </small>
               </div>
             </div>
 
@@ -234,6 +248,7 @@
                     <th>Menu Name</th>
                     <th>Header?</th>
                     <th>Module?</th>
+                    <th>Sub Module?</th>
                     <th>Component?</th>
                     <th>Route Link</th>
                     <th>Parent Menu</th>
@@ -246,6 +261,7 @@
                     <td>{{ menu.Name }}</td>
                     <td>{{ menu.IsHeader ? 'Yes' : 'No' }}</td>
                     <td>{{ menu.IsModule ? 'Yes' : 'No' }}</td>
+                    <td>{{ menu.IsSubModule ? 'Yes' : 'No' }}</td>
                     <td>{{ menu.IsComponent ? 'Yes' : 'No' }}</td>
                     <td>{{ menu.RouteLink }}</td>
                     <td>{{ menu.ParentName }}</td>

@@ -10,8 +10,10 @@ import {
   ViewChild,
 } from '@angular/core';
 import {
+  AbstractControl,
   FormBuilder,
   FormGroup,
+  ValidationErrors,
   Validators,
   FormControl,
 } from '@angular/forms';
@@ -89,6 +91,8 @@ export class AppUserMenuComponent implements OnInit, AfterViewInit, OnDestroy {
   public iconList: { name: string }[] = [];
   public filteredIconList: { name: string }[] = [];
   public parentMenuList: AppUserRoleMenuInitialData[] = [];
+  public filteredParentMenuList: AppUserRoleMenuInitialData[] = [];
+  public parentMenuHint: string = '';
   public dropdownIconList: { name: string }[] = [];
   public filteredDropdownIconList: { name: string }[] = [];
 
@@ -156,22 +160,24 @@ export class AppUserMenuComponent implements OnInit, AfterViewInit, OnDestroy {
   createForm() {
     this.appUserMenuForm = this.formBuilder.group({
       Id: [null],
-      Name: ['', [Validators.required, CustomValidators.englishText(1, 50)]],
+      Name: ['', [Validators.required, CustomValidators.menuName(1, 100)]],
       IsHeader: [false],
       IsModule: [false],
+      IsSubModule: [false],
       IsComponent: [false],
       CssClass: new FormControl('', Validators.required),
       IsRouteLink: [false],
-      RouteLink: new FormControl('', Validators.required),
-      RouteLinkClass: new FormControl('', Validators.required),
-      Icon: new FormControl('', Validators.required),
+      RouteLink: new FormControl(''),
+      RouteLinkClass: new FormControl(''),
+      Icon: new FormControl(''),
       Remark: new FormControl(''),
       ParentId: new FormControl(''),
       DropdownIcon: new FormControl(''),
       SerialNo: new FormControl('', Validators.required),
       CreateUpdateBy: this.appUserProfileId,
       IsActive: [true],
-    });
+    }, { validators: AppUserMenuComponent.menuTypeValidator });
+    this.watchRouteLinkFlag();
   }
 
   initializeFormData() {
@@ -217,7 +223,8 @@ export class AppUserMenuComponent implements OnInit, AfterViewInit, OnDestroy {
             );
             this.filteredIconList = [...this.iconList];
 
-            this.parentMenuList = this.initialDataResponse.parentMenuList;
+            this.parentMenuList = this.initialDataResponse.parentMenuList ?? [];
+            this.applyMenuTypeRules();
 
             this.initialDataResponse.dropdownIconList.forEach(
               (item: AppUserRoleMenuInitialData) => {
@@ -364,6 +371,73 @@ export class AppUserMenuComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   // ===============================================================================================================
+  // MENU TYPE (Header > Module > (Sub Module >)* Component)
+  // ===============================================================================================================
+  private static readonly MENU_TYPES = ['IsHeader', 'IsModule', 'IsSubModule', 'IsComponent'];
+
+  /** Exactly one menu type must be ticked. */
+  static menuTypeValidator(group: AbstractControl): ValidationErrors | null {
+    const ticked = AppUserMenuComponent.MENU_TYPES.filter((type) => !!group.get(type)?.value).length;
+    return ticked === 1 ? null : { menuType: true };
+  }
+
+  /** The type checkboxes behave like radio buttons. */
+  onMenuTypeChange(type: string): void {
+    if (this.appUserMenuForm.get(type).value) {
+      AppUserMenuComponent.MENU_TYPES.filter((other) => other !== type).forEach((other) =>
+        this.appUserMenuForm.get(other).setValue(false, { emitEvent: false })
+      );
+    }
+    this.applyMenuTypeRules();
+  }
+
+  private watchRouteLinkFlag(): void {
+    this.appUserMenuForm.get('IsRouteLink').valueChanges.subscribe(() => this.applyRequiredFields());
+  }
+
+  /** Parent choices and required fields follow the menu type. */
+  private applyMenuTypeRules(): void {
+    const form = this.appUserMenuForm;
+    const selfId = form.get('Id').value;
+    let allowedParents: string[] = [];
+    if (form.get('IsHeader').value) {
+      this.parentMenuHint = 'A header is a top-level sidebar section and has no parent.';
+    } else if (form.get('IsModule').value) {
+      allowedParents = ['Header'];
+      this.parentMenuHint = 'A module goes under a header.';
+    } else if (form.get('IsSubModule').value || form.get('IsComponent').value) {
+      allowedParents = ['Module', 'SubModule'];
+      this.parentMenuHint = 'Place it under a module or a sub module.';
+    } else {
+      this.parentMenuHint = 'Select a menu type first.';
+    }
+    this.filteredParentMenuList = this.parentMenuList.filter(
+      (parent) => allowedParents.includes(parent.Type ?? '') && parent.Id?.toLowerCase() !== selfId?.toLowerCase()
+    );
+    const parentId = form.get('ParentId').value;
+    if (parentId && !this.filteredParentMenuList.some((parent) => parent.Id?.toLowerCase() === `${parentId}`.toLowerCase())) {
+      form.get('ParentId').setValue('');
+    }
+    this.applyRequiredFields();
+  }
+
+  private applyRequiredFields(): void {
+    const form = this.appUserMenuForm;
+    const isHeader = !!form.get('IsHeader').value;
+    const needsRoute = !!form.get('IsComponent').value || !!form.get('IsRouteLink').value;
+    this.setRequired('ParentId', !isHeader);
+    this.setRequired('RouteLink', needsRoute);
+    this.setRequired('RouteLinkClass', !isHeader);
+    this.setRequired('Icon', !isHeader);
+  }
+
+  private setRequired(controlName: string, required: boolean): void {
+    const control = this.appUserMenuForm.get(controlName);
+    control.setValidators(required ? Validators.required : null);
+    control.updateValueAndValidity({ emitEvent: false });
+  }
+
+  // ===============================================================================================================
   // CREATE UPDATE & DELETE
   // ===============================================================================================================
   createUpdateAppUserMenu(appUserMenu): void {
@@ -380,6 +454,7 @@ export class AppUserMenuComponent implements OnInit, AfterViewInit, OnDestroy {
       appUserMenuRequest.Name = appUserMenu['Name'];
       appUserMenuRequest.IsHeader = appUserMenu['IsHeader'];
       appUserMenuRequest.IsModule = appUserMenu['IsModule'];
+      appUserMenuRequest.IsSubModule = appUserMenu['IsSubModule'];
       appUserMenuRequest.IsComponent = appUserMenu['IsComponent'];
       appUserMenuRequest.CssClass = appUserMenu['CssClass'];
       appUserMenuRequest.IsRouteLink = appUserMenu['IsRouteLink'];
@@ -387,7 +462,7 @@ export class AppUserMenuComponent implements OnInit, AfterViewInit, OnDestroy {
       appUserMenuRequest.RouteLinkClass = appUserMenu['RouteLinkClass'];
       appUserMenuRequest.Icon = appUserMenu['Icon'];
       appUserMenuRequest.Remark = appUserMenu['Remark'];
-      appUserMenuRequest.ParentId = appUserMenu['ParentId'];
+      appUserMenuRequest.ParentId = appUserMenu['ParentId'] || null;
       appUserMenuRequest.DropdownIcon = appUserMenu['DropdownIcon'];
       appUserMenuRequest.SerialNo = appUserMenu['SerialNo'];
       appUserMenuRequest.CreateUpdateBy = appUserMenu['CreateUpdateBy'];
@@ -398,6 +473,7 @@ export class AppUserMenuComponent implements OnInit, AfterViewInit, OnDestroy {
       appUserMenuRequest.Name = appUserMenu['Name'];
       appUserMenuRequest.IsHeader = appUserMenu['IsHeader'];
       appUserMenuRequest.IsModule = appUserMenu['IsModule'];
+      appUserMenuRequest.IsSubModule = appUserMenu['IsSubModule'];
       appUserMenuRequest.IsComponent = appUserMenu['IsComponent'];
       appUserMenuRequest.CssClass = appUserMenu['CssClass'];
       appUserMenuRequest.IsRouteLink = appUserMenu['IsRouteLink'];
@@ -405,7 +481,7 @@ export class AppUserMenuComponent implements OnInit, AfterViewInit, OnDestroy {
       appUserMenuRequest.RouteLinkClass = appUserMenu['RouteLinkClass'];
       appUserMenuRequest.Icon = appUserMenu['Icon'];
       appUserMenuRequest.Remark = appUserMenu['Remark'];
-      appUserMenuRequest.ParentId = appUserMenu['ParentId'];
+      appUserMenuRequest.ParentId = appUserMenu['ParentId'] || null;
       appUserMenuRequest.DropdownIcon = appUserMenu['DropdownIcon'];
       appUserMenuRequest.SerialNo = appUserMenu['SerialNo'];
       appUserMenuRequest.CreateUpdateBy = appUserMenu['CreateUpdateBy'];
@@ -450,6 +526,7 @@ export class AppUserMenuComponent implements OnInit, AfterViewInit, OnDestroy {
         Name: menu.Name,
         IsHeader: menu.IsHeader,
         IsModule: menu.IsModule,
+        IsSubModule: menu.IsSubModule ?? false,
         IsComponent: menu.IsComponent,
         CssClass: menu.CssClass,
         IsRouteLink: menu.IsRouteLink,
@@ -463,6 +540,7 @@ export class AppUserMenuComponent implements OnInit, AfterViewInit, OnDestroy {
         CreateUpdateBy: this.appUserProfileId,
         IsActive: menu.IsActive,
       });
+      this.applyMenuTypeRules();
     } else {
       this.notifyService.showError(
         MessageConstants.APP_USER_MENU_NOT_FOUND_TO_UPDATE_MEG,
@@ -554,28 +632,31 @@ export class AppUserMenuComponent implements OnInit, AfterViewInit, OnDestroy {
 
     this.appUserMenuForm = this.formBuilder.group({
       Id: [null],
-      Name: ['', [Validators.required, CustomValidators.englishText(1, 50)]],
+      Name: ['', [Validators.required, CustomValidators.menuName(1, 100)]],
       IsHeader: [false],
       IsModule: [false],
+      IsSubModule: [false],
       IsComponent: [false],
       CssClass: new FormControl('', Validators.required),
       IsRouteLink: [false],
-      RouteLink: new FormControl('', Validators.required),
-      RouteLinkClass: new FormControl('', Validators.required),
-      Icon: new FormControl('', Validators.required),
+      RouteLink: new FormControl(''),
+      RouteLinkClass: new FormControl(''),
+      Icon: new FormControl(''),
       Remark: new FormControl(''),
       ParentId: new FormControl(''),
       DropdownIcon: new FormControl(''),
       SerialNo: new FormControl('', Validators.required),
       CreateUpdateBy: this.appUserProfileId,
       IsActive: [true],
-    });
+    }, { validators: AppUserMenuComponent.menuTypeValidator });
+    this.watchRouteLinkFlag();
 
     this.appUserMenuForm.reset({
       Id: null,
       Name: '',
       IsHeader: false,
       IsModule: false,
+      IsSubModule: false,
       IsComponent: false,
       CssClass: '',
       IsRouteLink: false,

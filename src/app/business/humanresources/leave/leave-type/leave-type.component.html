@@ -1,0 +1,118 @@
+<div class="content-wrapper">
+  <section class="content-header">
+    <div class="container-fluid">
+      <div class="row mb-2">
+        <div class="col-sm-6"><h1>Leave Types</h1></div>
+        <div class="col-sm-6">
+          <ol class="breadcrumb float-sm-right">
+            <li class="breadcrumb-item"><a class="bc-link">Leave</a></li>
+            <li class="breadcrumb-item active">Types</li>
+          </ol>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="content">
+    <div class="container-fluid">
+      <div *ngIf="!isView" class="alert alert-warning">{{ pageDisplayMessage }}</div>
+
+      <!-- LIST -->
+      <div class="card card-outline card-primary" *ngIf="isView && viewMode === 'list'">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <h3 class="card-title mt-1">Leave Type List</h3>
+          <button class="btn btn-primary btn-sm" *ngIf="isCreate" (click)="openCreateForm()"><i class="fas fa-plus mr-1"></i> New Type</button>
+        </div>
+        <div class="card-body">
+          <div class="row mb-3">
+            <div class="col-md-4">
+              <div class="input-group input-group-sm">
+                <input type="text" class="form-control" placeholder="Search by code / name…" [(ngModel)]="searchTerm" (keyup.enter)="search()">
+                <span class="input-group-append"><button class="btn btn-default" (click)="search()"><i class="fas fa-search"></i></button></span>
+              </div>
+            </div>
+            <div class="col-md-8 text-right">
+              <label class="mr-2 mb-0">Page size</label>
+              <select class="form-control form-control-sm d-inline-block" style="width:auto" (change)="changePageSize($event)">
+                <option *ngFor="let s of pageSizeList" [value]="s">{{ s }}</option>
+              </select>
+            </div>
+          </div>
+          <div class="table-responsive">
+            <table class="table table-hover table-bordered list-table">
+              <thead>
+                <tr><th>Code</th><th>Name</th><th class="text-center">Paid</th><th class="text-center">Half Day</th><th class="text-center">Carry Fwd</th><th class="text-center">Accrual/Mo</th><th class="text-center" style="width:110px">Actions</th></tr>
+              </thead>
+              <tbody>
+                <tr *ngIf="list.length === 0"><td colspan="7" class="text-center text-muted">No leave types found.</td></tr>
+                <tr *ngFor="let t of list">
+                  <td>{{ t.leaveTypeCode }}</td>
+                  <td><span class="dot" [style.background]="t.colorHex || '#6c757d'"></span>{{ t.name }}</td>
+                  <td class="text-center"><span class="badge" [class.badge-success]="t.isPaid" [class.badge-secondary]="!t.isPaid">{{ t.isPaid ? 'Paid' : 'Unpaid' }}</span></td>
+                  <td class="text-center">{{ t.allowHalfDay ? 'Yes' : 'No' }}</td>
+                  <td class="text-center">{{ t.isCarryForward ? (t.maxCarryForward || 'Yes') : 'No' }}</td>
+                  <td class="text-center">{{ t.accrualPerMonth || '—' }}</td>
+                  <td class="text-center action-icons">
+                    <a title="Edit" *ngIf="isUpdate" (click)="edit(t)"><i class="fas fa-edit text-primary"></i></a>
+                    <a title="Delete" *ngIf="isDelete" (click)="remove(t)"><i class="fas fa-trash text-danger"></i></a>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div class="card-footer clearfix">
+          <span class="float-left text-muted mt-1">Showing {{ startPage }}–{{ endPage }} of {{ totalRows }}</span>
+          <ul class="pagination pagination-sm m-0 float-right">
+            <li class="page-item" [class.disabled]="currentPage === 1"><a class="page-link" (click)="changePage(currentPage - 1)">«</a></li>
+            <li class="page-item" *ngFor="let x of [].constructor(pageCount); let i = index" [class.active]="currentPage === i + 1"><a class="page-link" (click)="changePage(i + 1)">{{ i + 1 }}</a></li>
+            <li class="page-item" [class.disabled]="currentPage === pageCount"><a class="page-link" (click)="changePage(currentPage + 1)">»</a></li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- FORM -->
+      <div class="card card-outline card-primary" *ngIf="isView && viewMode === 'form'">
+        <div class="card-header"><h3 class="card-title mt-1">{{ isEdit ? 'Edit' : 'New' }} Leave Type</h3></div>
+        <form [formGroup]="form" (ngSubmit)="save()">
+          <div class="card-body">
+            <div class="row">
+              <div class="col-md-3 form-group"><label>Code <span class="text-danger">*</span></label><input class="form-control" formControlName="leaveTypeCode"></div>
+              <div class="col-md-5 form-group"><label>Name <span class="text-danger">*</span></label><input class="form-control" formControlName="name"></div>
+              <div class="col-md-2 form-group"><label>Color</label><input type="color" class="form-control" formControlName="colorHex"></div>
+            </div>
+            <div class="row">
+              <div class="col-md-2 form-group">
+                <label class="d-block">Paid</label>
+                <div class="custom-control custom-switch mt-2"><input type="checkbox" class="custom-control-input" id="isPaid" formControlName="isPaid"><label class="custom-control-label" for="isPaid">Paid leave</label></div>
+              </div>
+              <div class="col-md-2 form-group">
+                <label class="d-block">Half Day</label>
+                <div class="custom-control custom-switch mt-2"><input type="checkbox" class="custom-control-input" id="allowHalf" formControlName="allowHalfDay"><label class="custom-control-label" for="allowHalf">Allowed</label></div>
+              </div>
+              <div class="col-md-3 form-group">
+                <label class="d-block">Attachment</label>
+                <div class="custom-control custom-switch mt-2"><input type="checkbox" class="custom-control-input" id="reqAtt" formControlName="requiresAttachment"><label class="custom-control-label" for="reqAtt">Required</label></div>
+              </div>
+              <div class="col-md-2 form-group">
+                <label class="d-block">Carry Forward</label>
+                <div class="custom-control custom-switch mt-2"><input type="checkbox" class="custom-control-input" id="isCF" formControlName="isCarryForward"><label class="custom-control-label" for="isCF">Enabled</label></div>
+              </div>
+              <div class="col-md-3 form-group"><label>Max Carry Forward</label><input type="number" step="0.5" class="form-control" formControlName="maxCarryForward"></div>
+            </div>
+            <div class="row">
+              <div class="col-md-3 form-group"><label>Accrual / month</label><input type="number" step="0.01" class="form-control" formControlName="accrualPerMonth" placeholder="e.g. 2.5"></div>
+              <div class="col-md-9 form-group"><label>Description</label><input class="form-control" formControlName="description"></div>
+            </div>
+          </div>
+          <div class="card-footer">
+            <button type="submit" class="btn btn-primary"><i class="fas fa-save mr-1"></i> Save</button>
+            <button type="button" class="btn btn-default ml-2" (click)="cancelForm()">Cancel</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </section>
+</div>
+
+<app-confirm-dialog #confirmDialog [message]="deleteConfirmationMessage" (confirmed)="executeDelete()"></app-confirm-dialog>

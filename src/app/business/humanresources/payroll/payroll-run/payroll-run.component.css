@@ -1,0 +1,11 @@
+.list-table thead th { background:#f8f9fa; font-size:.82rem; text-transform:uppercase; letter-spacing:.02em; }
+.list-table td { vertical-align: middle; font-size:.88rem; }
+.action-icons a { cursor:pointer; margin:0 6px; }
+.bc-link { cursor:pointer; }
+
+.payslip-overlay { position:fixed; inset:0; background:rgba(0,0,0,.45); display:flex; align-items:center; justify-content:center; z-index:1050; }
+.payslip-card { background:#fff; width:480px; max-width:94vw; max-height:88vh; overflow:auto; border-radius:8px; box-shadow:0 10px 40px rgba(0,0,0,.25); }
+.payslip-head { display:flex; justify-content:space-between; align-items:flex-start; padding:16px 18px; border-bottom:1px solid #eee; }
+.payslip-head .close-x { cursor:pointer; font-size:1.1rem; }
+.payslip-body { padding:16px 18px; }
+.net-row { display:flex; justify-content:space-between; align-items:center; padding:12px 4px 0; border-top:2px solid #e9ecef; font-size:1.05rem; }

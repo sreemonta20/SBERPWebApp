@@ -11,5 +11,7 @@ export interface EmployeeListItem {
   dateOfJoining?: string;
   employmentStatus?: number;
   employmentStatusName?: string;
+  /** Null when no photo was uploaded: the default avatar is shown. */
+  photoId?: string | null;
   isActive?: boolean;
 }

@@ -3,6 +3,7 @@ export class AppUserMenuResponse {
     Name?: string | null;
     IsHeader?: boolean | null;
     IsModule?: boolean | null;
+    IsSubModule?: boolean | null;
     IsComponent?: boolean | null;
     CssClass?: string | null;
     IsRouteLink?: boolean | null;

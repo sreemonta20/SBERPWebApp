@@ -163,6 +163,59 @@
                     </div>
                 </div>
 
+                <!-- ====== Biometric Attendance (mobile app / door terminal) ====== -->
+                <div class="card card-primary card-outline">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <i class="fas fa-fingerprint mr-1"></i> Biometric Attendance (mobile app / door terminal)
+                        </h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label>Office time zone</label>
+                                    <input type="text" formControlName="timeZoneId" class="form-control" placeholder="Asia/Dubai" />
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label>Work-day cut-off (HH:mm)</label>
+                                    <input type="text" formControlName="attendanceDayCutoffTime" class="form-control" placeholder="04:00" />
+                                    <small class="text-muted">A punch before this time counts for the previous day (night shifts).</small>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label>Minimum minutes between check-in and check-out</label>
+                                    <input type="number" formControlName="minMinutesBetweenInOut" class="form-control" />
+                                    <small class="text-muted">Earliest punch = check-in, latest = check-out once this gap is reached.</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label>Ignore repeat punches within (minutes)</label>
+                                    <input type="number" formControlName="duplicatePunchMinutes" class="form-control" />
+                                </div>
+                            </div>
+                            <div class="col-md-4 d-flex align-items-end">
+                                <div class="form-group form-check">
+                                    <input type="checkbox" id="mobileAtt" formControlName="mobileAttendanceEnabled" class="form-check-input" />
+                                    <label class="form-check-label" for="mobileAtt">Mobile app check-in enabled</label>
+                                </div>
+                            </div>
+                            <div class="col-md-4 d-flex align-items-end">
+                                <div class="form-group form-check">
+                                    <input type="checkbox" id="officeNet" formControlName="requireOfficeNetwork" class="form-check-input" />
+                                    <label class="form-check-label" for="officeNet">Mobile check-in only inside an Office Zone</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- ====== Data Security & Privacy ====== -->
                 <div class="card card-primary card-outline">
                     <div class="card-header">

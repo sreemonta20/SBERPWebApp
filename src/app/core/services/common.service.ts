@@ -164,7 +164,7 @@ export class CommonService {
       this.serializedUserMenus$.subscribe((serializedMenus) => {
         if (!this.isInvalidObject(serializedMenus)) {
           const matchedMenu = serializedMenus.find((element: MenuItem) =>
-            element.RouteLink.includes(url),
+            element.RouteLink?.includes(url),
           );
           resolve(!!matchedMenu);
         } else {
@@ -192,7 +192,7 @@ export class CommonService {
     this.serializedUserMenus$.subscribe((serializedMenus) => {
       if (!this.isInvalidObject(serializedMenus)) {
         const matchedMenu = serializedMenus.find((element: MenuItem) =>
-          element.RouteLink.includes(url),
+          element.RouteLink?.includes(url),
         );
 
         if (matchedMenu) {

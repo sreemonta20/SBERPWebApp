@@ -1,0 +1,108 @@
+<div class="content-wrapper">
+  <section class="content-header">
+    <div class="container-fluid">
+      <div class="row mb-2">
+        <div class="col-sm-6"><h1>Overtime</h1></div>
+        <div class="col-sm-6">
+          <ol class="breadcrumb float-sm-right">
+            <li class="breadcrumb-item"><a class="bc-link">Attendance</a></li>
+            <li class="breadcrumb-item active">Overtime</li>
+          </ol>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="content">
+    <div class="container-fluid">
+      <div *ngIf="!isView" class="alert alert-warning">{{ pageDisplayMessage }}</div>
+
+      <!-- LIST -->
+      <div class="card card-outline card-primary" *ngIf="isView && viewMode === 'list'">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <h3 class="card-title mt-1">Overtime Requests</h3>
+          <button class="btn btn-primary btn-sm" *ngIf="isCreate" (click)="openCreateForm()"><i class="fas fa-plus mr-1"></i> Raise Request</button>
+        </div>
+        <div class="card-body">
+          <div class="row mb-3">
+            <div class="col-md-4">
+              <div class="input-group input-group-sm">
+                <input type="text" class="form-control" placeholder="Search by code / employee…" [(ngModel)]="searchTerm" (keyup.enter)="search()">
+                <span class="input-group-append"><button class="btn btn-default" (click)="search()"><i class="fas fa-search"></i></button></span>
+              </div>
+            </div>
+            <div class="col-md-8 text-right">
+              <label class="mr-2 mb-0">Page size</label>
+              <select class="form-control form-control-sm d-inline-block" style="width:auto" (change)="changePageSize($event)">
+                <option *ngFor="let s of pageSizeList" [value]="s">{{ s }}</option>
+              </select>
+            </div>
+          </div>
+          <div class="table-responsive">
+            <table class="table table-hover table-bordered list-table">
+              <thead>
+                <tr><th>Code</th><th>Employee</th><th>Date</th><th>From</th><th>To</th><th class="text-center">Hrs</th><th class="text-center">Status</th><th class="text-center" style="width:110px">Actions</th></tr>
+              </thead>
+              <tbody>
+                <tr *ngIf="list.length === 0"><td colspan="8" class="text-center text-muted">No overtime requests found.</td></tr>
+                <tr *ngFor="let o of list">
+                  <td>{{ o.requestCode }}</td>
+                  <td>{{ o.employeeName }}<div><small class="text-muted">{{ o.employeeCode }}</small></div></td>
+                  <td>{{ o.overtimeDate | date:'mediumDate' }}</td>
+                  <td>{{ o.fromTime }}</td>
+                  <td>{{ o.toTime }}</td>
+                  <td class="text-center">{{ o.hours }}</td>
+                  <td class="text-center"><span [class]="statusBadgeClass(o.statusId)">{{ o.statusName }}</span></td>
+                  <td class="text-center action-icons">
+                    <ng-container *ngIf="isUpdate && o.statusId === STATUS.Pending">
+                      <a title="Approve" (click)="approve(o)"><i class="fas fa-check text-success"></i></a>
+                      <a title="Reject" (click)="reject(o)"><i class="fas fa-times text-danger"></i></a>
+                    </ng-container>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div class="card-footer clearfix">
+          <span class="float-left text-muted mt-1">Showing {{ startPage }}–{{ endPage }} of {{ totalRows }}</span>
+          <ul class="pagination pagination-sm m-0 float-right">
+            <li class="page-item" [class.disabled]="currentPage === 1"><a class="page-link" (click)="changePage(currentPage - 1)">«</a></li>
+            <li class="page-item" *ngFor="let x of [].constructor(pageCount); let i = index" [class.active]="currentPage === i + 1"><a class="page-link" (click)="changePage(i + 1)">{{ i + 1 }}</a></li>
+            <li class="page-item" [class.disabled]="currentPage === pageCount"><a class="page-link" (click)="changePage(currentPage + 1)">»</a></li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- FORM -->
+      <div class="card card-outline card-primary" *ngIf="isView && viewMode === 'form'">
+        <div class="card-header"><h3 class="card-title mt-1">Raise Overtime Request</h3></div>
+        <form [formGroup]="form" (ngSubmit)="save()">
+          <div class="card-body">
+            <div class="row">
+              <div class="col-md-6 form-group">
+                <label>Employee <span class="text-danger">*</span></label>
+                <select class="form-control" formControlName="employeeId">
+                  <option value="">-- Select employee --</option>
+                  <option *ngFor="let e of employees" [value]="e.id">{{ e.fullName }} ({{ e.employeeCode }})</option>
+                </select>
+              </div>
+              <div class="col-md-3 form-group"><label>Date <span class="text-danger">*</span></label><input type="date" class="form-control" formControlName="overtimeDate"></div>
+            </div>
+            <div class="row">
+              <div class="col-md-3 form-group"><label>From <span class="text-danger">*</span></label><input type="time" class="form-control" formControlName="fromTime"></div>
+              <div class="col-md-3 form-group"><label>To <span class="text-danger">*</span></label><input type="time" class="form-control" formControlName="toTime"></div>
+              <div class="col-md-6 form-group"><label>Reason</label><input class="form-control" formControlName="reason"></div>
+            </div>
+          </div>
+          <div class="card-footer">
+            <button type="submit" class="btn btn-primary"><i class="fas fa-save mr-1"></i> Submit</button>
+            <button type="button" class="btn btn-default ml-2" (click)="cancelForm()">Cancel</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </section>
+</div>
+
+<app-confirm-dialog #confirmDialog [message]="deleteConfirmationMessage" (confirmed)="executeStatus()"></app-confirm-dialog>
