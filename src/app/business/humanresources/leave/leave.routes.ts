@@ -1,24 +1,18 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
-import { AuthGuard } from '@app/core/guards/auth.guard';
 
 import { LeaveTypeComponent } from './leave-type/leave-type.component';
 import { LeavePolicyComponent } from './leave-policy/leave-policy.component';
 import { LeaveApplicationComponent } from './leave-application/leave-application.component';
 
-/**
- * Leave routes. Wire into business.routes.ts:
- *   {
- *     path: 'leave',
- *     loadChildren: () =>
- *       import('./leave/leave.module').then(m => m.LeaveModule),
- *   }
- */
+// Leave screens at /business/humanresources/leave/*.
+// Lazy-loaded by humanresources.routes.ts; access (session + menu permission) is checked once by the
+// AuthGuard on the parent /business route (canActivateChild), not on every route here.
 const routes: Routes = [
   { path: '', redirectTo: 'applications', pathMatch: 'full' },
-  { path: 'types',        component: LeaveTypeComponent,        canActivate: [AuthGuard] },
-  { path: 'policies',     component: LeavePolicyComponent,      canActivate: [AuthGuard] },
-  { path: 'applications', component: LeaveApplicationComponent, canActivate: [AuthGuard] },
+  { path: 'types',        component: LeaveTypeComponent },
+  { path: 'policies',     component: LeavePolicyComponent },
+  { path: 'applications', component: LeaveApplicationComponent },
 ];
 
 @NgModule({

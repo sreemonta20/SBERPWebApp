@@ -1,121 +1,105 @@
 import { Injectable } from '@angular/core';
 import {
   ActivatedRouteSnapshot,
+  CanActivate,
+  CanActivateChild,
+  CanMatch,
+  Route,
   Router,
   RouterStateSnapshot,
-  CanActivate
+  UrlSegment,
+  UrlTree,
 } from '@angular/router';
 import { JwtHelperService } from '@auth0/angular-jwt';
-import { ToastrService } from 'ngx-toastr';
-import { combineLatest, firstValueFrom } from 'rxjs';
 
 import { CommonService } from '../services/common.service';
 import { AuthService } from '../services/auth.service';
 import { NotificationService } from '../services/notification.service';
-import { SessionStorageService } from '../services/session.service';
+import { MessageConstants, RouteConstants } from '../constants/common.constants';
 
-import {
-  RouteConstants,
-} from '../constants/common.constants';
-import {
-  TokenResponse,
-  RefreshTokenRequest,
-  User,
-} from '@app/core/class/index';
-
+/**
+ * One guard, three entry points:
+ * - canMatch on the lazy /business route: no session = the business chunk is not downloaded at all.
+ * - canActivateChild on the /business layout route: every screen (session, token refresh, menu permission).
+ * - canActivate on the public /auth pages: a signed-in user is sent to the dashboard instead.
+ *
+ * Every "no" returns a UrlTree, never a bare false: a bare false cancels the navigation and leaves
+ * an empty page (that is what happened on the login page for a signed-in user, and on a denied URL).
+ */
 @Injectable({
   providedIn: 'root',
 })
-export class AuthGuard implements CanActivate {
+export class AuthGuard implements CanMatch, CanActivate, CanActivateChild {
   private jwtHelper = new JwtHelperService();
 
   constructor(
-    private toastr: ToastrService,
     private router: Router,
-    private sessionService: SessionStorageService,
     private authService: AuthService,
     private notifyService: NotificationService,
     private commonService: CommonService
   ) {}
 
-  async canActivate(
-    route: ActivatedRouteSnapshot,
-    state: RouterStateSnapshot
-  ): Promise<boolean> {
-    const session = await this.loadSession();
+  canMatch(_route: Route, segments: UrlSegment[]): boolean | UrlTree {
+    if (this.hasSession()) {
+      return true;
+    }
+    return this.loginUrl('/' + segments.map((segment) => segment.path).join('/'));
+  }
 
-    const isLoggedIn = session.isLoggedIn;
-    const loggedInUser = session.loggedInUser;
-    const accessToken = session.accessToken;
-    const refreshToken = session.refreshToken;
+  /** Public pages (login, reset password): only for visitors without a session. */
+  canActivate(_route: ActivatedRouteSnapshot, _state: RouterStateSnapshot): boolean | UrlTree {
+    return this.hasSession() ? this.router.parseUrl(RouteConstants.BUSINESS_HOME_URL) : true;
+  }
 
-    const isLoginPage = state.url.includes(RouteConstants.LOGIN_USER_URL);
-
-    if (!isLoggedIn || !loggedInUser || this.commonService.isInvalidObject(loggedInUser)) {
-      if (!isLoginPage) {
-        this.router.navigate([RouteConstants.LOGIN_USER_URL], {
-          queryParams: { returnUrl: state.url },
-        });
-        return false;
-      }
+  async canActivateChild(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): Promise<boolean | UrlTree> {
+    // The router asks once per route level (e.g. 'humanresources' and then 'employee');
+    // the check is about the URL, so it is done once, for the screen itself.
+    if (route.firstChild) {
       return true;
     }
 
-    const isTokenValid = accessToken && !this.jwtHelper.isTokenExpired(accessToken);
-
-    if (isTokenValid) {
-      // User is logged in with valid token
-      if (isLoginPage) {
-        return false; // Already logged in, redirect away from login
-      }
-
-      if (!this.commonService.isRouteValid(state.url)) {
-        return false;
-      }
-
-      return true;
+    if (!this.hasSession()) {
+      return this.loginUrl(state.url);
     }
 
-    // Attempt token refresh
-    const refreshTokenRequest: RefreshTokenRequest = {
-      Access_Token: accessToken,
-      Refresh_Token: refreshToken,
-    };
-    
-    const isRefreshSuccess = await this.authService.refreshTokenAsync(refreshTokenRequest);
-
-    if (isRefreshSuccess) {
-      if (isLoginPage || !this.commonService.isRouteValid(state.url)) {
+    const { accessToken } = this.commonService.sessionSnapshot();
+    if (!accessToken || this.jwtHelper.isTokenExpired(accessToken)) {
+      // single-flight: shared with the interceptor when a request got a 401 at the same time
+      const renewed = await this.authService.refreshTokenAsync();
+      if (!renewed) {
+        this.authService.logout(); // clears the session and opens the login page
         return false;
       }
-      return true;
     }
 
-    // Token refresh failed
-    this.authService.logout();
+    return this.checkPermission(state.url);
+  }
+
+  private hasSession(): boolean {
+    const { isLoggedIn, loggedInUser } = this.commonService.sessionSnapshot();
+    return !!isLoggedIn && !this.commonService.isInvalidObject(loggedInUser);
+  }
+
+  /** The URL must be one of the user's menu screens (menu rights come from SecurityDB). */
+  private checkPermission(url: string): boolean | UrlTree {
+    if (this.commonService.isRouteValid(url)) {
+      return true;
+    }
+    this.notifyService.showError(
+      'You do not have permission to open this page.',
+      MessageConstants.GENERAL_ERROR_TITLE
+    );
+    const home = RouteConstants.BUSINESS_HOME_URL;
+    // fall back to the dashboard, unless the dashboard itself is the denied page (no loop)
+    if (!url.startsWith(home) && this.commonService.isRouteValid(home)) {
+      return this.router.parseUrl(home);
+    }
     return false;
   }
 
-  private async loadSession(): Promise<{
-    isLoggedIn: boolean;
-    loggedInUser: User;
-    accessToken: string;
-    refreshToken: string;
-  }> {
-    const [isLoggedIn, loggedInUser, accessToken, refreshToken] = await firstValueFrom(
-      combineLatest([
-        this.commonService.isLoggedIn$,
-        this.commonService.loggedInUser$,
-        this.commonService.accessToken$,
-        this.commonService.refreshToken$,
-      ])
-    );
-
-    return {
-      isLoggedIn,
-      loggedInUser,
-      accessToken,
-      refreshToken,
-    };
+  private loginUrl(returnUrl: string): UrlTree {
+    return this.router.createUrlTree(['/' + RouteConstants.LOGIN_USER_URL], {
+      queryParams: { returnUrl },
+    });
   }
 }

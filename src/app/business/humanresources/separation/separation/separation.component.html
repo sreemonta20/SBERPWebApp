@@ -15,221 +15,288 @@
 
   <section class="content">
     <div class="container-fluid">
-      <div *ngIf="!isView" class="alert alert-warning">{{ pageDisplayMessage }}</div>
+      @if (!isView) {
+        <div class="alert alert-warning">{{ pageDisplayMessage }}</div>
+      }
 
       <!-- ===================== LIST ===================== -->
-      <div class="card card-outline card-primary" *ngIf="isView && viewMode === 'list'">
-        <div class="card-header d-flex justify-content-between align-items-center">
-          <h3 class="card-title mt-1">Separation List</h3>
-          <button class="btn btn-primary btn-sm" *ngIf="isCreate" (click)="openCreateForm()"><i class="fas fa-plus mr-1"></i> New Separation</button>
-        </div>
-        <div class="card-body">
-          <div class="row mb-3">
-            <div class="col-md-4">
-              <div class="input-group input-group-sm">
-                <input type="text" class="form-control" placeholder="Search by code / employee…" [(ngModel)]="searchTerm" (keyup.enter)="search()">
-                <span class="input-group-append"><button class="btn btn-default" (click)="search()"><i class="fas fa-search"></i></button></span>
-              </div>
-            </div>
-            <div class="col-md-8 text-right">
-              <label class="mr-2 mb-0">Page size</label>
-              <select class="form-control form-control-sm d-inline-block" style="width:auto" (change)="changePageSize($event)">
-                <option *ngFor="let s of pageSizeList" [value]="s">{{ s }}</option>
-              </select>
-            </div>
-          </div>
-          <div class="table-responsive">
-            <table class="table table-hover table-bordered list-table">
-              <thead>
-                <tr><th>Code</th><th>Employee</th><th>Type</th><th>Last Working</th><th class="text-center">Clearance</th><th class="text-center">Exit</th><th class="text-center">Status</th><th class="text-center" style="width:150px">Actions</th></tr>
-              </thead>
-              <tbody>
-                <tr *ngIf="list.length === 0"><td colspan="8" class="text-center text-muted">No separations found.</td></tr>
-                <tr *ngFor="let s of list">
-                  <td>{{ s.separationCode }}</td>
-                  <td>{{ s.employeeName }}<div><small class="text-muted">{{ s.employeeCode }}</small></div></td>
-                  <td>{{ s.separationTypeName }}</td>
-                  <td>{{ s.lastWorkingDate | date:'mediumDate' }}</td>
-                  <td class="text-center">
-                    <span *ngIf="s.clearanceTotal > 0" class="badge" [class.badge-success]="s.clearanceCleared === s.clearanceTotal" [class.badge-secondary]="s.clearanceCleared !== s.clearanceTotal">
-                      {{ s.clearanceCleared }}/{{ s.clearanceTotal }}
-                    </span>
-                    <span *ngIf="s.clearanceTotal === 0" class="text-muted">—</span>
-                  </td>
-                  <td class="text-center"><i class="fas" [class.fa-check-circle]="s.exitInterviewDone" [class.text-success]="s.exitInterviewDone" [class.fa-minus-circle]="!s.exitInterviewDone" [class.text-muted]="!s.exitInterviewDone"></i></td>
-                  <td class="text-center"><span [class]="statusBadgeClass(s.statusId)">{{ s.statusName }}</span></td>
-                  <td class="text-center action-icons">
-                    <a title="Open" (click)="open(s)"><i class="fas fa-external-link-alt text-primary"></i></a>
-                    <a title="Edit" *ngIf="isUpdate && s.statusId <= STATUS.Pending" (click)="edit(s)"><i class="fas fa-edit text-info"></i></a>
-                    <a title="Submit" *ngIf="isUpdate && s.statusId === STATUS.Draft" (click)="submit(s)"><i class="fas fa-paper-plane text-warning"></i></a>
-                    <a title="Cancel" *ngIf="isUpdate && s.statusId < STATUS.Settled" (click)="cancel(s)"><i class="fas fa-ban text-danger"></i></a>
-                    <a title="Delete" *ngIf="isDelete && s.statusId === STATUS.Draft" (click)="remove(s)"><i class="fas fa-trash text-danger"></i></a>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-        <div class="card-footer clearfix">
-          <span class="float-left text-muted mt-1">Showing {{ startPage }}–{{ endPage }} of {{ totalRows }}</span>
-          <ul class="pagination pagination-sm m-0 float-right">
-            <li class="page-item" [class.disabled]="currentPage === 1"><a class="page-link" (click)="changePage(currentPage - 1)">«</a></li>
-            <li class="page-item" *ngFor="let x of [].constructor(pageCount); let i = index" [class.active]="currentPage === i + 1"><a class="page-link" (click)="changePage(i + 1)">{{ i + 1 }}</a></li>
-            <li class="page-item" [class.disabled]="currentPage === pageCount"><a class="page-link" (click)="changePage(currentPage + 1)">»</a></li>
-          </ul>
-        </div>
-      </div>
-
-      <!-- ===================== FORM ===================== -->
-      <div class="card card-outline card-primary" *ngIf="isView && viewMode === 'form'">
-        <div class="card-header"><h3 class="card-title mt-1">{{ isEdit ? 'Edit' : 'New' }} Separation</h3></div>
-        <form [formGroup]="form" (ngSubmit)="save()">
-          <div class="card-body">
-            <div class="row">
-              <div class="col-md-5 form-group">
-                <label>Employee <span class="text-danger">*</span></label>
-                <select class="form-control" formControlName="employeeId">
-                  <option value="">-- Select employee --</option>
-                  <option *ngFor="let e of employees" [value]="e.id">{{ e.fullName }} ({{ e.employeeCode }})</option>
-                </select>
-              </div>
-              <div class="col-md-3 form-group">
-                <label>Type <span class="text-danger">*</span></label>
-                <select class="form-control" formControlName="separationTypeId">
-                  <option *ngFor="let t of separationTypes" [ngValue]="t.id">{{ t.name }}</option>
-                </select>
-              </div>
-              <div class="col-md-2 form-group"><label>Notice Period (days)</label><input type="number" class="form-control" formControlName="noticePeriodDays"></div>
-              <div class="col-md-2 form-group">
-                <label class="d-block">Notice Waived</label>
-                <div class="custom-control custom-switch mt-2">
-                  <input type="checkbox" class="custom-control-input" id="waiveSwitch" formControlName="isNoticeWaived">
-                  <label class="custom-control-label" for="waiveSwitch">Waive</label>
-                </div>
-              </div>
-            </div>
-            <div class="row">
-              <div class="col-md-3 form-group"><label>Notice Date</label><input type="date" class="form-control" formControlName="noticeDate"></div>
-              <div class="col-md-3 form-group"><label>Requested Last Working Date</label><input type="date" class="form-control" formControlName="requestedLastWorkingDate"></div>
-            </div>
-            <div class="row">
-              <div class="col-md-12 form-group"><label>Reason</label><textarea rows="3" class="form-control" formControlName="reason"></textarea></div>
-            </div>
-          </div>
-          <div class="card-footer">
-            <button type="submit" class="btn btn-primary"><i class="fas fa-save mr-1"></i> Save</button>
-            <button type="button" class="btn btn-default ml-2" (click)="cancelForm()">Cancel</button>
-          </div>
-        </form>
-      </div>
-
-      <!-- ===================== DETAIL ===================== -->
-      <div *ngIf="isView && viewMode === 'detail' && detail">
+      @if (isView && viewMode === 'list') {
         <div class="card card-outline card-primary">
           <div class="card-header d-flex justify-content-between align-items-center">
-            <h3 class="card-title mt-1">
-              {{ detail.SeparationCode || detail.separationCode }} — {{ detail.EmployeeName || detail.employeeName }}
-              <span [class]="statusBadgeClass(statusId)" class="ml-2">{{ detail.StatusName || detail.statusName }}</span>
-            </h3>
-            <button class="btn btn-default btn-sm" (click)="back()"><i class="fas fa-arrow-left mr-1"></i> Back</button>
+            <h3 class="card-title mt-1">Separation List</h3>
+            @if (isCreate) {
+              <button class="btn btn-primary btn-sm" (click)="openCreateForm()"><i class="fas fa-plus mr-1"></i> New Separation</button>
+            }
           </div>
           <div class="card-body">
-            <div class="row">
-              <div class="col-md-3"><small class="text-muted d-block">Type</small>{{ detail.SeparationTypeName || detail.separationTypeName }}</div>
-              <div class="col-md-3"><small class="text-muted d-block">Notice Date</small>{{ (detail.NoticeDate || detail.noticeDate) | date:'mediumDate' }}</div>
-              <div class="col-md-3"><small class="text-muted d-block">Last Working Date</small>{{ (detail.LastWorkingDate || detail.lastWorkingDate) | date:'mediumDate' }}</div>
-              <div class="col-md-3"><small class="text-muted d-block">Settlement</small>{{ (detail.SettlementDate || detail.settlementDate) ? ((detail.SettlementDate || detail.settlementDate) | date:'mediumDate') : '—' }}</div>
+            <div class="row mb-3">
+              <div class="col-md-4">
+                <div class="input-group input-group-sm">
+                  <input type="text" class="form-control" placeholder="Search by code / employee…" [(ngModel)]="searchTerm" (keyup.enter)="search()">
+                  <span class="input-group-append"><button class="btn btn-default" (click)="search()"><i class="fas fa-search"></i></button></span>
+                </div>
+              </div>
+              <div class="col-md-8 text-right">
+                <label class="mr-2 mb-0">Page size</label>
+                <select class="form-control form-control-sm d-inline-block" style="width:auto" (change)="changePageSize($event)">
+                  @for (s of pageSizeList; track s) {
+                    <option [value]="s">{{ s }}</option>
+                  }
+                </select>
+              </div>
             </div>
-            <div class="row mt-2" *ngIf="detail.Reason || detail.reason">
-              <div class="col-md-12"><small class="text-muted d-block">Reason</small>{{ detail.Reason || detail.reason }}</div>
-            </div>
-          </div>
-        </div>
-
-        <!-- workflow bar -->
-        <div class="card">
-          <div class="card-body py-2">
-            <button class="btn btn-warning btn-sm mr-2" *ngIf="isUpdate && statusId === STATUS.Draft" (click)="submit()"><i class="fas fa-paper-plane mr-1"></i> Submit for Approval</button>
-            <button class="btn btn-info btn-sm mr-2" *ngIf="isUpdate && (statusId === STATUS.Draft || statusId === STATUS.Pending)" (click)="approve()"><i class="fas fa-check mr-1"></i> Approve &amp; Start Clearance</button>
-            <button class="btn btn-success btn-sm mr-2" *ngIf="isUpdate && statusId === STATUS.InClearance" (click)="settle()" [disabled]="!allCleared"><i class="fas fa-flag-checkered mr-1"></i> Settle</button>
-            <button class="btn btn-dark btn-sm mr-2" *ngIf="isUpdate && statusId === STATUS.Settled" (click)="complete()"><i class="fas fa-box-archive mr-1"></i> Complete</button>
-            <button class="btn btn-outline-danger btn-sm" *ngIf="isUpdate && statusId < STATUS.Settled" (click)="cancel()"><i class="fas fa-ban mr-1"></i> Cancel</button>
-            <span class="text-muted ml-2" *ngIf="statusId === STATUS.InClearance && !allCleared"><small><i class="fas fa-info-circle"></i> All clearance lines must be cleared before settling.</small></span>
-            <span class="text-danger ml-2" *ngIf="anyBlocked"><small><i class="fas fa-exclamation-triangle"></i> A clearance line is blocked.</small></span>
-          </div>
-        </div>
-
-        <!-- clearance grid -->
-        <div class="card card-outline card-secondary" *ngIf="clearances.length > 0">
-          <div class="card-header"><h3 class="card-title mt-1">Clearance Checklist</h3></div>
-          <div class="card-body">
             <div class="table-responsive">
-              <table class="table table-bordered list-table">
-                <thead><tr><th>Department</th><th class="text-center">Status</th><th style="width:140px">Dues</th><th>Remarks</th><th class="text-center" style="width:170px">Action</th></tr></thead>
+              <table class="table table-hover table-bordered list-table">
+                <thead>
+                  <tr><th>Code</th><th>Employee</th><th>Type</th><th>Last Working</th><th class="text-center">Clearance</th><th class="text-center">Exit</th><th class="text-center">Status</th><th class="text-center" style="width:150px">Actions</th></tr>
+                </thead>
                 <tbody>
-                  <tr *ngFor="let c of clearances">
-                    <td>{{ c.departmentName }}</td>
-                    <td class="text-center"><span [class]="clrBadgeClass(c.clearanceStatusId)">{{ c.clearanceStatusName }}</span></td>
-                    <td><input type="number" step="0.01" class="form-control form-control-sm" [(ngModel)]="c.duesAmount" [disabled]="statusId !== STATUS.InClearance"></td>
-                    <td><input class="form-control form-control-sm" [(ngModel)]="c.remarks" [disabled]="statusId !== STATUS.InClearance" placeholder="Optional"></td>
-                    <td class="text-center">
-                      <ng-container *ngIf="isUpdate && statusId === STATUS.InClearance">
-                        <button class="btn btn-success btn-xs mr-1" (click)="setClearance(c, CLR.Cleared)" *ngIf="c.clearanceStatusId !== CLR.Cleared">Clear</button>
-                        <button class="btn btn-danger btn-xs mr-1" (click)="setClearance(c, CLR.Blocked)" *ngIf="c.clearanceStatusId !== CLR.Blocked">Block</button>
-                        <button class="btn btn-secondary btn-xs" (click)="setClearance(c, CLR.Pending)" *ngIf="c.clearanceStatusId !== CLR.Pending">Reset</button>
-                      </ng-container>
-                      <span class="text-muted" *ngIf="statusId !== STATUS.InClearance"><small>—</small></span>
-                    </td>
-                  </tr>
+                  @if (list.length === 0) {
+                    <tr><td colspan="8" class="text-center text-muted">No separations found.</td></tr>
+                  }
+                  @for (s of list; track s) {
+                    <tr>
+                      <td>{{ s.separationCode }}</td>
+                      <td>{{ s.employeeName }}<div><small class="text-muted">{{ s.employeeCode }}</small></div></td>
+                      <td>{{ s.separationTypeName }}</td>
+                      <td>{{ s.lastWorkingDate | date:'mediumDate' }}</td>
+                      <td class="text-center">
+                        @if (s.clearanceTotal > 0) {
+                          <span class="badge" [class.badge-success]="s.clearanceCleared === s.clearanceTotal" [class.badge-secondary]="s.clearanceCleared !== s.clearanceTotal">
+                            {{ s.clearanceCleared }}/{{ s.clearanceTotal }}
+                          </span>
+                        }
+                        @if (s.clearanceTotal === 0) {
+                          <span class="text-muted">—</span>
+                        }
+                      </td>
+                      <td class="text-center"><i class="fas" [class.fa-check-circle]="s.exitInterviewDone" [class.text-success]="s.exitInterviewDone" [class.fa-minus-circle]="!s.exitInterviewDone" [class.text-muted]="!s.exitInterviewDone"></i></td>
+                      <td class="text-center"><span [class]="statusBadgeClass(s.statusId)">{{ s.statusName }}</span></td>
+                      <td class="text-center action-icons">
+                        <a title="Open" (click)="open(s)"><i class="fas fa-external-link-alt text-primary"></i></a>
+                        @if (isUpdate && s.statusId <= STATUS.Pending) {
+                          <a title="Edit" (click)="edit(s)"><i class="fas fa-edit text-info"></i></a>
+                        }
+                        @if (isUpdate && s.statusId === STATUS.Draft) {
+                          <a title="Submit" (click)="submit(s)"><i class="fas fa-paper-plane text-warning"></i></a>
+                        }
+                        @if (isUpdate && s.statusId < STATUS.Settled) {
+                          <a title="Cancel" (click)="cancel(s)"><i class="fas fa-ban text-danger"></i></a>
+                        }
+                        @if (isDelete && s.statusId === STATUS.Draft) {
+                          <a title="Delete" (click)="remove(s)"><i class="fas fa-trash text-danger"></i></a>
+                        }
+                      </td>
+                    </tr>
+                  }
                 </tbody>
               </table>
             </div>
           </div>
-        </div>
-
-        <!-- exit interview -->
-        <div class="card card-outline card-secondary">
-          <div class="card-header d-flex justify-content-between align-items-center">
-            <h3 class="card-title mt-1">Exit Interview</h3>
-            <button class="btn btn-outline-primary btn-sm" *ngIf="isUpdate" (click)="toggleExitForm()">
-              <i class="fas fa-edit mr-1"></i> {{ exitForm.value.id ? 'Edit' : 'Capture' }}
-            </button>
+          <div class="card-footer clearfix">
+            <span class="float-left text-muted mt-1">Showing {{ startPage }}–{{ endPage }} of {{ totalRows }}</span>
+            <ul class="pagination pagination-sm m-0 float-right">
+              <li class="page-item" [class.disabled]="currentPage === 1"><a class="page-link" (click)="changePage(currentPage - 1)">«</a></li>
+              @for (x of [].constructor(pageCount); track $index; let i = $index) {
+                <li class="page-item" [class.active]="currentPage === i + 1"><a class="page-link" (click)="changePage(i + 1)">{{ i + 1 }}</a></li>
+              }
+              <li class="page-item" [class.disabled]="currentPage === pageCount"><a class="page-link" (click)="changePage(currentPage + 1)">»</a></li>
+            </ul>
           </div>
-          <div class="card-body">
-            <div *ngIf="!showExitForm">
-              <div *ngIf="exitForm.value.id; else noExit" class="row">
-                <div class="col-md-3"><small class="text-muted d-block">Primary Reason</small>{{ exitForm.value.primaryReason || '—' }}</div>
-                <div class="col-md-3"><small class="text-muted d-block">Overall Rating</small>{{ exitForm.value.overallExperienceRating != null ? exitForm.value.overallExperienceRating + ' / 5' : '—' }}</div>
-                <div class="col-md-3"><small class="text-muted d-block">Would Recommend</small>{{ exitForm.value.wouldRecommend == null ? '—' : (exitForm.value.wouldRecommend ? 'Yes' : 'No') }}</div>
-                <div class="col-md-3"><small class="text-muted d-block">Interview Date</small>{{ exitForm.value.interviewDate ? (exitForm.value.interviewDate | date:'mediumDate') : '—' }}</div>
-              </div>
-              <ng-template #noExit><p class="text-muted mb-0">No exit interview captured yet.</p></ng-template>
-            </div>
+        </div>
+      }
 
-            <form *ngIf="showExitForm" [formGroup]="exitForm" (ngSubmit)="saveExitInterview()">
+      <!-- ===================== FORM ===================== -->
+      @if (isView && viewMode === 'form') {
+        <div class="card card-outline card-primary">
+          <div class="card-header"><h3 class="card-title mt-1">{{ isEdit ? 'Edit' : 'New' }} Separation</h3></div>
+          <form [formGroup]="form" (ngSubmit)="save()">
+            <div class="card-body">
               <div class="row">
-                <div class="col-md-3 form-group"><label>Interview Date</label><input type="date" class="form-control" formControlName="interviewDate"></div>
-                <div class="col-md-3 form-group"><label>Overall Rating (1–5)</label><input type="number" min="1" max="5" class="form-control" formControlName="overallExperienceRating"></div>
-                <div class="col-md-3 form-group">
-                  <label>Would Recommend?</label>
-                  <select class="form-control" formControlName="wouldRecommend">
-                    <option [ngValue]="null">—</option>
-                    <option [ngValue]="true">Yes</option>
-                    <option [ngValue]="false">No</option>
+                <div class="col-md-5 form-group">
+                  <label>Employee <span class="text-danger">*</span></label>
+                  <select class="form-control" formControlName="employeeId">
+                    <option value="">-- Select employee --</option>
+                    @for (e of employees; track e) {
+                      <option [value]="e.id">{{ e.fullName }} ({{ e.employeeCode }})</option>
+                    }
                   </select>
                 </div>
-                <div class="col-md-3 form-group"><label>Primary Reason</label><input class="form-control" formControlName="primaryReason"></div>
+                <div class="col-md-3 form-group">
+                  <label>Type <span class="text-danger">*</span></label>
+                  <select class="form-control" formControlName="separationTypeId">
+                    @for (t of separationTypes; track t) {
+                      <option [ngValue]="t.id">{{ t.name }}</option>
+                    }
+                  </select>
+                </div>
+                <div class="col-md-2 form-group"><label>Notice Period (days)</label><input type="number" class="form-control" formControlName="noticePeriodDays"></div>
+                <div class="col-md-2 form-group">
+                  <label class="d-block">Notice Waived</label>
+                  <div class="custom-control custom-switch mt-2">
+                    <input type="checkbox" class="custom-control-input" id="waiveSwitch" formControlName="isNoticeWaived">
+                    <label class="custom-control-label" for="waiveSwitch">Waive</label>
+                  </div>
+                </div>
               </div>
               <div class="row">
-                <div class="col-md-6 form-group"><label>Feedback</label><textarea rows="3" class="form-control" formControlName="feedback"></textarea></div>
-                <div class="col-md-6 form-group"><label>Suggestions</label><textarea rows="3" class="form-control" formControlName="suggestions"></textarea></div>
+                <div class="col-md-3 form-group"><label>Notice Date</label><input type="date" class="form-control" formControlName="noticeDate"></div>
+                <div class="col-md-3 form-group"><label>Requested Last Working Date</label><input type="date" class="form-control" formControlName="requestedLastWorkingDate"></div>
               </div>
-              <button type="submit" class="btn btn-primary btn-sm"><i class="fas fa-save mr-1"></i> Save Exit Interview</button>
-              <button type="button" class="btn btn-default btn-sm ml-2" (click)="toggleExitForm()">Cancel</button>
-            </form>
+              <div class="row">
+                <div class="col-md-12 form-group"><label>Reason</label><textarea rows="3" class="form-control" formControlName="reason"></textarea></div>
+              </div>
+            </div>
+            <div class="card-footer">
+              <button type="submit" class="btn btn-primary"><i class="fas fa-save mr-1"></i> Save</button>
+              <button type="button" class="btn btn-default ml-2" (click)="cancelForm()">Cancel</button>
+            </div>
+          </form>
+        </div>
+      }
+
+      <!-- ===================== DETAIL ===================== -->
+      @if (isView && viewMode === 'detail' && detail) {
+        <div>
+          <div class="card card-outline card-primary">
+            <div class="card-header d-flex justify-content-between align-items-center">
+              <h3 class="card-title mt-1">
+                {{ detail.SeparationCode || detail.separationCode }} — {{ detail.EmployeeName || detail.employeeName }}
+                <span [class]="statusBadgeClass(statusId)" class="ml-2">{{ detail.StatusName || detail.statusName }}</span>
+              </h3>
+              <button class="btn btn-default btn-sm" (click)="back()"><i class="fas fa-arrow-left mr-1"></i> Back</button>
+            </div>
+            <div class="card-body">
+              <div class="row">
+                <div class="col-md-3"><small class="text-muted d-block">Type</small>{{ detail.SeparationTypeName || detail.separationTypeName }}</div>
+                <div class="col-md-3"><small class="text-muted d-block">Notice Date</small>{{ (detail.NoticeDate || detail.noticeDate) | date:'mediumDate' }}</div>
+                <div class="col-md-3"><small class="text-muted d-block">Last Working Date</small>{{ (detail.LastWorkingDate || detail.lastWorkingDate) | date:'mediumDate' }}</div>
+                <div class="col-md-3"><small class="text-muted d-block">Settlement</small>{{ (detail.SettlementDate || detail.settlementDate) ? ((detail.SettlementDate || detail.settlementDate) | date:'mediumDate') : '—' }}</div>
+              </div>
+              @if (detail.Reason || detail.reason) {
+                <div class="row mt-2">
+                  <div class="col-md-12"><small class="text-muted d-block">Reason</small>{{ detail.Reason || detail.reason }}</div>
+                </div>
+              }
+            </div>
+          </div>
+          <!-- workflow bar -->
+          <div class="card">
+            <div class="card-body py-2">
+              @if (isUpdate && statusId === STATUS.Draft) {
+                <button class="btn btn-warning btn-sm mr-2" (click)="submit()"><i class="fas fa-paper-plane mr-1"></i> Submit for Approval</button>
+              }
+              @if (isUpdate && (statusId === STATUS.Draft || statusId === STATUS.Pending)) {
+                <button class="btn btn-info btn-sm mr-2" (click)="approve()"><i class="fas fa-check mr-1"></i> Approve &amp; Start Clearance</button>
+              }
+              @if (isUpdate && statusId === STATUS.InClearance) {
+                <button class="btn btn-success btn-sm mr-2" (click)="settle()" [disabled]="!allCleared"><i class="fas fa-flag-checkered mr-1"></i> Settle</button>
+              }
+              @if (isUpdate && statusId === STATUS.Settled) {
+                <button class="btn btn-dark btn-sm mr-2" (click)="complete()"><i class="fas fa-box-archive mr-1"></i> Complete</button>
+              }
+              @if (isUpdate && statusId < STATUS.Settled) {
+                <button class="btn btn-outline-danger btn-sm" (click)="cancel()"><i class="fas fa-ban mr-1"></i> Cancel</button>
+              }
+              @if (statusId === STATUS.InClearance && !allCleared) {
+                <span class="text-muted ml-2"><small><i class="fas fa-info-circle"></i> All clearance lines must be cleared before settling.</small></span>
+              }
+              @if (anyBlocked) {
+                <span class="text-danger ml-2"><small><i class="fas fa-exclamation-triangle"></i> A clearance line is blocked.</small></span>
+              }
+            </div>
+          </div>
+          <!-- clearance grid -->
+          @if (clearances.length > 0) {
+            <div class="card card-outline card-secondary">
+              <div class="card-header"><h3 class="card-title mt-1">Clearance Checklist</h3></div>
+              <div class="card-body">
+                <div class="table-responsive">
+                  <table class="table table-bordered list-table">
+                    <thead><tr><th>Department</th><th class="text-center">Status</th><th style="width:140px">Dues</th><th>Remarks</th><th class="text-center" style="width:170px">Action</th></tr></thead>
+                    <tbody>
+                      @for (c of clearances; track c) {
+                        <tr>
+                          <td>{{ c.departmentName }}</td>
+                          <td class="text-center"><span [class]="clrBadgeClass(c.clearanceStatusId)">{{ c.clearanceStatusName }}</span></td>
+                          <td><input type="number" step="0.01" class="form-control form-control-sm" [(ngModel)]="c.duesAmount" [disabled]="statusId !== STATUS.InClearance"></td>
+                          <td><input class="form-control form-control-sm" [(ngModel)]="c.remarks" [disabled]="statusId !== STATUS.InClearance" placeholder="Optional"></td>
+                          <td class="text-center">
+                            @if (isUpdate && statusId === STATUS.InClearance) {
+                              @if (c.clearanceStatusId !== CLR.Cleared) {
+                                <button class="btn btn-success btn-xs mr-1" (click)="setClearance(c, CLR.Cleared)">Clear</button>
+                              }
+                              @if (c.clearanceStatusId !== CLR.Blocked) {
+                                <button class="btn btn-danger btn-xs mr-1" (click)="setClearance(c, CLR.Blocked)">Block</button>
+                              }
+                              @if (c.clearanceStatusId !== CLR.Pending) {
+                                <button class="btn btn-secondary btn-xs" (click)="setClearance(c, CLR.Pending)">Reset</button>
+                              }
+                            }
+                            @if (statusId !== STATUS.InClearance) {
+                              <span class="text-muted"><small>—</small></span>
+                            }
+                          </td>
+                        </tr>
+                      }
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          }
+          <!-- exit interview -->
+          <div class="card card-outline card-secondary">
+            <div class="card-header d-flex justify-content-between align-items-center">
+              <h3 class="card-title mt-1">Exit Interview</h3>
+              @if (isUpdate) {
+                <button class="btn btn-outline-primary btn-sm" (click)="toggleExitForm()">
+                  <i class="fas fa-edit mr-1"></i> {{ exitForm.value.id ? 'Edit' : 'Capture' }}
+                </button>
+              }
+            </div>
+            <div class="card-body">
+              @if (!showExitForm) {
+                <div>
+                  @if (exitForm.value.id) {
+                    <div class="row">
+                      <div class="col-md-3"><small class="text-muted d-block">Primary Reason</small>{{ exitForm.value.primaryReason || '—' }}</div>
+                      <div class="col-md-3"><small class="text-muted d-block">Overall Rating</small>{{ exitForm.value.overallExperienceRating != null ? exitForm.value.overallExperienceRating + ' / 5' : '—' }}</div>
+                      <div class="col-md-3"><small class="text-muted d-block">Would Recommend</small>{{ exitForm.value.wouldRecommend == null ? '—' : (exitForm.value.wouldRecommend ? 'Yes' : 'No') }}</div>
+                      <div class="col-md-3"><small class="text-muted d-block">Interview Date</small>{{ exitForm.value.interviewDate ? (exitForm.value.interviewDate | date:'mediumDate') : '—' }}</div>
+                    </div>
+                  } @else {
+                    <p class="text-muted mb-0">No exit interview captured yet.</p>
+                  }
+                </div>
+              }
+              @if (showExitForm) {
+                <form [formGroup]="exitForm" (ngSubmit)="saveExitInterview()">
+                  <div class="row">
+                    <div class="col-md-3 form-group"><label>Interview Date</label><input type="date" class="form-control" formControlName="interviewDate"></div>
+                    <div class="col-md-3 form-group"><label>Overall Rating (1–5)</label><input type="number" min="1" max="5" class="form-control" formControlName="overallExperienceRating"></div>
+                    <div class="col-md-3 form-group">
+                      <label>Would Recommend?</label>
+                      <select class="form-control" formControlName="wouldRecommend">
+                        <option [ngValue]="null">—</option>
+                        <option [ngValue]="true">Yes</option>
+                        <option [ngValue]="false">No</option>
+                      </select>
+                    </div>
+                    <div class="col-md-3 form-group"><label>Primary Reason</label><input class="form-control" formControlName="primaryReason"></div>
+                  </div>
+                  <div class="row">
+                    <div class="col-md-6 form-group"><label>Feedback</label><textarea rows="3" class="form-control" formControlName="feedback"></textarea></div>
+                    <div class="col-md-6 form-group"><label>Suggestions</label><textarea rows="3" class="form-control" formControlName="suggestions"></textarea></div>
+                  </div>
+                  <button type="submit" class="btn btn-primary btn-sm"><i class="fas fa-save mr-1"></i> Save Exit Interview</button>
+                  <button type="button" class="btn btn-default btn-sm ml-2" (click)="toggleExitForm()">Cancel</button>
+                </form>
+              }
+            </div>
           </div>
         </div>
-      </div>
+      }
     </div>
   </section>
 </div>

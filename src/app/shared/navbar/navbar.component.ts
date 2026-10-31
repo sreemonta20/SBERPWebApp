@@ -36,6 +36,10 @@ export class NavbarComponent implements OnInit, AfterViewInit, OnDestroy {
   private openMenuIds = new Set<string>();
   /** Ids on the path to the screen of the current route: the screen itself and all its parents. */
   private activeMenuIds = new Set<string>();
+  /** Filled by indexMenu() when the menu changes. */
+  private groupIds = new Set<string>();
+  private linkIds = new Set<string>();
+  private visibleHeaderIds = new Set<string>();
 
   constructor(
     @Inject(DOCUMENT) private document: Document,
@@ -74,6 +78,7 @@ export class NavbarComponent implements OnInit, AfterViewInit, OnDestroy {
     this.menuSubscription = this.commonService.GetUserMenus().subscribe({
       next: (userMenus) => {
         this.menuList = this.commonService.parseMenu(userMenus);
+        this.indexMenu();
         this.syncWithRoute();
       },
       error: (err) => {
@@ -95,19 +100,47 @@ export class NavbarComponent implements OnInit, AfterViewInit, OnDestroy {
     return item?.Children ?? [];
   }
 
+  /**
+   * Classifies every menu item once per menu load. The template asks isGroup / isLink /
+   * hasVisibleChildren for every item on every change detection; these used to walk the whole
+   * subtree recursively each time, now they are Set lookups.
+   */
+  private indexMenu(): void {
+    this.groupIds.clear();
+    this.linkIds.clear();
+    this.visibleHeaderIds.clear();
+    const visit = (item: MenuItem): boolean => {
+      const childVisible = this.children(item).map(visit).some(Boolean);
+      if (item.IsHeader) {
+        if (childVisible) this.visibleHeaderIds.add(item.Id);
+        return false;
+      }
+      if (childVisible) {
+        this.groupIds.add(item.Id); // a module / sub module with something to show below it
+        return true;
+      }
+      if (this.children(item).length === 0 && !!item.RouteLink?.trim()) {
+        this.linkIds.add(item.Id); // a routed screen, or a module that is a link itself (Dashboard)
+        return true;
+      }
+      return false;
+    };
+    (this.menuList ?? []).forEach(visit);
+  }
+
   /** A module / sub module that has something to show below it. */
   isGroup(item: MenuItem): boolean {
-    return !item.IsHeader && this.children(item).some((child) => this.isGroup(child) || this.isLink(child));
+    return this.groupIds.has(item.Id);
   }
 
   /** A routed screen: a component, or a module without children that is a link itself (Dashboard). */
   isLink(item: MenuItem): boolean {
-    return !item.IsHeader && this.children(item).length === 0 && !!item.RouteLink?.trim();
+    return this.linkIds.has(item.Id);
   }
 
   /** Headers are only drawn when the user can see at least one item under them. */
   hasVisibleChildren(item: MenuItem): boolean {
-    return this.children(item).some((child) => this.isGroup(child) || this.isLink(child));
+    return this.visibleHeaderIds.has(item.Id);
   }
 
   isOpen(item: MenuItem): boolean {

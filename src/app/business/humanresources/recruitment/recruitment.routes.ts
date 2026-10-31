@@ -1,29 +1,20 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
-import { AuthGuard } from '@app/core/guards/auth.guard';
 
 import { RequisitionComponent } from './requisition/requisition.component';
 import { JobPostingComponent } from './job-posting/job-posting.component';
 import { ApplicantPipelineComponent } from './applicant-pipeline/applicant-pipeline.component';
 
-/**
- * Recruitment routes — flattened, same convention as HumanResourcesRoutingModule.
- * Each screen hosts its own list/form via an internal viewMode flag.
- *
- * Wire into business.routes.ts as:
- *   {
- *     path: 'recruitment',
- *     loadChildren: () =>
- *       import('./recruitment/recruitment.module').then(m => m.RecruitmentModule),
- *   }
- */
+// Recruitment screens at /business/humanresources/recruitment/*. Each screen hosts its own list/form via a viewMode flag.
+// Lazy-loaded by humanresources.routes.ts; access (session + menu permission) is checked once by the
+// AuthGuard on the parent /business route (canActivateChild), not on every route here.
 const routes: Routes = [
   { path: '', redirectTo: 'requisition', pathMatch: 'full' },
   // Positions are maintained in Organization Setup (one shared seat model)
-  { path: 'position',     redirectTo: '/business/orgsetup/position', pathMatch: 'full' },
-  { path: 'requisition',  component: RequisitionComponent,       canActivate: [AuthGuard] },
-  { path: 'job-posting',  component: JobPostingComponent,        canActivate: [AuthGuard] },
-  { path: 'pipeline',     component: ApplicantPipelineComponent, canActivate: [AuthGuard] },
+  { path: 'position',     redirectTo: '/business/humanresources/orgsetup/position', pathMatch: 'full' },
+  { path: 'requisition',  component: RequisitionComponent },
+  { path: 'job-posting',  component: JobPostingComponent },
+  { path: 'pipeline',     component: ApplicantPipelineComponent },
 ];
 
 @NgModule({

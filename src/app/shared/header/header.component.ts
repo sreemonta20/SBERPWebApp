@@ -4,8 +4,6 @@ import { Router, RouterModule } from '@angular/router';
 import { DataResponse, User } from '@app/core/class';
 import { SessionConstants } from '@app/core/constants';
 import { SessionStorageService, AuthService, CommonService, UserCard, UserCardService } from '@app/core/services';
-import { JwtHelperService } from '@auth0/angular-jwt';
-import {jwtDecode} from 'jwt-decode';
 import { Subscription } from 'rxjs';
 
 @Component({

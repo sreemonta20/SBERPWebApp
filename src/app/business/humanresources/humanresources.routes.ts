@@ -1,38 +1,53 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
-import { AuthGuard } from '@app/core/guards/auth.guard';
 
-import { CompanyComponent } from './company/company.component';
-import { BranchComponent } from './branch/branch.component';
-import { EmployeeComponent } from './employee/employee.component';
-import { DepartmentComponent } from './department/department.component';
-import { DesignationComponent } from './designation/designation.component';
-import { HrSettingsComponent } from './hr-settings/hr-settings.component';
-
-/**
- * HR routes — flattened. The old separate /employee/new and /employee/:id
- * routes are gone; the EmployeeComponent now switches between list and
- * form internally via a viewMode flag (no navigation needed).
- *
- * Wired into business.routes.ts as:
- *   {
- *     path: 'humanresources',
- *     loadChildren: () =>
- *       import('./humanresources/humanresources.module').then(m => m.HumanResourcesModule),
- *   }
- */
+// Human Resources module at /business/humanresources/<sub-module>/<screen>. The 9 sub-modules follow
+// the menu tree in SecurityDB (Human Resources > Leave > Leave Application =
+// /business/humanresources/leave/applications); each one is lazy-loaded as its own chunk.
+// Lazy-loaded by business.routes.ts; access (session + menu permission) is checked once by the
+// AuthGuard on the parent /business route (canActivateChild), not on every route here.
 const routes: Routes = [
-  { path: '', redirectTo: 'employee', pathMatch: 'full' },
-  { path: 'employee',    component: EmployeeComponent,    canActivate: [AuthGuard] },
-  { path: 'department',  component: DepartmentComponent,  canActivate: [AuthGuard] },
-  { path: 'designation', component: DesignationComponent, canActivate: [AuthGuard] },
-  { path: 'settings',    component: HrSettingsComponent,  canActivate: [AuthGuard] },
-  { path: 'company',     component: CompanyComponent,     canActivate: [AuthGuard] },  // NEW
-  { path: 'branch',      component: BranchComponent,      canActivate: [AuthGuard] }
+  { path: '', redirectTo: 'corehr', pathMatch: 'full' },
+  {
+    path: 'corehr',
+    loadChildren: () => import('./corehr/corehr.module').then((m) => m.CoreHRModule),
+  },
+  {
+    path: 'orgsetup',
+    loadChildren: () => import('./orgsetup/orgsetup.module').then((m) => m.OrgSetupModule),
+  },
+  {
+    path: 'recruitment',
+    loadChildren: () => import('./recruitment/recruitment.module').then((m) => m.RecruitmentModule),
+  },
+  {
+    path: 'onboarding',
+    loadChildren: () => import('./onboarding/onboarding.module').then((m) => m.OnboardingModule),
+  },
+  {
+    path: 'attendance',
+    loadChildren: () => import('./attendance/attendance.module').then((m) => m.AttendanceModule),
+  },
+  {
+    path: 'leave',
+    loadChildren: () => import('./leave/leave.module').then((m) => m.LeaveModule),
+  },
+  {
+    path: 'payroll',
+    loadChildren: () => import('./payroll/payroll.module').then((m) => m.PayrollModule),
+  },
+  {
+    path: 'performance',
+    loadChildren: () => import('./performance/performance.module').then((m) => m.PerformanceModule),
+  },
+  {
+    path: 'separation',
+    loadChildren: () => import('./separation/separation.module').then((m) => m.SeparationModule),
+  },
 ];
 
 @NgModule({
   imports: [RouterModule.forChild(routes)],
-  exports: [RouterModule]
+  exports: [RouterModule],
 })
-export class HumanResourcesRoutingModule { }
+export class HumanResourcesRoutingModule {}

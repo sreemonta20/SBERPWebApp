@@ -15,119 +15,149 @@
 
   <section class="content">
     <div class="container-fluid">
-      <div *ngIf="!isView" class="alert alert-warning">{{ pageDisplayMessage }}</div>
+      @if (!isView) {
+        <div class="alert alert-warning">{{ pageDisplayMessage }}</div>
+      }
 
-      <div *ngIf="isView && newDeviceKey" class="alert alert-info">
-        <strong>Device key (shown only once):</strong>
-        <code class="ml-2 user-select-all">{{ newDeviceKey }}</code>
-        <div class="small mt-1">Enter it in the device bridge as the <code>X-Device-Key</code> header. Only its hash is stored; if it is lost, edit the device and tick "New device key".</div>
-        <button type="button" class="close" (click)="newDeviceKey = null"><span>&times;</span></button>
-      </div>
+      @if (isView && newDeviceKey) {
+        <div class="alert alert-info">
+          <strong>Device key (shown only once):</strong>
+          <code class="ml-2 user-select-all">{{ newDeviceKey }}</code>
+          <div class="small mt-1">Enter it in the device bridge as the <code>X-Device-Key</code> header. Only its hash is stored; if it is lost, edit the device and tick "New device key".</div>
+          <button type="button" class="close" (click)="newDeviceKey = null"><span>&times;</span></button>
+        </div>
+      }
 
       <!-- LIST -->
-      <div class="card card-outline card-primary" *ngIf="isView && viewMode === 'list'">
-        <div class="card-header d-flex justify-content-between align-items-center">
-          <h3 class="card-title mt-1">Door Terminals</h3>
-          <button class="btn btn-primary btn-sm" *ngIf="isCreate" (click)="openCreateForm()"><i class="fas fa-plus mr-1"></i> New Device</button>
-        </div>
-        <div class="card-body">
-          <div class="row mb-3">
-            <div class="col-md-4">
-              <div class="input-group input-group-sm">
-                <input type="text" class="form-control" placeholder="Search by code / name / serial…" [(ngModel)]="searchTerm" (keyup.enter)="search()">
-                <span class="input-group-append"><button class="btn btn-default" (click)="search()"><i class="fas fa-search"></i></button></span>
-              </div>
-            </div>
-            <div class="col-md-8 text-right">
-              <label class="mr-2 mb-0">Page size</label>
-              <select class="form-control form-control-sm d-inline-block" style="width:auto" (change)="changePageSize($event)">
-                <option *ngFor="let s of pageSizeList" [value]="s">{{ s }}</option>
-              </select>
-            </div>
+      @if (isView && viewMode === 'list') {
+        <div class="card card-outline card-primary">
+          <div class="card-header d-flex justify-content-between align-items-center">
+            <h3 class="card-title mt-1">Door Terminals</h3>
+            @if (isCreate) {
+              <button class="btn btn-primary btn-sm" (click)="openCreateForm()"><i class="fas fa-plus mr-1"></i> New Device</button>
+            }
           </div>
-          <div class="table-responsive">
-            <table class="table table-hover table-bordered list-table">
-              <thead>
-                <tr><th>Code</th><th>Name</th><th>Serial No.</th><th>Protocol</th><th>Location</th><th>Last Seen</th><th class="text-center">Status</th><th class="text-center" style="width:110px">Actions</th></tr>
-              </thead>
-              <tbody>
-                <tr *ngIf="deviceList.length === 0"><td colspan="8" class="text-center text-muted">No devices registered yet.</td></tr>
-                <tr *ngFor="let d of deviceList">
-                  <td>{{ d.deviceCode }}</td>
-                  <td>{{ d.name }}<div><small class="text-muted">{{ d.vendor }} {{ d.model }}</small></div></td>
-                  <td>{{ d.serialNumber }}</td>
-                  <td>{{ d.protocolName }}</td>
-                  <td>{{ d.location }}<div *ngIf="d.ipAddress"><small class="text-muted">IP {{ d.ipAddress }}</small></div></td>
-                  <td>{{ d.lastSeenDate ? (d.lastSeenDate + 'Z' | date: 'dd MMM yyyy HH:mm') : 'Never' }}</td>
-                  <td class="text-center"><span class="badge" [class.badge-success]="d.isActive" [class.badge-secondary]="!d.isActive">{{ d.isActive ? 'Active' : 'Inactive' }}</span></td>
-                  <td class="text-center action-icons">
-                    <a title="Edit" *ngIf="isUpdate" (click)="editDevice(d)"><i class="fas fa-edit text-primary"></i></a>
-                    <a title="Inactivate" *ngIf="isDelete && d.isActive" (click)="deleteDevice(d)"><i class="fas fa-trash text-danger"></i></a>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-        <div class="card-footer clearfix">
-          <span class="float-left text-muted mt-1">Showing {{ startPage }}–{{ endPage }} of {{ totalRows }}</span>
-          <ul class="pagination pagination-sm m-0 float-right">
-            <li class="page-item" [class.disabled]="currentPage === 1"><a class="page-link" (click)="changePage(currentPage - 1)">«</a></li>
-            <li class="page-item" *ngFor="let x of [].constructor(pageCount); let i = index" [class.active]="currentPage === i + 1"><a class="page-link" (click)="changePage(i + 1)">{{ i + 1 }}</a></li>
-            <li class="page-item" [class.disabled]="currentPage === pageCount"><a class="page-link" (click)="changePage(currentPage + 1)">»</a></li>
-          </ul>
-        </div>
-      </div>
-
-      <!-- FORM -->
-      <div class="card card-outline card-primary" *ngIf="isView && viewMode === 'form'">
-        <div class="card-header"><h3 class="card-title mt-1">{{ isEdit ? 'Edit' : 'New' }} Attendance Device</h3></div>
-        <form [formGroup]="deviceForm" (ngSubmit)="saveDevice()">
           <div class="card-body">
-            <div class="row">
-              <div class="col-md-3 form-group"><label>Code <span class="text-danger">*</span></label><input class="form-control" formControlName="deviceCode" placeholder="DEV-01"></div>
-              <div class="col-md-5 form-group"><label>Name <span class="text-danger">*</span></label><input class="form-control" formControlName="name" placeholder="Main entrance"></div>
-              <div class="col-md-4 form-group"><label>Serial No. <span class="text-danger">*</span></label><input class="form-control" formControlName="serialNumber" placeholder="As shown in the device's System Info"></div>
-            </div>
-            <div class="row">
-              <div class="col-md-3 form-group"><label>Vendor</label><input class="form-control" formControlName="vendor"></div>
-              <div class="col-md-3 form-group"><label>Model</label><input class="form-control" formControlName="model"></div>
-              <div class="col-md-3 form-group">
-                <label>Protocol <span class="text-danger">*</span></label>
-                <select class="form-control" formControlName="protocol">
-                  <option *ngFor="let p of protocols" [ngValue]="p.id">{{ p.name }}</option>
+            <div class="row mb-3">
+              <div class="col-md-4">
+                <div class="input-group input-group-sm">
+                  <input type="text" class="form-control" placeholder="Search by code / name / serial…" [(ngModel)]="searchTerm" (keyup.enter)="search()">
+                  <span class="input-group-append"><button class="btn btn-default" (click)="search()"><i class="fas fa-search"></i></button></span>
+                </div>
+              </div>
+              <div class="col-md-8 text-right">
+                <label class="mr-2 mb-0">Page size</label>
+                <select class="form-control form-control-sm d-inline-block" style="width:auto" (change)="changePageSize($event)">
+                  @for (s of pageSizeList; track s) {
+                    <option [value]="s">{{ s }}</option>
+                  }
                 </select>
               </div>
-              <div class="col-md-3 form-group"><label>Fixed IP (optional)</label><input class="form-control" formControlName="ipAddress" placeholder="192.168.1.50"></div>
             </div>
-            <div class="row">
-              <div class="col-md-6 form-group"><label>Location</label><input class="form-control" formControlName="location"></div>
-              <div class="col-md-6 form-group"><label>Remarks</label><input class="form-control" formControlName="remarks"></div>
+            <div class="table-responsive">
+              <table class="table table-hover table-bordered list-table">
+                <thead>
+                  <tr><th>Code</th><th>Name</th><th>Serial No.</th><th>Protocol</th><th>Location</th><th>Last Seen</th><th class="text-center">Status</th><th class="text-center" style="width:110px">Actions</th></tr>
+                </thead>
+                <tbody>
+                  @if (deviceList.length === 0) {
+                    <tr><td colspan="8" class="text-center text-muted">No devices registered yet.</td></tr>
+                  }
+                  @for (d of deviceList; track d) {
+                    <tr>
+                      <td>{{ d.deviceCode }}</td>
+                      <td>{{ d.name }}<div><small class="text-muted">{{ d.vendor }} {{ d.model }}</small></div></td>
+                      <td>{{ d.serialNumber }}</td>
+                      <td>{{ d.protocolName }}</td>
+                      <td>{{ d.location }}@if (d.ipAddress) {
+                        <div><small class="text-muted">IP {{ d.ipAddress }}</small></div>
+                      }</td>
+                      <td>{{ d.lastSeenDate ? (d.lastSeenDate + 'Z' | date: 'dd MMM yyyy HH:mm') : 'Never' }}</td>
+                      <td class="text-center"><span class="badge" [class.badge-success]="d.isActive" [class.badge-secondary]="!d.isActive">{{ d.isActive ? 'Active' : 'Inactive' }}</span></td>
+                      <td class="text-center action-icons">
+                        @if (isUpdate) {
+                          <a title="Edit" (click)="editDevice(d)"><i class="fas fa-edit text-primary"></i></a>
+                        }
+                        @if (isDelete && d.isActive) {
+                          <a title="Inactivate" (click)="deleteDevice(d)"><i class="fas fa-trash text-danger"></i></a>
+                        }
+                      </td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
             </div>
-            <div class="row">
-              <div class="col-md-3">
-                <div class="custom-control custom-switch">
-                  <input type="checkbox" class="custom-control-input" id="devActive" formControlName="isActive">
-                  <label class="custom-control-label" for="devActive">Active</label>
-                </div>
-              </div>
-              <div class="col-md-5" *ngIf="isEdit && +deviceForm.value.protocol === 2">
-                <div class="custom-control custom-switch">
-                  <input type="checkbox" class="custom-control-input" id="devKey" formControlName="regenerateKey">
-                  <label class="custom-control-label" for="devKey">New device key (the old one stops working)</label>
-                </div>
-              </div>
-            </div>
-            <p class="text-muted small mt-3 mb-0" *ngIf="+deviceForm.value.protocol === 1">
-              On the terminal: Menu → Comm. → Cloud Server Setting → server address = this server (API gateway), port 5200, HTTPS if the terminal supports it.
-            </p>
           </div>
-          <div class="card-footer">
-            <button type="submit" class="btn btn-primary"><i class="fas fa-save mr-1"></i> Save</button>
-            <button type="button" class="btn btn-default ml-2" (click)="cancelForm()">Cancel</button>
+          <div class="card-footer clearfix">
+            <span class="float-left text-muted mt-1">Showing {{ startPage }}–{{ endPage }} of {{ totalRows }}</span>
+            <ul class="pagination pagination-sm m-0 float-right">
+              <li class="page-item" [class.disabled]="currentPage === 1"><a class="page-link" (click)="changePage(currentPage - 1)">«</a></li>
+              @for (x of [].constructor(pageCount); track $index; let i = $index) {
+                <li class="page-item" [class.active]="currentPage === i + 1"><a class="page-link" (click)="changePage(i + 1)">{{ i + 1 }}</a></li>
+              }
+              <li class="page-item" [class.disabled]="currentPage === pageCount"><a class="page-link" (click)="changePage(currentPage + 1)">»</a></li>
+            </ul>
           </div>
-        </form>
-      </div>
+        </div>
+      }
+
+      <!-- FORM -->
+      @if (isView && viewMode === 'form') {
+        <div class="card card-outline card-primary">
+          <div class="card-header"><h3 class="card-title mt-1">{{ isEdit ? 'Edit' : 'New' }} Attendance Device</h3></div>
+          <form [formGroup]="deviceForm" (ngSubmit)="saveDevice()">
+            <div class="card-body">
+              <div class="row">
+                <div class="col-md-3 form-group"><label>Code <span class="text-danger">*</span></label><input class="form-control" formControlName="deviceCode" placeholder="DEV-01"></div>
+                <div class="col-md-5 form-group"><label>Name <span class="text-danger">*</span></label><input class="form-control" formControlName="name" placeholder="Main entrance"></div>
+                <div class="col-md-4 form-group"><label>Serial No. <span class="text-danger">*</span></label><input class="form-control" formControlName="serialNumber" placeholder="As shown in the device's System Info"></div>
+              </div>
+              <div class="row">
+                <div class="col-md-3 form-group"><label>Vendor</label><input class="form-control" formControlName="vendor"></div>
+                <div class="col-md-3 form-group"><label>Model</label><input class="form-control" formControlName="model"></div>
+                <div class="col-md-3 form-group">
+                  <label>Protocol <span class="text-danger">*</span></label>
+                  <select class="form-control" formControlName="protocol">
+                    @for (p of protocols; track p) {
+                      <option [ngValue]="p.id">{{ p.name }}</option>
+                    }
+                  </select>
+                </div>
+                <div class="col-md-3 form-group"><label>Fixed IP (optional)</label><input class="form-control" formControlName="ipAddress" placeholder="192.168.1.50"></div>
+              </div>
+              <div class="row">
+                <div class="col-md-6 form-group"><label>Location</label><input class="form-control" formControlName="location"></div>
+                <div class="col-md-6 form-group"><label>Remarks</label><input class="form-control" formControlName="remarks"></div>
+              </div>
+              <div class="row">
+                <div class="col-md-3">
+                  <div class="custom-control custom-switch">
+                    <input type="checkbox" class="custom-control-input" id="devActive" formControlName="isActive">
+                    <label class="custom-control-label" for="devActive">Active</label>
+                  </div>
+                </div>
+                @if (isEdit && +deviceForm.value.protocol === 2) {
+                  <div class="col-md-5">
+                    <div class="custom-control custom-switch">
+                      <input type="checkbox" class="custom-control-input" id="devKey" formControlName="regenerateKey">
+                      <label class="custom-control-label" for="devKey">New device key (the old one stops working)</label>
+                    </div>
+                  </div>
+                }
+              </div>
+              @if (+deviceForm.value.protocol === 1) {
+                <p class="text-muted small mt-3 mb-0">
+                  On the terminal: Menu → Comm. → Cloud Server Setting → server address = this server (API gateway), port 5200, HTTPS if the terminal supports it.
+                </p>
+              }
+            </div>
+            <div class="card-footer">
+              <button type="submit" class="btn btn-primary"><i class="fas fa-save mr-1"></i> Save</button>
+              <button type="button" class="btn btn-default ml-2" (click)="cancelForm()">Cancel</button>
+            </div>
+          </form>
+        </div>
+      }
     </div>
   </section>
 </div>

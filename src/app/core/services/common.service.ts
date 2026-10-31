@@ -12,7 +12,6 @@ import { formatDate } from '@angular/common';
   providedIn: 'root',
 })
 export class CommonService {
-  private flattenedMenuItems: MenuItem[] = [];
   permission: MenuPermission = null;
 
   private isLoggedIn: BehaviorSubject<boolean>;
@@ -159,53 +158,72 @@ export class CommonService {
     this.router.navigate([RouteConstants.LOGIN_USER_URL]);
   }
 
-  async isRouteValid(url: string): Promise<boolean> {
-    return new Promise((resolve) => {
-      this.serializedUserMenus$.subscribe((serializedMenus) => {
-        if (!this.isInvalidObject(serializedMenus)) {
-          const matchedMenu = serializedMenus.find((element: MenuItem) =>
-            element.RouteLink?.includes(url),
-          );
-          resolve(!!matchedMenu);
-        } else {
-          resolve(false);
-        }
-      });
-    });
+  /** Current session values, read synchronously (the guard needs them on every navigation). */
+  sessionSnapshot(): { isLoggedIn: boolean; loggedInUser: User; accessToken: string; refreshToken: string } {
+    return {
+      isLoggedIn: this.isLoggedIn.value,
+      loggedInUser: this.loggedInUser.value,
+      accessToken: this.accessToken.value,
+      refreshToken: this.refreshToken.value,
+    };
   }
 
-  createSerializedUserMenus(userMenus: MenuItem[]) {
-    userMenus.forEach((item) => {
-      // Push the current menu item
-      this.flattenedMenuItems.push(item);
+  /**
+   * True when the URL is one of the user's menu screens with view rights. Synchronous on purpose:
+   * the old version returned a Promise, so the guard's `if (!isRouteValid(url))` tested a Promise
+   * object (always truthy) and the check never denied anything. It also subscribed on every call
+   * and never unsubscribed.
+   */
+  isRouteValid(url: string): boolean {
+    const menu = this.findMenuForUrl(url);
+    return !!menu && menu.IsView !== false;
+  }
 
-      // If the current menu item has children, recursively call the function
-      if (item.Children && item.Children.length > 0) {
-        this.createSerializedUserMenus(item.Children);
+  /** Flattens the menu tree into a new array (the old version appended to a field that was never cleared). */
+  createSerializedUserMenus(userMenus: MenuItem[], into: MenuItem[] = []): MenuItem[] {
+    for (const item of userMenus ?? []) {
+      into.push(item);
+      if (item.Children?.length) {
+        this.createSerializedUserMenus(item.Children, into);
       }
-    });
-    return this.flattenedMenuItems;
+    }
+    return into;
   }
 
+  /**
+   * The CRUD rights of the screen at this URL (all false when it is not one of the user's screens).
+   * Reads the current value: no subscription is left behind by the ~45 screens that call this on load.
+   */
   public getMenuPermission(url: any): MenuPermission {
-    let menuPermission = new MenuPermission();
-    this.serializedUserMenus$.subscribe((serializedMenus) => {
-      if (!this.isInvalidObject(serializedMenus)) {
-        const matchedMenu = serializedMenus.find((element: MenuItem) =>
-          element.RouteLink?.includes(url),
-        );
-
-        if (matchedMenu) {
-          menuPermission.IsView = matchedMenu.IsView;
-          menuPermission.IsCreate = matchedMenu.IsCreate;
-          menuPermission.IsUpdate = matchedMenu.IsUpdate;
-          menuPermission.IsDelete = matchedMenu.IsDelete;
-        }
-      } else {
-        return null;
-      }
-    });
+    const menuPermission = new MenuPermission();
+    const matchedMenu = this.findMenuForUrl(url);
+    if (matchedMenu) {
+      menuPermission.IsView = matchedMenu.IsView;
+      menuPermission.IsCreate = matchedMenu.IsCreate;
+      menuPermission.IsUpdate = matchedMenu.IsUpdate;
+      menuPermission.IsDelete = matchedMenu.IsDelete;
+    }
     return menuPermission;
+  }
+
+  /**
+   * The menu screen for a router URL: query string / fragment / matrix params are ignored, and the
+   * RouteLink must equal the path or be a parent segment of it (longest match wins). The old
+   * `RouteLink.includes(url)` failed for '?profile=...' and matched '/business' to every screen.
+   */
+  private findMenuForUrl(url: string): MenuItem | undefined {
+    const path = (url ?? '').split(/[?#;]/)[0].replace(/\/+$/, '');
+    if (!path) {
+      return undefined;
+    }
+    let best: MenuItem | undefined;
+    for (const menu of this.serializedUserMenus.value ?? []) {
+      const link = menu.RouteLink?.trim().replace(/\/+$/, '');
+      if (link && (path === link || path.startsWith(link + '/')) && link.length > (best?.RouteLink?.trim().length ?? 0)) {
+        best = menu;
+      }
+    }
+    return best;
   }
 
   public pageSize() {
@@ -272,7 +290,6 @@ export class CommonService {
       // Handle possible double-encoded JSON
       if (typeof parsed === 'string') parsed = JSON.parse(parsed);
       if (Array.isArray(parsed)) {
-        console.log('Parsed menu with', parsed.length, 'items');
         return parsed;
       } else {
         console.warn('Menu data is not an array:', parsed);

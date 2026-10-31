@@ -1,0 +1,295 @@
+<ngx-spinner size="medium" type="ball-clip-rotate-pulse">
+  <p class="text-white">Please Wait..</p>
+</ngx-spinner>
+
+@if (isView) {
+  <div class="content-wrapper">
+    <section class="content-header">
+      <div class="container-fluid">
+        <div class="row mb-2">
+          <div class="col-sm-6">
+            <h1>Companies</h1>
+          </div>
+          <div class="col-sm-6">
+            <ol class="breadcrumb float-sm-right">
+              <li class="breadcrumb-item"><a [routerLink]="['/business/home']">Home</a></li>
+              <li class="breadcrumb-item"><a (click)="viewMode='list'" style="cursor:pointer">Companies</a>
+            </li>
+            @if (viewMode==='form') {
+              <li class="breadcrumb-item active">
+                {{ isEdit ? 'Edit' : 'New' }}
+              </li>
+            }
+          </ol>
+        </div>
+      </div>
+    </div>
+  </section>
+  <section class="content">
+    <div class="container-fluid">
+      <!-- =========================== LIST VIEW =========================== -->
+      @if (viewMode==='list') {
+        <div>
+          <div class="card">
+            <div class="card-header p-2">
+              <div class="row align-items-center">
+                <div class="col-md-3">
+                  <h3 class="card-title">All Companies</h3>
+                </div>
+                <div class="col-md-2">
+                  <select class="form-control form-control-sm" name="pageSize" [(ngModel)]="pageSize"
+                    (change)="changePageSize($event)">
+                    @for (size of pageSizeList; track size) {
+                      <option [value]="size">{{size}}</option>
+                    }
+                  </select>
+                </div>
+                <div class="col-md-4">
+                  <div class="input-group input-group-sm">
+                    <input type="text" class="form-control" placeholder="Search by code or name"
+                      [(ngModel)]="searchTerm" (keyup.enter)="searchCompanies()">
+                      <div class="input-group-append">
+                        <button type="button" class="btn btn-default" (click)="searchCompanies()">
+                          <i class="fas fa-search"></i>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="col-md-3 text-right">
+                    <button type="button" class="btn btn-sm btn-primary" [disabled]="!isCreate"
+                      (click)="openCreateForm()">
+                      <i class="fa fa-plus"></i> Add Company
+                    </button>
+                  </div>
+                </div>
+              </div>
+              <div class="card-body table-responsive p-2">
+                <table class="table table-hover text-nowrap">
+                  <thead>
+                    <tr>
+                      <th>Code</th>
+                      <th>Name</th>
+                      <th>Currency</th>
+                      <th class="text-center">Branches</th>
+                      <th class="text-center">Active</th>
+                      <th class="text-center" style="width:140px">Action</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @for (c of companyList; track c) {
+                      <tr>
+                        <td data-label="Code">{{ c.companyCode }}</td>
+                        <td data-label="Name">{{ c.name }}</td>
+                        <td data-label="Currency">{{ c.currencyCode || '—' }}</td>
+                        <td data-label="Branches" class="text-center">{{ c.branchCount || 0 }}</td>
+                        <td data-label="Active" class="text-center">
+                          <span class="badge" [class.badge-success]="c.isActive"
+                            [class.badge-secondary]="!c.isActive">
+                            {{ c.isActive ? 'Yes' : 'No' }}
+                          </span>
+                        </td>
+                        <td data-label="Action" class="text-center">
+                          <ul class="list-inline m-0">
+                            <li class="list-inline-item action-icon" [class.disabled]="!isUpdate"
+                              (click)="isUpdate && editCompany(c)">
+                              <i class="fa fa-edit"></i>
+                            </li>
+                            <li class="list-inline-item action-icon" [class.disabled]="!isDelete"
+                              (click)="isDelete && deleteCompany(c)">
+                              <i class="fa fa-trash"></i>
+                            </li>
+                          </ul>
+                        </td>
+                      </tr>
+                    }
+                  </tbody>
+                  @if (companyList.length === 0) {
+                    <tfoot>
+                      <tr>
+                        <td colspan="6" class="text-center">No companies found</td>
+                      </tr>
+                    </tfoot>
+                  }
+                </table>
+              </div>
+              <div class="card-footer clearfix p-2">
+                <div class="row">
+                  <div class="col-sm-5">
+                    <div class="dataTables_info">
+                      Showing <span class="text-success"><b>{{startPage}}</b></span> to
+                      <span class="text-success"><b>{{endPage}}</b></span> of
+                      <span class="text-success"><b>{{totalRows}}</b></span> entries
+                    </div>
+                  </div>
+                  <div class="col-sm-7">
+                    <ul class="pagination pagination-sm m-0 float-right">
+                      <li class="page-item" [class.disabled]="currentPage === 1">
+                        <a class="page-link" (click)="changePage(1)">&laquo;&laquo;</a>
+                      </li>
+                      <li class="page-item" [class.disabled]="currentPage === 1">
+                        <a class="page-link" (click)="changePage(currentPage - 1)">&laquo;</a>
+                      </li>
+                      @for (p of [].constructor(pageCount); track p; let i = $index) {
+                        <li class="page-item"
+                          [class.active]="currentPage === i + 1">
+                          <a class="page-link" (click)="changePage(i + 1)">{{ i + 1 }}</a>
+                        </li>
+                      }
+                      <li class="page-item" [class.disabled]="currentPage === pageCount">
+                        <a class="page-link" (click)="changePage(currentPage + 1)">&raquo;</a>
+                      </li>
+                      <li class="page-item" [class.disabled]="currentPage === pageCount">
+                        <a class="page-link" (click)="changePage(pageCount)">&raquo;&raquo;</a>
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        }
+        <!-- =========================== FORM VIEW =========================== -->
+        @if (viewMode==='form') {
+          <div>
+            <div class="card card-primary card-outline">
+              <div class="card-header">
+                <h3 class="card-title">{{ isEdit ? 'Edit' : 'Create' }} Company</h3>
+                <div class="card-tools">
+                  <button type="button" class="btn btn-tool" (click)="cancelForm()" title="Back to list">
+                    <i class="fas fa-arrow-left"></i>
+                  </button>
+                </div>
+              </div>
+              <form [formGroup]="companyForm" (ngSubmit)="saveCompany()">
+                <div class="card-body">
+                  <input type="hidden" formControlName="id" />
+                  <input type="hidden" formControlName="createUpdateBy" />
+                  <div class="row">
+                    <div class="col-md-3">
+                      <div class="form-group">
+                        <label>Code <span class="text-danger">*</span></label>
+                        <input type="text" formControlName="companyCode" class="form-control"
+                          placeholder="e.g. SBERP" />
+                          @if (companyForm.get('companyCode')?.touched && companyForm.get('companyCode')?.invalid) {
+                            <div
+                            class="text-danger small mt-1">Code is required.</div>
+                          }
+                        </div>
+                      </div>
+                      <div class="col-md-9">
+                        <div class="form-group">
+                          <label>Name <span class="text-danger">*</span></label>
+                          <input type="text" formControlName="name" class="form-control" />
+                          @if (companyForm.get('name')?.touched && companyForm.get('name')?.invalid) {
+                            <div
+                            class="text-danger small mt-1">Name is required.</div>
+                          }
+                        </div>
+                      </div>
+                      <div class="col-md-6">
+                        <div class="form-group">
+                          <label>Legal Name</label>
+                          <input type="text" formControlName="legalName" class="form-control" />
+                        </div>
+                      </div>
+                      <div class="col-md-3">
+                        <div class="form-group">
+                          <label>Registration No.</label>
+                          <input type="text" formControlName="registrationNumber" class="form-control" />
+                        </div>
+                      </div>
+                      <div class="col-md-3">
+                        <div class="form-group">
+                          <label>Tax / VAT No.</label>
+                          <input type="text" formControlName="taxNumber" class="form-control" />
+                        </div>
+                      </div>
+                      <div class="col-md-12">
+                        <div class="form-group">
+                          <label>Address</label>
+                          <textarea formControlName="address" class="form-control" rows="2"></textarea>
+                        </div>
+                      </div>
+                      <div class="col-md-3">
+                        <div class="form-group">
+                          <label>City</label>
+                          <input type="text" formControlName="city" class="form-control" />
+                        </div>
+                      </div>
+                      <div class="col-md-3">
+                        <div class="form-group">
+                          <label>Country</label>
+                          <input type="text" formControlName="country" class="form-control" />
+                        </div>
+                      </div>
+                      <div class="col-md-3">
+                        <div class="form-group">
+                          <label>Phone</label>
+                          <input type="text" formControlName="phone" class="form-control" />
+                        </div>
+                      </div>
+                      <div class="col-md-3">
+                        <div class="form-group">
+                          <label>Email</label>
+                          <input type="email" formControlName="email" class="form-control" />
+                        </div>
+                      </div>
+                      <div class="col-md-4">
+                        <div class="form-group">
+                          <label>Website</label>
+                          <input type="text" formControlName="website" class="form-control" />
+                        </div>
+                      </div>
+                      <div class="col-md-3">
+                        <div class="form-group">
+                          <label>Currency</label>
+                          <input type="text" formControlName="currencyCode" class="form-control"
+                            placeholder="e.g. AED" />
+                          </div>
+                        </div>
+                        <div class="col-md-3">
+                          <div class="form-group">
+                            <label>Financial Year Start Month</label>
+                            <select formControlName="financialYearStartMonth" class="form-control">
+                              @for (m of [1,2,3,4,5,6,7,8,9,10,11,12]; track m) {
+                                <option [ngValue]="m">{{m}}</option>
+                              }
+                            </select>
+                          </div>
+                        </div>
+                        <div class="col-md-2 d-flex align-items-end">
+                          <div class="form-group form-check">
+                            <input type="checkbox" id="coActive" formControlName="isActive"
+                              class="form-check-input" />
+                              <label class="form-check-label" for="coActive">Active</label>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="card-footer">
+                        <button type="submit" class="btn btn-sm btn-primary mr-1"
+                          [disabled]="isEdit ? !isUpdate : !isCreate">
+                          <i class="fas fa-save"></i> {{ isEdit ? 'Update' : 'Save' }}
+                        </button>
+                        <button type="button" class="btn btn-sm btn-warning" (click)="cancelForm()">Cancel</button>
+                      </div>
+                    </form>
+                  </div>
+                </div>
+              }
+            </div>
+          </section>
+        </div>
+      }
+
+      @if (!isView) {
+        <div class="content-wrapper">
+          <div class="alert alert-danger text-center">
+            {{ pageDisplayMessage }}
+          </div>
+        </div>
+      }
+
+      <app-confirm-dialog #confirmDialog [title]="'Confirm Removal'" [message]="deleteConfirmationMessage"
+        [confirmButtonText]="'Remove'" [confirmButtonClass]="'btn-danger'" (confirmed)="executeDelete()">
+      </app-confirm-dialog>

@@ -1,0 +1,519 @@
+<ngx-spinner size="medium" type="ball-clip-rotate-pulse">
+  <p class="text-white">Please Wait..</p>
+</ngx-spinner>
+
+@if (isView) {
+  <div class="content-wrapper">
+    <section class="content-header">
+      <div class="container-fluid">
+        <div class="row mb-2">
+          <div class="col-sm-6">
+            <h1>HR Settings</h1>
+          </div>
+          <div class="col-sm-6">
+            <ol class="breadcrumb float-sm-right">
+              <li class="breadcrumb-item"><a [routerLink]="['/business/home']">Home</a></li>
+              <li class="breadcrumb-item active">HR Settings</li>
+            </ol>
+          </div>
+        </div>
+      </div>
+    </section>
+    <section class="content">
+      <div class="container-fluid">
+        <form [formGroup]="settingsForm" (ngSubmit)="saveSettings()">
+          <input type="hidden" formControlName="id" />
+          <input type="hidden" formControlName="createUpdateBy" />
+          <!-- ====== Attendance Source ====== -->
+          <div class="card card-primary card-outline">
+            <div class="card-header">
+              <h3 class="card-title">Attendance Source</h3>
+              <div class="card-tools">
+                <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                  <i class="fas fa-minus"></i>
+                </button>
+              </div>
+            </div>
+            <div class="card-body">
+              <div class="row">
+                <div class="col-md-6">
+                  <div class="form-group">
+                    <label>Source <span class="text-danger">*</span></label>
+                    <select formControlName="attendanceSource" class="form-control">
+                      <option [ngValue]="1">Manual Excel Upload</option>
+                      <option [ngValue]="2">Biometric (Fingerprint / Face / Iris)</option>
+                    </select>
+                  </div>
+                </div>
+                @if (attendanceSource === 2) {
+                  <div class="col-md-6">
+                    <div class="form-group">
+                      <label>Biometric Provider</label>
+                      <select formControlName="biometricProvider" class="form-control">
+                        <option [ngValue]="null">— Select —</option>
+                        <option [ngValue]="1">Fingerprint</option>
+                        <option [ngValue]="2">Face</option>
+                        <option [ngValue]="3">Iris</option>
+                        <option [ngValue]="4">Multi-modal</option>
+                      </select>
+                    </div>
+                  </div>
+                }
+              </div>
+              @if (attendanceSource === 2) {
+                <div class="form-group">
+                  <label>Biometric DB Connection String</label>
+                  <input type="text" formControlName="biometricConnectionString" class="form-control"
+                    placeholder="Server=...;Database=...;User Id=...;Password=..." />
+                  <small class="text-muted">Stored encrypted at rest. Read-only access is enough.</small>
+                </div>
+                <div class="form-group">
+                  <label>Source Object (table or SP)</label>
+                  <input type="text" formControlName="biometricSourceObject" class="form-control"
+                    placeholder="e.g. dbo.vw_DailyPunches" />
+                </div>
+              }
+            </div>
+          </div>
+          <!-- ====== Work Hours & Leave ====== -->
+          <div class="card card-primary card-outline">
+            <div class="card-header">
+              <h3 class="card-title">Work Hours &amp; Leave</h3>
+              <div class="card-tools">
+                <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                  <i class="fas fa-minus"></i>
+                </button>
+              </div>
+            </div>
+            <div class="card-body">
+              <div class="row">
+                <div class="col-md-3">
+                  <div class="form-group">
+                    <label>Office Start</label>
+                    <input type="text" formControlName="officeStartTime" class="form-control"
+                      placeholder="08:30" />
+                  </div>
+                </div>
+                <div class="col-md-3">
+                  <div class="form-group">
+                    <label>Office End</label>
+                    <input type="text" formControlName="officeEndTime" class="form-control"
+                      placeholder="17:30" />
+                  </div>
+                </div>
+                <div class="col-md-3">
+                  <div class="form-group">
+                    <label>Grace (min)</label>
+                    <input type="number" formControlName="gracePeriodMinutes" class="form-control" />
+                  </div>
+                </div>
+                <div class="col-md-3">
+                  <div class="form-group">
+                    <label>Weekly Off Days (CSV)</label>
+                    <input type="text" formControlName="weeklyOffDays" class="form-control"
+                      placeholder="5,6" />
+                    <small class="text-muted">0=Sun … 6=Sat. UAE default: 5,6</small>
+                  </div>
+                </div>
+                <div class="col-md-4">
+                  <div class="form-group">
+                    <label>Annual Leave (days)</label>
+                    <input type="number" formControlName="annualLeaveDays" class="form-control" />
+                  </div>
+                </div>
+                <div class="col-md-4">
+                  <div class="form-group">
+                    <label>Sick Leave (days)</label>
+                    <input type="number" formControlName="sickLeaveDays" class="form-control" />
+                  </div>
+                </div>
+                <div class="col-md-4">
+                  <div class="form-group">
+                    <label>Casual Leave (days)</label>
+                    <input type="number" formControlName="casualLeaveDays" class="form-control" />
+                  </div>
+                </div>
+                <div class="col-md-4">
+                  <div class="form-group">
+                    <label>Auto-process Time</label>
+                    <input type="text" formControlName="autoProcessTime" class="form-control"
+                      placeholder="23:30" />
+                  </div>
+                </div>
+                <div class="col-md-4 d-flex align-items-end">
+                  <div class="form-group form-check">
+                    <input type="checkbox" id="autoProc" formControlName="autoProcessEnabled"
+                      class="form-check-input" />
+                    <label class="form-check-label" for="autoProc">Auto-process enabled</label>
+                  </div>
+                </div>
+                <div class="col-md-4 d-flex align-items-end">
+                  <div class="form-group form-check">
+                    <input type="checkbox" id="hrSettingsActive" formControlName="isActive"
+                      class="form-check-input" />
+                    <label class="form-check-label" for="hrSettingsActive">Active</label>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- ====== Biometric Attendance (mobile app / door terminal) ====== -->
+          <div class="card card-primary card-outline">
+            <div class="card-header">
+              <h3 class="card-title">
+                <i class="fas fa-fingerprint mr-1"></i> Biometric Attendance (mobile app / door terminal)
+              </h3>
+            </div>
+            <div class="card-body">
+              <div class="row">
+                <div class="col-md-4">
+                  <div class="form-group">
+                    <label>Office time zone</label>
+                    <input type="text" formControlName="timeZoneId" class="form-control" placeholder="Asia/Dubai" />
+                  </div>
+                </div>
+                <div class="col-md-4">
+                  <div class="form-group">
+                    <label>Work-day cut-off (HH:mm)</label>
+                    <input type="text" formControlName="attendanceDayCutoffTime" class="form-control" placeholder="04:00" />
+                    <small class="text-muted">A punch before this time counts for the previous day (night shifts).</small>
+                  </div>
+                </div>
+                <div class="col-md-4">
+                  <div class="form-group">
+                    <label>Minimum minutes between check-in and check-out</label>
+                    <input type="number" formControlName="minMinutesBetweenInOut" class="form-control" />
+                    <small class="text-muted">Earliest punch = check-in, latest = check-out once this gap is reached.</small>
+                  </div>
+                </div>
+              </div>
+              <div class="row">
+                <div class="col-md-4">
+                  <div class="form-group">
+                    <label>Ignore repeat punches within (minutes)</label>
+                    <input type="number" formControlName="duplicatePunchMinutes" class="form-control" />
+                  </div>
+                </div>
+                <div class="col-md-4 d-flex align-items-end">
+                  <div class="form-group form-check">
+                    <input type="checkbox" id="mobileAtt" formControlName="mobileAttendanceEnabled" class="form-check-input" />
+                    <label class="form-check-label" for="mobileAtt">Mobile app check-in enabled</label>
+                  </div>
+                </div>
+                <div class="col-md-4 d-flex align-items-end">
+                  <div class="form-group form-check">
+                    <input type="checkbox" id="officeNet" formControlName="requireOfficeNetwork" class="form-check-input" />
+                    <label class="form-check-label" for="officeNet">Mobile check-in only inside an Office Zone</label>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- ====== Data Security & Privacy ====== -->
+          <div class="card card-primary card-outline">
+            <div class="card-header">
+              <h3 class="card-title">
+                <i class="fas fa-shield-alt mr-1"></i> Data Security &amp; Privacy
+              </h3>
+              <div class="card-tools">
+                <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                  <i class="fas fa-minus"></i>
+                </button>
+              </div>
+            </div>
+            <div class="card-body">
+              <p class="text-muted">
+                Controls how employee and HR data is handled across the module.
+                Additional data-security and privacy options will be added here over time.
+              </p>
+              <div class="row">
+                <div class="col-md-6">
+                  <div class="form-group form-check">
+                    <input type="checkbox" id="hardDelete" formControlName="isHardDelete"
+                      class="form-check-input" />
+                    <label class="form-check-label" for="hardDelete">
+                      Permanently delete records (hard delete)
+                    </label>
+                    <small class="form-text text-muted">
+                      When off, removed records are only inactivated (soft delete)
+                      and can be recovered later.
+                    </small>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="card-footer bg-transparent border-0 px-0">
+            <button type="submit" class="btn btn-sm btn-primary"
+              [disabled]="saving || (!isCreate && !isUpdate)">
+              <i class="fas fa-save"></i> {{ saving ? 'Saving...' : 'Save Settings' }}
+            </button>
+          </div>
+        </form>
+        <!-- ====== Manual Attendance Upload (only when source = 1) ====== -->
+        @if (attendanceSource === 1) {
+          <div class="card card-success card-outline">
+            <div class="card-header">
+              <h3 class="card-title">Manual Attendance Upload</h3>
+            </div>
+            <div class="card-body">
+              <p class="text-muted">
+                Expected header row:
+                <code>EmployeeCode | Date | CheckIn | CheckOut | Status</code>.
+                Dates and times accept any standard format; unknown employee codes are
+                skipped and reported.
+              </p>
+              <div class="custom-file mb-3" style="max-width:520px">
+                <input type="file" class="custom-file-input" id="excelFile" accept=".xlsx,.xls"
+                  (change)="onFileChange($event)" />
+                <label class="custom-file-label" for="excelFile">
+                  {{ selectedFile?.name || 'Choose Excel file' }}
+                </label>
+              </div>
+              <button type="button" class="btn btn-success btn-sm" (click)="uploadAttendance()"
+                [disabled]="!selectedFile || uploading">
+                <i class="fas fa-upload"></i>
+                {{ uploading ? 'Uploading...' : 'Upload & Process' }}
+              </button>
+              @if (uploadResult; as r) {
+                <div class="mt-3 alert alert-info">
+                  <strong>Batch:</strong> {{ r.batchId }}<br />
+                  <strong>Total:</strong> {{ r.totalRows }} •
+                  <strong>Success:</strong> {{ r.successRows }} •
+                  <strong>Failed:</strong> {{ r.failedRows }}
+                </div>
+              }
+            </div>
+          </div>
+        }
+      </div>
+    </section>
+  </div>
+}
+
+@if (!isView) {
+  <div class="content-wrapper">
+    <div class="alert alert-danger text-center">
+      {{ pageDisplayMessage }}
+    </div>
+  </div>
+}
+
+<!-- <ngx-spinner size="medium" type="ball-clip-rotate-pulse">
+<p class="text-white">Please Wait..</p>
+</ngx-spinner>
+
+<div class="content-wrapper" *ngIf="isView">
+
+  <section class="content-header">
+    <div class="container-fluid">
+      <div class="row mb-2">
+        <div class="col-sm-6">
+          <h1>HR Settings</h1>
+        </div>
+        <div class="col-sm-6">
+          <ol class="breadcrumb float-sm-right">
+            <li class="breadcrumb-item"><a [routerLink]="['/business/home']">Home</a></li>
+            <li class="breadcrumb-item active">HR Settings</li>
+          </ol>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="content">
+    <div class="container-fluid">
+
+      <form [formGroup]="settingsForm" (ngSubmit)="saveSettings()">
+        <input type="hidden" formControlName="id" />
+        <input type="hidden" formControlName="createUpdateBy" />
+
+
+        <div class="card card-primary card-outline">
+          <div class="card-header">
+            <h3 class="card-title">Attendance Source</h3>
+            <div class="card-tools">
+              <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                <i class="fas fa-minus"></i>
+              </button>
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="row">
+              <div class="col-md-6">
+                <div class="form-group">
+                  <label>Source <span class="text-danger">*</span></label>
+                  <select formControlName="attendanceSource" class="form-control">
+                    <option [ngValue]="1">Manual Excel Upload</option>
+                    <option [ngValue]="2">Biometric (Fingerprint / Face / Iris)</option>
+                  </select>
+                </div>
+              </div>
+              <div class="col-md-6" *ngIf="attendanceSource === 2">
+                <div class="form-group">
+                  <label>Biometric Provider</label>
+                  <select formControlName="biometricProvider" class="form-control">
+                    <option [ngValue]="null">— Select —</option>
+                    <option [ngValue]="1">Fingerprint</option>
+                    <option [ngValue]="2">Face</option>
+                    <option [ngValue]="3">Iris</option>
+                    <option [ngValue]="4">Multi-modal</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <ng-container *ngIf="attendanceSource === 2">
+              <div class="form-group">
+                <label>Biometric DB Connection String</label>
+                <input type="text" formControlName="biometricConnectionString" class="form-control"
+                  placeholder="Server=...;Database=...;User Id=...;Password=..." />
+                <small class="text-muted">Stored encrypted at rest. Read-only access is enough.</small>
+              </div>
+              <div class="form-group">
+                <label>Source Object (table or SP)</label>
+                <input type="text" formControlName="biometricSourceObject" class="form-control"
+                  placeholder="e.g. dbo.vw_DailyPunches" />
+              </div>
+            </ng-container>
+          </div>
+        </div>
+
+
+        <div class="card card-primary card-outline">
+          <div class="card-header">
+            <h3 class="card-title">Work Hours &amp; Leave</h3>
+            <div class="card-tools">
+              <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                <i class="fas fa-minus"></i>
+              </button>
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="row">
+              <div class="col-md-3">
+                <div class="form-group">
+                  <label>Office Start</label>
+                  <input type="text" formControlName="officeStartTime" class="form-control"
+                    placeholder="08:30" />
+                </div>
+              </div>
+              <div class="col-md-3">
+                <div class="form-group">
+                  <label>Office End</label>
+                  <input type="text" formControlName="officeEndTime" class="form-control"
+                    placeholder="17:30" />
+                </div>
+              </div>
+              <div class="col-md-3">
+                <div class="form-group">
+                  <label>Grace (min)</label>
+                  <input type="number" formControlName="gracePeriodMinutes" class="form-control" />
+                </div>
+              </div>
+              <div class="col-md-3">
+                <div class="form-group">
+                  <label>Weekly Off Days (CSV)</label>
+                  <input type="text" formControlName="weeklyOffDays" class="form-control"
+                    placeholder="5,6" />
+                  <small class="text-muted">0=Sun … 6=Sat. UAE default: 5,6</small>
+                </div>
+              </div>
+
+              <div class="col-md-4">
+                <div class="form-group">
+                  <label>Annual Leave (days)</label>
+                  <input type="number" formControlName="annualLeaveDays" class="form-control" />
+                </div>
+              </div>
+              <div class="col-md-4">
+                <div class="form-group">
+                  <label>Sick Leave (days)</label>
+                  <input type="number" formControlName="sickLeaveDays" class="form-control" />
+                </div>
+              </div>
+              <div class="col-md-4">
+                <div class="form-group">
+                  <label>Casual Leave (days)</label>
+                  <input type="number" formControlName="casualLeaveDays" class="form-control" />
+                </div>
+              </div>
+
+              <div class="col-md-4">
+                <div class="form-group">
+                  <label>Auto-process Time</label>
+                  <input type="text" formControlName="autoProcessTime" class="form-control"
+                    placeholder="23:30" />
+                </div>
+              </div>
+              <div class="col-md-4 d-flex align-items-end">
+                <div class="form-group form-check">
+                  <input type="checkbox" id="autoProc" formControlName="autoProcessEnabled"
+                    class="form-check-input" />
+                  <label class="form-check-label" for="autoProc">Auto-process enabled</label>
+                </div>
+              </div>
+              <div class="col-md-4 d-flex align-items-end">
+                <div class="form-group form-check">
+                  <input type="checkbox" id="hrSettingsActive" formControlName="isActive"
+                    class="form-check-input" />
+                  <label class="form-check-label" for="hrSettingsActive">Active</label>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card-footer">
+            <button type="submit" class="btn btn-sm btn-primary"
+              [disabled]="saving || (!isCreate && !isUpdate)">
+              <i class="fas fa-save"></i> {{ saving ? 'Saving...' : 'Save Settings' }}
+            </button>
+          </div>
+        </div>
+      </form>
+
+
+      <div class="card card-success card-outline" *ngIf="attendanceSource === 1">
+        <div class="card-header">
+          <h3 class="card-title">Manual Attendance Upload</h3>
+        </div>
+        <div class="card-body">
+          <p class="text-muted">
+            Expected header row:
+            <code>EmployeeCode | Date | CheckIn | CheckOut | Status</code>.
+            Dates and times accept any standard format; unknown employee codes are
+            skipped and reported.
+          </p>
+
+          <div class="custom-file mb-3" style="max-width:520px">
+            <input type="file" class="custom-file-input" id="excelFile" accept=".xlsx,.xls"
+              (change)="onFileChange($event)" />
+            <label class="custom-file-label" for="excelFile">
+              {{ selectedFile?.name || 'Choose Excel file' }}
+            </label>
+          </div>
+
+          <button type="button" class="btn btn-success btn-sm" (click)="uploadAttendance()"
+            [disabled]="!selectedFile || uploading">
+            <i class="fas fa-upload"></i>
+            {{ uploading ? 'Uploading...' : 'Upload & Process' }}
+          </button>
+
+          <div *ngIf="uploadResult as r" class="mt-3 alert alert-info">
+            <strong>Batch:</strong> {{ r.batchId }}<br />
+            <strong>Total:</strong> {{ r.totalRows }} •
+            <strong>Success:</strong> {{ r.successRows }} •
+            <strong>Failed:</strong> {{ r.failedRows }}
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+</div>
+
+<div class="content-wrapper" *ngIf="!isView">
+  <div class="alert alert-danger text-center">
+    {{ pageDisplayMessage }}
+  </div>
+</div> -->

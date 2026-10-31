@@ -1,36 +1,23 @@
 import { DatePipe } from '@angular/common';
-import { HTTP_INTERCEPTORS, provideHttpClient, withInterceptors } from '@angular/common/http';
-import { CUSTOM_ELEMENTS_SCHEMA, NgModule } from '@angular/core';
-import { BrowserModule, Title } from '@angular/platform-browser';
-
+import { provideHttpClient, withFetch, withInterceptors } from '@angular/common/http';
+import { NgModule } from '@angular/core';
 import {
-  HashLocationStrategy,
-  LocationStrategy
-} from '@angular/common';
+  BrowserModule,
+  Title,
+  provideClientHydration,
+  withEventReplay,
+} from '@angular/platform-browser';
+import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { ToastrModule } from 'ngx-toastr';
+import { NgxSpinnerModule } from 'ngx-spinner';
 
 import {
   AuthReqInterceptor,
   EncryptDecryptAuthInterceptor
 } from '@app/core/interceptor';
-import { SessionStorageService } from '@app/core/services';
-import { JwtModule } from '@auth0/angular-jwt';
-import {
-  PERFECT_SCROLLBAR_CONFIG,
-  PerfectScrollbarConfigInterface
-} from 'ngx-perfect-scrollbar';
-import { NgxSpinnerModule } from 'ngx-spinner';
 import { AppRoutingModule } from './app.routes';
 import { AppComponent } from './app.component';
-const DEFAULT_PERFECT_SCROLLBAR_CONFIG: PerfectScrollbarConfigInterface = {
-  suppressScrollX: true,
-};
-
-export function tokenGetter() { 
-  return sessionStorage.getItem("access_token"); 
-}
 
 @NgModule({
   declarations: [AppComponent],
@@ -40,38 +27,30 @@ export function tokenGetter() {
     FormsModule,
     NgxSpinnerModule,
     ReactiveFormsModule,
-    BrowserAnimationsModule,
     ToastrModule.forRoot({
-      positionClass: 'toast-top-right', // Change the position as needed
+      positionClass: 'toast-top-right',
     }),
-    JwtModule.forRoot({
-      config: {
-        tokenGetter: tokenGetter,
-        allowedDomains: ["localhost:5001","localhost:39842","localhost:7101","localhost:5043","localhost:44360"],
-        disallowedRoutes: []
-      }
-    })
   ],
   providers: [
-    {
-      provide: LocationStrategy,
-      useClass: HashLocationStrategy,
-    },
-    {
-      provide: PERFECT_SCROLLBAR_CONFIG,
-      useValue: DEFAULT_PERFECT_SCROLLBAR_CONFIG,
-    },
-    SessionStorageService,
+    // Path URLs (/business/home) instead of hash URLs (/#/business/home): the server only sees
+    // the path, so it is what makes server rendering + hydration possible. Old /#/ bookmarks are
+    // rewritten by the inline script in index.html.
     Title,
+    DatePipe,
+    // withFetch: HttpClient uses fetch(), which also works on the server (recommended for SSR)
     provideHttpClient(
+      withFetch(),
       withInterceptors([
         AuthReqInterceptor,
         EncryptDecryptAuthInterceptor
       ])
     ),
-    DatePipe
+    // the animations package (~60 kB) is loaded on first use (first toast / spinner), not at start-up
+    provideAnimationsAsync(),
+    // reuse the server-rendered DOM of prerendered pages (login) instead of re-creating it;
+    // clicks / typing made before the app is ready are replayed once it is
+    provideClientHydration(withEventReplay()),
   ],
   bootstrap: [AppComponent],
-  schemas: [CUSTOM_ELEMENTS_SCHEMA],
 })
 export class AppModule {}

@@ -15,7 +15,7 @@ import {
   FormGroup,
   Validators,
 } from '@angular/forms';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import {
   DataResponse,
   LoginRequest,
@@ -61,6 +61,7 @@ export class LoginComponent implements OnInit, AfterViewInit, OnDestroy {
     @Inject(DOCUMENT) private document: Document,
     private elementRef: ElementRef,
     public router: Router,
+    private route: ActivatedRoute,
     private http: HttpClient,
     private renderer: Renderer2,
     private fb: FormBuilder,
@@ -135,9 +136,8 @@ export class LoginComponent implements OnInit, AfterViewInit, OnDestroy {
               this.commonService.parseMenu(this.profileMenuResponse.userMenus)
             );
 
-            setTimeout(() => {
-              this.router.navigate([RouteConstants.BUSINESS_HOME_URL]);
-            }, 500);
+            // straight to the page the guard sent the user away from (no artificial delay)
+            this.router.navigateByUrl(this.safeReturnUrl());
           } else {
             this.authService.logout();
           }
@@ -162,6 +162,12 @@ export class LoginComponent implements OnInit, AfterViewInit, OnDestroy {
     });
 
     this.subscriptions.add(loginSub);
+  }
+
+  /** returnUrl from the guard, only when it is a page inside the app (no open redirect to another site). */
+  private safeReturnUrl(): string {
+    const returnUrl = this.route.snapshot.queryParamMap.get('returnUrl');
+    return returnUrl && returnUrl.startsWith('/business/') ? returnUrl : RouteConstants.BUSINESS_HOME_URL;
   }
 
   loadScripts(urls: string[]) {

@@ -15,96 +15,120 @@
 
   <section class="content">
     <div class="container-fluid">
-      <div *ngIf="!isView" class="alert alert-warning">{{ pageDisplayMessage }}</div>
+      @if (!isView) {
+        <div class="alert alert-warning">{{ pageDisplayMessage }}</div>
+      }
 
       <!-- LIST -->
-      <div class="card card-outline card-primary" *ngIf="isView && viewMode === 'list'">
-        <div class="card-header d-flex justify-content-between align-items-center">
-          <h3 class="card-title mt-1">Loan List</h3>
-          <button class="btn btn-primary btn-sm" *ngIf="isCreate" (click)="openCreateForm()"><i class="fas fa-plus mr-1"></i> New Loan</button>
-        </div>
-        <div class="card-body">
-          <div class="row mb-3">
-            <div class="col-md-4">
-              <div class="input-group input-group-sm">
-                <input type="text" class="form-control" placeholder="Search by code / employee…" [(ngModel)]="searchTerm" (keyup.enter)="search()">
-                <span class="input-group-append"><button class="btn btn-default" (click)="search()"><i class="fas fa-search"></i></button></span>
-              </div>
-            </div>
-            <div class="col-md-8 text-right">
-              <label class="mr-2 mb-0">Page size</label>
-              <select class="form-control form-control-sm d-inline-block" style="width:auto" (change)="changePageSize($event)">
-                <option *ngFor="let s of pageSizeList" [value]="s">{{ s }}</option>
-              </select>
-            </div>
+      @if (isView && viewMode === 'list') {
+        <div class="card card-outline card-primary">
+          <div class="card-header d-flex justify-content-between align-items-center">
+            <h3 class="card-title mt-1">Loan List</h3>
+            @if (isCreate) {
+              <button class="btn btn-primary btn-sm" (click)="openCreateForm()"><i class="fas fa-plus mr-1"></i> New Loan</button>
+            }
           </div>
-          <div class="table-responsive">
-            <table class="table table-hover table-bordered list-table">
-              <thead>
-                <tr><th>Code</th><th>Employee</th><th class="text-right">Principal</th><th class="text-right">Installment</th><th class="text-center">Progress</th><th class="text-right">Outstanding</th><th class="text-center">Status</th><th class="text-center" style="width:130px">Actions</th></tr>
-              </thead>
-              <tbody>
-                <tr *ngIf="list.length === 0"><td colspan="8" class="text-center text-muted">No loans found.</td></tr>
-                <tr *ngFor="let l of list">
-                  <td>{{ l.loanCode }}</td>
-                  <td>{{ l.employeeName }}<div><small class="text-muted">{{ l.employeeCode }}</small></div></td>
-                  <td class="text-right">{{ l.principalAmount | number:'1.2-2' }}</td>
-                  <td class="text-right">{{ l.installmentAmount | number:'1.2-2' }}</td>
-                  <td class="text-center">{{ l.paidInstallments }} / {{ l.totalInstallments }}</td>
-                  <td class="text-right">{{ l.outstandingAmount | number:'1.2-2' }}</td>
-                  <td class="text-center"><span [class]="statusBadgeClass(l.statusId)">{{ l.statusName }}</span></td>
-                  <td class="text-center action-icons">
-                    <a title="Edit" *ngIf="isUpdate && l.statusId === STATUS.Active && l.paidInstallments === 0" (click)="edit(l)"><i class="fas fa-edit text-primary"></i></a>
-                    <a title="Close" *ngIf="isUpdate && l.statusId === STATUS.Active" (click)="close(l)"><i class="fas fa-check-circle text-success"></i></a>
-                    <a title="Cancel" *ngIf="isUpdate && l.statusId === STATUS.Active" (click)="cancel(l)"><i class="fas fa-ban text-danger"></i></a>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-        <div class="card-footer clearfix">
-          <span class="float-left text-muted mt-1">Showing {{ startPage }}–{{ endPage }} of {{ totalRows }}</span>
-          <ul class="pagination pagination-sm m-0 float-right">
-            <li class="page-item" [class.disabled]="currentPage === 1"><a class="page-link" (click)="changePage(currentPage - 1)">«</a></li>
-            <li class="page-item" *ngFor="let x of [].constructor(pageCount); let i = index" [class.active]="currentPage === i + 1"><a class="page-link" (click)="changePage(i + 1)">{{ i + 1 }}</a></li>
-            <li class="page-item" [class.disabled]="currentPage === pageCount"><a class="page-link" (click)="changePage(currentPage + 1)">»</a></li>
-          </ul>
-        </div>
-      </div>
-
-      <!-- FORM -->
-      <div class="card card-outline card-primary" *ngIf="isView && viewMode === 'form'">
-        <div class="card-header"><h3 class="card-title mt-1">{{ isEdit ? 'Edit' : 'New' }} Loan</h3></div>
-        <form [formGroup]="form" (ngSubmit)="save()">
           <div class="card-body">
-            <div class="row">
-              <div class="col-md-6 form-group">
-                <label>Employee <span class="text-danger">*</span></label>
-                <select class="form-control" formControlName="employeeId">
-                  <option value="">-- Select employee --</option>
-                  <option *ngFor="let e of employees" [value]="e.id">{{ e.fullName }} ({{ e.employeeCode }})</option>
+            <div class="row mb-3">
+              <div class="col-md-4">
+                <div class="input-group input-group-sm">
+                  <input type="text" class="form-control" placeholder="Search by code / employee…" [(ngModel)]="searchTerm" (keyup.enter)="search()">
+                  <span class="input-group-append"><button class="btn btn-default" (click)="search()"><i class="fas fa-search"></i></button></span>
+                </div>
+              </div>
+              <div class="col-md-8 text-right">
+                <label class="mr-2 mb-0">Page size</label>
+                <select class="form-control form-control-sm d-inline-block" style="width:auto" (change)="changePageSize($event)">
+                  @for (s of pageSizeList; track s) {
+                    <option [value]="s">{{ s }}</option>
+                  }
                 </select>
               </div>
-              <div class="col-md-3 form-group"><label>Principal <span class="text-danger">*</span></label><input type="number" step="0.01" class="form-control" formControlName="principalAmount"></div>
-              <div class="col-md-3 form-group"><label>Installment <span class="text-danger">*</span></label><input type="number" step="0.01" class="form-control" formControlName="installmentAmount"></div>
             </div>
-            <div class="row">
-              <div class="col-md-3 form-group"><label>Total Installments <span class="text-danger">*</span></label><input type="number" class="form-control" formControlName="totalInstallments"></div>
-              <div class="col-md-3 form-group"><label>Start Month <span class="text-danger">*</span></label><input type="number" min="1" max="12" class="form-control" formControlName="startMonth"></div>
-              <div class="col-md-3 form-group"><label>Start Year <span class="text-danger">*</span></label><input type="number" class="form-control" formControlName="startYear"></div>
+            <div class="table-responsive">
+              <table class="table table-hover table-bordered list-table">
+                <thead>
+                  <tr><th>Code</th><th>Employee</th><th class="text-right">Principal</th><th class="text-right">Installment</th><th class="text-center">Progress</th><th class="text-right">Outstanding</th><th class="text-center">Status</th><th class="text-center" style="width:130px">Actions</th></tr>
+                </thead>
+                <tbody>
+                  @if (list.length === 0) {
+                    <tr><td colspan="8" class="text-center text-muted">No loans found.</td></tr>
+                  }
+                  @for (l of list; track l) {
+                    <tr>
+                      <td>{{ l.loanCode }}</td>
+                      <td>{{ l.employeeName }}<div><small class="text-muted">{{ l.employeeCode }}</small></div></td>
+                      <td class="text-right">{{ l.principalAmount | number:'1.2-2' }}</td>
+                      <td class="text-right">{{ l.installmentAmount | number:'1.2-2' }}</td>
+                      <td class="text-center">{{ l.paidInstallments }} / {{ l.totalInstallments }}</td>
+                      <td class="text-right">{{ l.outstandingAmount | number:'1.2-2' }}</td>
+                      <td class="text-center"><span [class]="statusBadgeClass(l.statusId)">{{ l.statusName }}</span></td>
+                      <td class="text-center action-icons">
+                        @if (isUpdate && l.statusId === STATUS.Active && l.paidInstallments === 0) {
+                          <a title="Edit" (click)="edit(l)"><i class="fas fa-edit text-primary"></i></a>
+                        }
+                        @if (isUpdate && l.statusId === STATUS.Active) {
+                          <a title="Close" (click)="close(l)"><i class="fas fa-check-circle text-success"></i></a>
+                        }
+                        @if (isUpdate && l.statusId === STATUS.Active) {
+                          <a title="Cancel" (click)="cancel(l)"><i class="fas fa-ban text-danger"></i></a>
+                        }
+                      </td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
             </div>
-            <div class="row">
-              <div class="col-md-12 form-group"><label>Reason</label><input class="form-control" formControlName="reason"></div>
-            </div>
-            <p class="text-muted mb-0"><small>Recovery runs automatically during payroll — one installment per payslip, capped at the outstanding balance. The loan closes itself when fully recovered.</small></p>
           </div>
-          <div class="card-footer">
-            <button type="submit" class="btn btn-primary"><i class="fas fa-save mr-1"></i> Save</button>
-            <button type="button" class="btn btn-default ml-2" (click)="cancelForm()">Cancel</button>
+          <div class="card-footer clearfix">
+            <span class="float-left text-muted mt-1">Showing {{ startPage }}–{{ endPage }} of {{ totalRows }}</span>
+            <ul class="pagination pagination-sm m-0 float-right">
+              <li class="page-item" [class.disabled]="currentPage === 1"><a class="page-link" (click)="changePage(currentPage - 1)">«</a></li>
+              @for (x of [].constructor(pageCount); track $index; let i = $index) {
+                <li class="page-item" [class.active]="currentPage === i + 1"><a class="page-link" (click)="changePage(i + 1)">{{ i + 1 }}</a></li>
+              }
+              <li class="page-item" [class.disabled]="currentPage === pageCount"><a class="page-link" (click)="changePage(currentPage + 1)">»</a></li>
+            </ul>
           </div>
-        </form>
-      </div>
+        </div>
+      }
+
+      <!-- FORM -->
+      @if (isView && viewMode === 'form') {
+        <div class="card card-outline card-primary">
+          <div class="card-header"><h3 class="card-title mt-1">{{ isEdit ? 'Edit' : 'New' }} Loan</h3></div>
+          <form [formGroup]="form" (ngSubmit)="save()">
+            <div class="card-body">
+              <div class="row">
+                <div class="col-md-6 form-group">
+                  <label>Employee <span class="text-danger">*</span></label>
+                  <select class="form-control" formControlName="employeeId">
+                    <option value="">-- Select employee --</option>
+                    @for (e of employees; track e) {
+                      <option [value]="e.id">{{ e.fullName }} ({{ e.employeeCode }})</option>
+                    }
+                  </select>
+                </div>
+                <div class="col-md-3 form-group"><label>Principal <span class="text-danger">*</span></label><input type="number" step="0.01" class="form-control" formControlName="principalAmount"></div>
+                <div class="col-md-3 form-group"><label>Installment <span class="text-danger">*</span></label><input type="number" step="0.01" class="form-control" formControlName="installmentAmount"></div>
+              </div>
+              <div class="row">
+                <div class="col-md-3 form-group"><label>Total Installments <span class="text-danger">*</span></label><input type="number" class="form-control" formControlName="totalInstallments"></div>
+                <div class="col-md-3 form-group"><label>Start Month <span class="text-danger">*</span></label><input type="number" min="1" max="12" class="form-control" formControlName="startMonth"></div>
+                <div class="col-md-3 form-group"><label>Start Year <span class="text-danger">*</span></label><input type="number" class="form-control" formControlName="startYear"></div>
+              </div>
+              <div class="row">
+                <div class="col-md-12 form-group"><label>Reason</label><input class="form-control" formControlName="reason"></div>
+              </div>
+              <p class="text-muted mb-0"><small>Recovery runs automatically during payroll — one installment per payslip, capped at the outstanding balance. The loan closes itself when fully recovered.</small></p>
+            </div>
+            <div class="card-footer">
+              <button type="submit" class="btn btn-primary"><i class="fas fa-save mr-1"></i> Save</button>
+              <button type="button" class="btn btn-default ml-2" (click)="cancelForm()">Cancel</button>
+            </div>
+          </form>
+        </div>
+      }
     </div>
   </section>
 </div>

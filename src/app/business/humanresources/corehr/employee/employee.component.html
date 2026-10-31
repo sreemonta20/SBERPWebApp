@@ -1,0 +1,1492 @@
+<!-- <ngx-spinner size="medium" type="ball-clip-rotate-pulse">
+<p class="text-white">Please Wait..</p>
+</ngx-spinner>
+
+<div class="content-wrapper" *ngIf="isView">
+
+  <section class="content-header">
+    <div class="container-fluid">
+      <div class="row mb-2">
+        <div class="col-sm-6">
+          <h1>
+            Employees
+            <small *ngIf="viewMode==='form'" class="text-muted ml-2">
+              &mdash; {{ isEdit ? 'Edit' : 'New' }}
+              <span *ngIf="model.employeeCode">({{ model.employeeCode }})</span>
+            </small>
+          </h1>
+        </div>
+        <div class="col-sm-6">
+          <ol class="breadcrumb float-sm-right">
+            <li class="breadcrumb-item"><a [routerLink]="['/business/home']">Home</a></li>
+            <li class="breadcrumb-item"><a (click)="viewMode='list'" style="cursor:pointer">Employees</a>
+          </li>
+          <li class="breadcrumb-item active" *ngIf="viewMode==='form'">
+            {{ isEdit ? 'Edit' : 'New' }}
+          </li>
+        </ol>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="content">
+  <div class="container-fluid">
+
+    <div *ngIf="viewMode==='list'">
+      <div class="card">
+        <div class="card-header p-2">
+          <div class="row align-items-center">
+            <div class="col-md-3">
+              <h3 class="card-title">All Employees</h3>
+            </div>
+            <div class="col-md-2">
+              <select class="form-control form-control-sm" name="pageSize" [(ngModel)]="pageSize"
+                (change)="changePageSize($event)">
+                <option *ngFor="let size of pageSizeList" [value]="size">{{size}}</option>
+              </select>
+            </div>
+            <div class="col-md-4">
+              <div class="input-group input-group-sm">
+                <input type="text" class="form-control"
+                  placeholder="Search by name, code, email or phone" [(ngModel)]="searchTerm"
+                  (keyup.enter)="searchEmployees()">
+                <div class="input-group-append">
+                  <button type="button" class="btn btn-default" (click)="searchEmployees()">
+                    <i class="fas fa-search"></i>
+                  </button>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-3 text-right">
+              <button type="button" class="btn btn-sm btn-primary" [disabled]="!isCreate"
+                (click)="openCreateForm()">
+                <i class="fa fa-plus"></i> New Employee
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="card-body table-responsive p-2">
+          <table class="table table-hover text-nowrap">
+            <thead>
+              <tr>
+                <th>Code</th>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Department</th>
+                <th>Designation</th>
+                <th>Joined</th>
+                <th class="text-center">Status</th>
+                <th class="text-center" style="width:140px">Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let e of employeeList">
+                <td data-label="Code">{{ e.employeeCode }}</td>
+                <td data-label="Name">{{ e.fullName }}</td>
+                <td data-label="Email">{{ e.officialEmail }}</td>
+                <td data-label="Department">{{ e.departmentName }}</td>
+                <td data-label="Designation">{{ e.designationName }}</td>
+                <td data-label="Joined">{{ e.dateOfJoining | date: dateFormat }}</td>
+                <td data-label="Status" class="text-center">
+                  <span class="badge" [ngClass]="statusBadgeClass(e.employmentStatus)">
+                    {{ e.employmentStatusName || '—' }}
+                  </span>
+                </td>
+                <td data-label="Action" class="text-center">
+                  <ul class="list-inline m-0">
+                    <li class="list-inline-item action-icon" [class.disabled]="!isUpdate"
+                      (click)="isUpdate && editEmployee(e)">
+                      <i class="fa fa-edit"></i>
+                    </li>
+                    <li class="list-inline-item action-icon" [class.disabled]="!isDelete"
+                      (click)="isDelete && deleteEmployee(e)">
+                      <i class="fa fa-trash"></i>
+                    </li>
+                  </ul>
+                </td>
+              </tr>
+            </tbody>
+            <tfoot *ngIf="employeeList.length === 0">
+              <tr>
+                <td colspan="8" class="text-center">No employees found</td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+
+        <div class="card-footer clearfix p-2">
+          <div class="row">
+            <div class="col-sm-5">
+              <div class="dataTables_info">
+                Showing <span class="text-success"><b>{{startPage}}</b></span> to
+                <span class="text-success"><b>{{endPage}}</b></span> of
+                <span class="text-success"><b>{{totalRows}}</b></span> entries
+              </div>
+            </div>
+            <div class="col-sm-7">
+              <ul class="pagination pagination-sm m-0 float-right">
+                <li class="page-item" [class.disabled]="currentPage === 1">
+                  <a class="page-link" (click)="changePage(1)">&laquo;&laquo;</a>
+                </li>
+                <li class="page-item" [class.disabled]="currentPage === 1">
+                  <a class="page-link" (click)="changePage(currentPage - 1)">&laquo;</a>
+                </li>
+                <li class="page-item" *ngFor="let p of [].constructor(pageCount); let i = index"
+                  [class.active]="currentPage === i + 1">
+                  <a class="page-link" (click)="changePage(i + 1)">{{ i + 1 }}</a>
+                </li>
+                <li class="page-item" [class.disabled]="currentPage === pageCount">
+                  <a class="page-link" (click)="changePage(currentPage + 1)">&raquo;</a>
+                </li>
+                <li class="page-item" [class.disabled]="currentPage === pageCount">
+                  <a class="page-link" (click)="changePage(pageCount)">&raquo;&raquo;</a>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div *ngIf="viewMode==='form'">
+      <div class="card card-primary card-outline card-tabs">
+        <div class="card-header p-0 pt-1 border-bottom-0">
+          <ul class="nav nav-tabs">
+            <li class="nav-item" *ngFor="let t of tabs; let i = index">
+              <a class="nav-link" [class.active]="activeTab === i" (click)="activeTab = i"
+              style="cursor:pointer">{{ t }}</a>
+            </li>
+          </ul>
+        </div>
+
+        <div class="card-body">
+
+          <div *ngIf="activeTab === 0">
+            <div class="row">
+              <div class="form-group col-md-3">
+                <label>Employee Code <span class="text-danger">*</span></label>
+                <input class="form-control" [(ngModel)]="model.employeeCode" [disabled]="isEdit" />
+              </div>
+              <div class="form-group col-md-3">
+                <label>First Name <span class="text-danger">*</span></label>
+                <input class="form-control" [(ngModel)]="model.firstName" />
+              </div>
+              <div class="form-group col-md-3">
+                <label>Middle Name</label>
+                <input class="form-control" [(ngModel)]="model.middleName" />
+              </div>
+              <div class="form-group col-md-3">
+                <label>Last Name <span class="text-danger">*</span></label>
+                <input class="form-control" [(ngModel)]="model.lastName" />
+              </div>
+              <div class="form-group col-md-3">
+                <label>Date of Birth</label>
+                <input type="date" class="form-control" [(ngModel)]="model.dateOfBirth" />
+              </div>
+              <div class="form-group col-md-3">
+                <label>Gender</label>
+                <select class="form-control" [(ngModel)]="model.gender">
+                  <option [ngValue]="undefined">— select —</option>
+                  <option *ngFor="let g of initial?.genders" [ngValue]="+g.id!">{{ g.name }}
+                  </option>
+                </select>
+              </div>
+              <div class="form-group col-md-3">
+                <label>Marital Status</label>
+                <select class="form-control" [(ngModel)]="model.maritalStatus">
+                  <option [ngValue]="undefined">— select —</option>
+                  <option *ngFor="let m of initial?.maritalStatuses" [ngValue]="+m.id!">{{ m.name
+                  }}</option>
+                </select>
+              </div>
+              <div class="form-group col-md-3">
+                <label>Blood Group</label>
+                <select class="form-control" [(ngModel)]="model.bloodGroup">
+                  <option [ngValue]="undefined">— select —</option>
+                  <option *ngFor="let b of initial?.bloodGroups" [ngValue]="+b.id!">{{ b.name }}
+                  </option>
+                </select>
+              </div>
+              <div class="form-group col-md-4">
+                <label>Nationality</label>
+                <input class="form-control" [(ngModel)]="model.nationality" />
+              </div>
+              <div class="form-group col-md-4">
+                <label>National ID</label>
+                <input class="form-control" [(ngModel)]="model.nationalId" />
+              </div>
+              <div class="form-group col-md-4">
+                <label>Passport Number</label>
+                <input class="form-control" [(ngModel)]="model.passportNumber" />
+              </div>
+            </div>
+          </div>
+
+          <div *ngIf="activeTab === 1">
+            <div class="row">
+              <div class="form-group col-md-4">
+                <label>Department</label>
+                <select class="form-control" [(ngModel)]="model.departmentId">
+                  <option [ngValue]="undefined">— select —</option>
+                  <option *ngFor="let d of initial?.departments" [ngValue]="d.id">{{ d.name }}
+                  </option>
+                </select>
+              </div>
+              <div class="form-group col-md-4">
+                <label>Designation</label>
+                <select class="form-control" [(ngModel)]="model.designationId">
+                  <option [ngValue]="undefined">— select —</option>
+                  <option *ngFor="let d of initial?.designations" [ngValue]="d.id">{{ d.name }}
+                  </option>
+                </select>
+              </div>
+              <div class="form-group col-md-4">
+                <label>Reporting Manager</label>
+                <select class="form-control" [(ngModel)]="model.reportingManagerId">
+                  <option [ngValue]="undefined">— none —</option>
+                  <option *ngFor="let m of initial?.reportingManagers" [ngValue]="m.id">{{ m.name
+                  }}</option>
+                </select>
+              </div>
+              <div class="form-group col-md-3">
+                <label>Employment Type</label>
+                <select class="form-control" [(ngModel)]="model.employmentType">
+                  <option [ngValue]="undefined">— select —</option>
+                  <option *ngFor="let t of initial?.employmentTypes" [ngValue]="+t.id!">{{ t.name
+                  }}</option>
+                </select>
+              </div>
+              <div class="form-group col-md-3">
+                <label>Status</label>
+                <select class="form-control" [(ngModel)]="model.employmentStatus">
+                  <option *ngFor="let s of initial?.employmentStatuses" [ngValue]="+s.id!">{{
+                  s.name }}</option>
+                </select>
+              </div>
+              <div class="form-group col-md-3">
+                <label>Date of Joining</label>
+                <input type="date" class="form-control" [(ngModel)]="model.dateOfJoining" />
+              </div>
+              <div class="form-group col-md-3">
+                <label>Probation End</label>
+                <input type="date" class="form-control" [(ngModel)]="model.probationEndDate" />
+              </div>
+              <div class="form-group col-md-4">
+                <label>Confirmation Date</label>
+                <input type="date" class="form-control" [(ngModel)]="model.confirmationDate" />
+              </div>
+              <div class="form-group col-md-4">
+                <label>Work Location</label>
+                <input class="form-control" [(ngModel)]="model.workLocation" />
+              </div>
+              <div class="form-group col-md-2">
+                <label>Basic Salary</label>
+                <input type="number" class="form-control" [(ngModel)]="model.basicSalary" />
+              </div>
+              <div class="form-group col-md-2">
+                <label>Currency</label>
+                <input class="form-control" [(ngModel)]="model.salaryCurrency" placeholder="AED" />
+              </div>
+            </div>
+          </div>
+
+          <div *ngIf="activeTab === 2">
+            <div class="row">
+              <div class="form-group col-md-4">
+                <label>Official Email</label>
+                <input type="email" class="form-control" [(ngModel)]="model.officialEmail" />
+              </div>
+              <div class="form-group col-md-4">
+                <label>Personal Email</label>
+                <input type="email" class="form-control" [(ngModel)]="model.personalEmail" />
+              </div>
+              <div class="form-group col-md-2">
+                <label>Mobile</label>
+                <input class="form-control" [(ngModel)]="model.mobileNumber" />
+              </div>
+              <div class="form-group col-md-2">
+                <label>Alternate Phone</label>
+                <input class="form-control" [(ngModel)]="model.alternatePhoneNumber" />
+              </div>
+            </div>
+
+            <h5 class="mt-3">Addresses</h5>
+            <div *ngFor="let a of model.addresses; let i = index" class="nested-block">
+              <div class="row">
+                <div class="form-group col-md-2">
+                  <label>Type</label>
+                  <select class="form-control" [(ngModel)]="a.addressType">
+                    <option [ngValue]="1">Permanent</option>
+                    <option [ngValue]="2">Current</option>
+                    <option [ngValue]="3">Office</option>
+                    <option [ngValue]="4">Other</option>
+                  </select>
+                </div>
+                <div class="form-group col-md-5"><label>Line 1</label>
+                <input class="form-control" [(ngModel)]="a.line1" />
+              </div>
+              <div class="form-group col-md-5"><label>Line 2</label>
+              <input class="form-control" [(ngModel)]="a.line2" />
+            </div>
+            <div class="form-group col-md-3"><label>City</label>
+            <input class="form-control" [(ngModel)]="a.city" />
+          </div>
+          <div class="form-group col-md-3"><label>State</label>
+          <input class="form-control" [(ngModel)]="a.state" />
+        </div>
+        <div class="form-group col-md-3"><label>Country</label>
+        <input class="form-control" [(ngModel)]="a.country" />
+      </div>
+      <div class="form-group col-md-2"><label>Postal</label>
+      <input class="form-control" [(ngModel)]="a.postalCode" />
+    </div>
+    <div class="form-group col-md-1">
+      <label class="d-none d-md-block">&nbsp;</label>
+      <button type="button" class="btn btn-danger btn-circle btn-sm" title="Remove"
+        (click)="removeAt('addresses', i)">
+        <i class="fas fa-minus"></i>
+      </button>
+    </div>
+  </div>
+</div>
+<button type="button" class="btn btn-sm btn-outline-primary" (click)="addAddress()">
+  <i class="fas fa-plus"></i> Add Address
+</button>
+</div>
+
+<div *ngIf="activeTab === 3">
+  <div *ngFor="let e of model.educations; let i = index" class="nested-block">
+    <div class="row">
+      <div class="form-group col-md-3">
+        <label>Qualification</label>
+        <input class="form-control" [(ngModel)]="e.qualification" />
+      </div>
+      <div class="form-group col-md-3">
+        <label>Institution</label>
+        <input class="form-control" [(ngModel)]="e.institution" />
+      </div>
+      <div class="form-group col-md-3">
+        <label>University / Board</label>
+        <input class="form-control" [(ngModel)]="e.university" />
+      </div>
+      <div class="form-group col-md-3">
+        <label>Specialization</label>
+        <input class="form-control" [(ngModel)]="e.specialization" />
+      </div>
+      <div class="form-group col-md-2">
+        <label>Start Year</label>
+        <input type="number" class="form-control" [(ngModel)]="e.startYear" />
+      </div>
+      <div class="form-group col-md-2">
+        <label>End Year</label>
+        <input type="number" class="form-control" [(ngModel)]="e.endYear" />
+      </div>
+      <div class="form-group col-md-2">
+        <label>Grade / %</label>
+        <input type="number" step="0.01" class="form-control" [(ngModel)]="e.grade" />
+      </div>
+
+      <div class="form-group col-md-1">
+        <label class="d-none d-md-block">&nbsp;</label>
+        <button type="button" class="btn btn-danger btn-circle btn-sm" title="Remove"
+          (click)="removeAt('educations', i)">
+          <i class="fas fa-minus"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <button type="button" class="btn btn-sm btn-outline-primary" (click)="addEducation()">
+    <i class="fas fa-plus"></i> Add Education
+  </button>
+</div>
+
+<div *ngIf="activeTab === 4">
+  <div *ngFor="let x of model.experiences; let i = index" class="nested-block">
+    <div class="row">
+      <div class="form-group col-md-4"><label>Company</label>
+      <input class="form-control" [(ngModel)]="x.companyName" />
+    </div>
+    <div class="form-group col-md-4"><label>Designation</label>
+    <input class="form-control" [(ngModel)]="x.designation" />
+  </div>
+  <div class="form-group col-md-2"><label>Start</label>
+  <input type="date" class="form-control" [(ngModel)]="x.startDate" />
+</div>
+<div class="form-group col-md-2"><label>End</label>
+<input type="date" class="form-control" [(ngModel)]="x.endDate" />
+</div>
+<div class="form-group col-md-11"><label>Responsibilities</label>
+<textarea class="form-control" rows="2"
+[(ngModel)]="x.responsibilities"></textarea>
+</div>
+<div class="form-group col-md-1">
+  <label class="d-none d-md-block">&nbsp;</label>
+  <button type="button" class="btn btn-danger btn-circle btn-sm" title="Remove"
+    (click)="removeAt('experiences', i)">
+    <i class="fas fa-minus"></i>
+  </button>
+</div>
+</div>
+</div>
+<button type="button" class="btn btn-sm btn-outline-primary" (click)="addExperience()">
+  <i class="fas fa-plus"></i> Add Experience
+</button>
+</div>
+
+<div *ngIf="activeTab === 5">
+  <div *ngFor="let s of model.skills; let i = index" class="nested-block">
+    <div class="row">
+      <div class="form-group col-md-5"><label>Skill</label>
+      <input class="form-control" [(ngModel)]="s.skillName" />
+    </div>
+    <div class="form-group col-md-3">
+      <label>Proficiency</label>
+      <select class="form-control" [(ngModel)]="s.proficiencyLevel">
+        <option>Beginner</option>
+        <option>Intermediate</option>
+        <option>Advanced</option>
+        <option>Expert</option>
+      </select>
+    </div>
+    <div class="form-group col-md-3"><label>Years</label>
+    <input type="number" class="form-control" [(ngModel)]="s.yearsOfExperience" />
+  </div>
+  <div class="form-group col-md-1">
+    <label class="d-none d-md-block">&nbsp;</label>
+    <button type="button" class="btn btn-danger btn-circle btn-sm" title="Remove"
+      (click)="removeAt('skills', i)">
+      <i class="fas fa-minus"></i>
+    </button>
+  </div>
+</div>
+</div>
+<button type="button" class="btn btn-sm btn-outline-primary" (click)="addSkill()">
+  <i class="fas fa-plus"></i> Add Skill
+</button>
+</div>
+
+<div *ngIf="activeTab === 6">
+  <h5>Trainings</h5>
+  <div *ngFor="let t of model.trainings; let i = index" class="nested-block">
+    <div class="row">
+      <div class="form-group col-md-4"><label>Training</label>
+      <input class="form-control" [(ngModel)]="t.trainingName" />
+    </div>
+    <div class="form-group col-md-3"><label>Provider</label>
+    <input class="form-control" [(ngModel)]="t.provider" />
+  </div>
+  <div class="form-group col-md-2"><label>Start</label>
+  <input type="date" class="form-control" [(ngModel)]="t.startDate" />
+</div>
+<div class="form-group col-md-2"><label>End</label>
+<input type="date" class="form-control" [(ngModel)]="t.endDate" />
+</div>
+<div class="form-group col-md-1">
+  <label class="d-none d-md-block">&nbsp;</label>
+  <button type="button" class="btn btn-danger btn-circle btn-sm" title="Remove"
+    (click)="removeAt('trainings', i)">
+    <i class="fas fa-minus"></i>
+  </button>
+</div>
+</div>
+</div>
+<button type="button" class="btn btn-sm btn-outline-primary mb-3" (click)="addTraining()">
+  <i class="fas fa-plus"></i> Add Training
+</button>
+
+<h5>Certifications</h5>
+<div *ngFor="let c of model.certifications; let i = index" class="nested-block">
+  <div class="row">
+    <div class="form-group col-md-4"><label>Name</label>
+    <input class="form-control" [(ngModel)]="c.certificationName" />
+  </div>
+  <div class="form-group col-md-3"><label>Authority</label>
+  <input class="form-control" [(ngModel)]="c.issuingAuthority" />
+</div>
+<div class="form-group col-md-3"><label>Cert #</label>
+<input class="form-control" [(ngModel)]="c.certificationNumber" />
+</div>
+<div class="form-group col-md-1"><label>Issued</label>
+<input type="date" class="form-control" [(ngModel)]="c.issueDate" />
+</div>
+<div class="form-group col-md-1">
+  <label class="d-none d-md-block">&nbsp;</label>
+  <button type="button" class="btn btn-danger btn-circle btn-sm" title="Remove"
+    (click)="removeAt('certifications', i)">
+    <i class="fas fa-minus"></i>
+  </button>
+</div>
+</div>
+</div>
+<button type="button" class="btn btn-sm btn-outline-primary" (click)="addCertification()">
+  <i class="fas fa-plus"></i> Add Certification
+</button>
+</div>
+
+<div *ngIf="activeTab === 7">
+  <div *ngFor="let d of model.documents; let i = index" class="nested-block">
+    <div class="row">
+      <div class="form-group col-md-3"><label>Type</label>
+      <input class="form-control" [(ngModel)]="d.documentType"
+        placeholder="Passport / NID / Visa / Offer Letter" />
+    </div>
+    <div class="form-group col-md-3"><label>Number</label>
+    <input class="form-control" [(ngModel)]="d.documentNumber" />
+  </div>
+  <div class="form-group col-md-2"><label>Issue Date</label>
+  <input type="date" class="form-control" [(ngModel)]="d.issueDate" />
+</div>
+<div class="form-group col-md-2"><label>Expiry</label>
+<input type="date" class="form-control" [(ngModel)]="d.expiryDate" />
+</div>
+<div class="form-group col-md-2"><label>File URL</label>
+<input class="form-control" [(ngModel)]="d.fileUrl" />
+</div>
+</div>
+</div>
+<button type="button" class="btn btn-sm btn-outline-primary" (click)="addDocument()">
+  <i class="fas fa-plus"></i> Add Document
+</button>
+</div>
+
+<div *ngIf="activeTab === 8">
+  <ng-container *ngIf="model.bankInfo as b">
+    <div class="row">
+      <div class="form-group col-md-3"><label>Bank Name</label>
+      <input class="form-control" [(ngModel)]="b.bankName" />
+    </div>
+    <div class="form-group col-md-3"><label>Branch</label>
+    <input class="form-control" [(ngModel)]="b.branchName" />
+  </div>
+  <div class="form-group col-md-3"><label>Account Holder</label>
+  <input class="form-control" [(ngModel)]="b.accountHolderName" />
+</div>
+<div class="form-group col-md-3"><label>Account Number</label>
+<input class="form-control" [(ngModel)]="b.accountNumber" />
+</div>
+<div class="form-group col-md-3"><label>IBAN</label>
+<input class="form-control" [(ngModel)]="b.ibanNumber" />
+</div>
+<div class="form-group col-md-3"><label>SWIFT</label>
+<input class="form-control" [(ngModel)]="b.swiftCode" />
+</div>
+<div class="form-group col-md-3"><label>Routing Number</label>
+<input class="form-control" [(ngModel)]="b.routingNumber" />
+</div>
+<div class="form-group col-md-3"><label>Currency</label>
+<input class="form-control" [(ngModel)]="b.currency" />
+</div>
+</div>
+</ng-container>
+</div>
+
+<div *ngIf="activeTab === 9">
+  <div *ngFor="let c of model.emergencyContacts; let i = index" class="nested-block">
+    <div class="row">
+      <div class="form-group col-md-3"><label>Name</label>
+      <input class="form-control" [(ngModel)]="c.name" />
+    </div>
+    <div class="form-group col-md-2"><label>Relationship</label>
+    <input class="form-control" [(ngModel)]="c.relationship" />
+  </div>
+  <div class="form-group col-md-2"><label>Primary Phone</label>
+  <input class="form-control" [(ngModel)]="c.primaryPhone" />
+</div>
+<div class="form-group col-md-2"><label>Alt. Phone</label>
+<input class="form-control" [(ngModel)]="c.alternatePhone" />
+</div>
+<div class="form-group col-md-2"><label>Email</label>
+<input class="form-control" [(ngModel)]="c.email" />
+</div>
+<div class="form-group col-md-1">
+  <label class="d-none d-md-block">&nbsp;</label>
+  <button type="button" class="btn btn-danger btn-circle btn-sm" title="Remove"
+    (click)="removeAt('emergencyContacts', i)">
+    <i class="fas fa-minus"></i>
+  </button>
+</div>
+</div>
+</div>
+<button type="button" class="btn btn-sm btn-outline-primary" (click)="addEmergency()">
+  <i class="fas fa-plus"></i> Add Emergency Contact
+</button>
+</div>
+
+</div>
+
+<div class="card-footer">
+  <button type="button" class="btn btn-sm btn-warning mr-2" (click)="cancelForm()">
+    Cancel
+  </button>
+  <button type="button" class="btn btn-sm btn-primary" (click)="saveEmployee()"
+    [disabled]="saving || (isEdit ? !isUpdate : !isCreate)">
+    <i class="fas fa-save"></i>
+    {{ saving ? 'Saving...' : (isEdit ? 'Update Employee' : 'Save Employee') }}
+  </button>
+</div>
+</div>
+</div>
+
+</div>
+</section>
+</div>
+
+<div class="content-wrapper" *ngIf="!isView">
+  <div class="alert alert-danger text-center">
+    {{ pageDisplayMessage }}
+  </div>
+</div>
+
+<app-confirm-dialog #confirmDialog [title]="'Confirm Removal'" [message]="deleteConfirmationMessage"
+  [confirmButtonText]="'Remove'" [confirmButtonClass]="'btn-danger'" (confirmed)="executeDelete()">
+</app-confirm-dialog> -->
+<ngx-spinner size="medium" type="ball-clip-rotate-pulse">
+  <p class="text-white">Please Wait..</p>
+</ngx-spinner>
+
+@if (isView) {
+  <div class="content-wrapper">
+    <!-- ============ HEADER ============ -->
+    <section class="content-header">
+      <div class="container-fluid">
+        <div class="row mb-2">
+          <div class="col-sm-6">
+            <h1>
+              Employees
+              @if (viewMode==='form') {
+                <small class="text-muted ml-2">
+                  &mdash; {{ isEdit ? 'Edit' : 'New' }}
+                  @if (model.employeeCode) {
+                    <span>({{ model.employeeCode }})</span>
+                  }
+                </small>
+              }
+            </h1>
+          </div>
+          <div class="col-sm-6">
+            <ol class="breadcrumb float-sm-right">
+              <li class="breadcrumb-item"><a [routerLink]="['/business/home']">Home</a></li>
+              <li class="breadcrumb-item"><a (click)="viewMode='list'" style="cursor:pointer">Employees</a>
+            </li>
+            @if (viewMode==='form') {
+              <li class="breadcrumb-item active">
+                {{ isEdit ? 'Edit' : 'New' }}
+              </li>
+            }
+          </ol>
+        </div>
+      </div>
+    </div>
+  </section>
+  <section class="content">
+    <div class="container-fluid">
+      <!-- =================================================== -->
+      <!-- LIST VIEW                                            -->
+      <!-- =================================================== -->
+      @if (viewMode==='list') {
+        <div>
+          <div class="card">
+            <div class="card-header p-2">
+              <div class="row align-items-center">
+                <div class="col-md-3">
+                  <h3 class="card-title">All Employees</h3>
+                </div>
+                <div class="col-md-2">
+                  <select class="form-control form-control-sm" name="pageSize" [(ngModel)]="pageSize"
+                    (change)="changePageSize($event)">
+                    @for (size of pageSizeList; track size) {
+                      <option [value]="size">{{size}}</option>
+                    }
+                  </select>
+                </div>
+                <div class="col-md-4">
+                  <div class="input-group input-group-sm">
+                    <input type="text" class="form-control"
+                      placeholder="Search by name, code, email or phone" [(ngModel)]="searchTerm"
+                      (keyup.enter)="searchEmployees()">
+                    <div class="input-group-append">
+                      <button type="button" class="btn btn-default" (click)="searchEmployees()">
+                        <i class="fas fa-search"></i>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-md-3 text-right">
+                  <button type="button" class="btn btn-sm btn-primary" [disabled]="!isCreate"
+                    (click)="openCreateForm()">
+                    <i class="fa fa-plus"></i> New Employee
+                  </button>
+                </div>
+              </div>
+            </div>
+            <div class="card-body table-responsive p-2">
+              <table class="table table-hover text-nowrap">
+                <thead>
+                  <tr>
+                    <th style="width:48px">Photo</th>
+                    <th>Code</th>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Company</th>
+                    <th>Branch</th>
+                    <th>Department</th>
+                    <th>Designation</th>
+                    <th>Joined</th>
+                    <th class="text-center">Status</th>
+                    <th class="text-center" style="width:140px">Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (e of employeeList; track e) {
+                    <tr>
+                      <td data-label="Photo">
+                        <app-photo-thumb owner="employee" [ownerId]="e.id" [photoId]="e.photoId ?? null"
+                        [size]="32" [alt]="e.fullName"></app-photo-thumb>
+                      </td>
+                      <td data-label="Code">{{ e.employeeCode }}</td>
+                      <td data-label="Name">{{ e.fullName }}</td>
+                      <td data-label="Email">{{ e.officialEmail }}</td>
+                      <td data-label="Company">{{ e.companyName || '—' }}</td>
+                      <td data-label="Branch">{{ e.branchName || '—' }}</td>
+                      <td data-label="Department">{{ e.departmentName }}</td>
+                      <td data-label="Designation">{{ e.designationName }}</td>
+                      <td data-label="Joined">{{ e.dateOfJoining | date: dateFormat }}</td>
+                      <td data-label="Status" class="text-center">
+                        <span class="badge" [ngClass]="statusBadgeClass(e.employmentStatus)">
+                          {{ e.employmentStatusName || '—' }}
+                        </span>
+                      </td>
+                      <td data-label="Action" class="text-center">
+                        <ul class="list-inline m-0">
+                          <li class="list-inline-item action-icon" [class.disabled]="!isUpdate"
+                            (click)="isUpdate && editEmployee(e)">
+                            <i class="fa fa-edit"></i>
+                          </li>
+                          <li class="list-inline-item action-icon" [class.disabled]="!isDelete"
+                            (click)="isDelete && deleteEmployee(e)">
+                            <i class="fa fa-trash"></i>
+                          </li>
+                        </ul>
+                      </td>
+                    </tr>
+                  }
+                </tbody>
+                @if (employeeList.length === 0) {
+                  <tfoot>
+                    <tr>
+                      <td colspan="10" class="text-center">No employees found</td>
+                    </tr>
+                  </tfoot>
+                }
+              </table>
+            </div>
+            <div class="card-footer clearfix p-2">
+              <div class="row">
+                <div class="col-sm-5">
+                  <div class="dataTables_info">
+                    Showing <span class="text-success"><b>{{startPage}}</b></span> to
+                    <span class="text-success"><b>{{endPage}}</b></span> of
+                    <span class="text-success"><b>{{totalRows}}</b></span> entries
+                  </div>
+                </div>
+                <div class="col-sm-7">
+                  <ul class="pagination pagination-sm m-0 float-right">
+                    <li class="page-item" [class.disabled]="currentPage === 1">
+                      <a class="page-link" (click)="changePage(1)">&laquo;&laquo;</a>
+                    </li>
+                    <li class="page-item" [class.disabled]="currentPage === 1">
+                      <a class="page-link" (click)="changePage(currentPage - 1)">&laquo;</a>
+                    </li>
+                    @for (p of [].constructor(pageCount); track p; let i = $index) {
+                      <li class="page-item"
+                        [class.active]="currentPage === i + 1">
+                        <a class="page-link" (click)="changePage(i + 1)">{{ i + 1 }}</a>
+                      </li>
+                    }
+                    <li class="page-item" [class.disabled]="currentPage === pageCount">
+                      <a class="page-link" (click)="changePage(currentPage + 1)">&raquo;</a>
+                    </li>
+                    <li class="page-item" [class.disabled]="currentPage === pageCount">
+                      <a class="page-link" (click)="changePage(pageCount)">&raquo;&raquo;</a>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      }
+      <!-- =================================================== -->
+      <!-- FORM VIEW (tabbed)                                   -->
+      <!-- =================================================== -->
+      @if (viewMode==='form') {
+        <div>
+          <div class="card card-primary card-outline card-tabs">
+            <div class="card-header p-0 pt-1 border-bottom-0">
+              <ul class="nav nav-tabs">
+                @for (t of tabs; track t; let i = $index) {
+                  <li class="nav-item">
+                    <a class="nav-link" [class.active]="activeTab === i" (click)="activeTab = i"
+                    style="cursor:pointer">{{ t }}</a>
+                  </li>
+                }
+              </ul>
+            </div>
+            <div class="card-body">
+              <!-- ============ Tab 0: Personal ============ -->
+              @if (activeTab === 0) {
+                <div>
+                  <!-- Employee photo (optional): uploaded after the employee is saved -->
+                  <div class="d-flex align-items-center mb-3 employee-photo-panel">
+                    <img [src]="photoPreviewUrl" class="img-circle elevation-2 employee-photo mr-3"
+                      alt="Employee photo">
+                    <div>
+                      <div class="mb-1">
+                        @if (photoStatus === 'uploaded') {
+                          <span class="badge badge-success">
+                            <i class="fas fa-check-circle"></i> Photo uploaded
+                          </span>
+                        }
+                        @if (photoStatus === 'pending') {
+                          <span class="badge badge-warning">
+                            New photo: uploads on Save
+                          </span>
+                        }
+                        @if (photoStatus === 'remove') {
+                          <span class="badge badge-secondary">
+                            Photo removed on Save
+                          </span>
+                        }
+                        @if (photoStatus === 'none') {
+                          <span class="badge badge-light">No photo</span>
+                        }
+                      </div>
+                      <input #photoInput type="file" class="d-none" [accept]="photoAccept"
+                        (change)="onPhotoSelected($event)">
+                      <div class="btn-group btn-group-sm">
+                        <button type="button" class="btn btn-outline-primary"
+                          (click)="photoInput.value = ''; photoInput.click()"
+                          [disabled]="isEdit ? !isUpdate : !isCreate">
+                          <i class="fas fa-camera"></i> {{ photoStatus === 'none' ? 'Upload photo' : 'Change photo' }}
+                        </button>
+                        @if (photoStatus === 'uploaded' || photoStatus === 'pending') {
+                          <button type="button" class="btn btn-outline-danger" title="Remove photo"
+                            (click)="removePhoto()" [disabled]="isEdit ? !isUpdate : !isCreate">
+                            <i class="fas fa-trash"></i>
+                          </button>
+                        }
+                      </div>
+                      <small class="form-text text-muted">
+                        Optional. JPG or PNG, max {{ photoMaxSizeMB }} MB. When this employee has a
+                        login, this photo is shown in the top bar and sidebar.
+                      </small>
+                    </div>
+                  </div>
+                  <div class="row">
+                    <div class="form-group col-md-3">
+                      <label>Employee Code <span class="text-danger">*</span></label>
+                      <input class="form-control" [(ngModel)]="model.employeeCode" [disabled]="isEdit" />
+                    </div>
+                    <div class="form-group col-md-3">
+                      <label>First Name <span class="text-danger">*</span></label>
+                      <input class="form-control" [(ngModel)]="model.firstName" />
+                    </div>
+                    <div class="form-group col-md-3">
+                      <label>Middle Name</label>
+                      <input class="form-control" [(ngModel)]="model.middleName" />
+                    </div>
+                    <div class="form-group col-md-3">
+                      <label>Last Name <span class="text-danger">*</span></label>
+                      <input class="form-control" [(ngModel)]="model.lastName" />
+                    </div>
+                    <div class="form-group col-md-3">
+                      <label>Date of Birth</label>
+                      <input type="date" class="form-control" [(ngModel)]="model.dateOfBirth" />
+                    </div>
+                    <div class="form-group col-md-3">
+                      <label>Gender</label>
+                      <select class="form-control" [(ngModel)]="model.gender">
+                        <option [ngValue]="undefined">— select —</option>
+                        @for (g of initial?.genders; track g) {
+                          <option [ngValue]="+g.id!">{{ g.name }}
+                          </option>
+                        }
+                      </select>
+                    </div>
+                    <div class="form-group col-md-3">
+                      <label>Marital Status</label>
+                      <select class="form-control" [(ngModel)]="model.maritalStatus">
+                        <option [ngValue]="undefined">— select —</option>
+                        @for (m of initial?.maritalStatuses; track m) {
+                          <option [ngValue]="+m.id!">{{ m.name
+                          }}</option>
+                        }
+                      </select>
+                    </div>
+                    <div class="form-group col-md-3">
+                      <label>Blood Group</label>
+                      <select class="form-control" [(ngModel)]="model.bloodGroup">
+                        <option [ngValue]="undefined">— select —</option>
+                        @for (b of initial?.bloodGroups; track b) {
+                          <option [ngValue]="+b.id!">{{ b.name }}
+                          </option>
+                        }
+                      </select>
+                    </div>
+                    <div class="form-group col-md-4">
+                      <label>Nationality</label>
+                      <input class="form-control" [(ngModel)]="model.nationality" />
+                    </div>
+                    <div class="form-group col-md-4">
+                      <label>National ID</label>
+                      <input class="form-control" [(ngModel)]="model.nationalId" />
+                    </div>
+                    <div class="form-group col-md-4">
+                      <label>Passport Number</label>
+                      <input class="form-control" [(ngModel)]="model.passportNumber" />
+                    </div>
+                  </div>
+                </div>
+              }
+              <!-- ============ Tab 1: Employment ============ -->
+              @if (activeTab === 1) {
+                <div>
+                  <div class="row">
+                    <div class="form-group col-md-4">
+                      <label>Company <span class="text-danger">*</span></label>
+                      <select class="form-control" [(ngModel)]="model.companyId" (change)="onCompanyChange()">
+                        <option [ngValue]="undefined">— select —</option>
+                        @for (c of initial?.companies; track c) {
+                          <option [ngValue]="c.id">{{ c.name }}
+                          </option>
+                        }
+                      </select>
+                    </div>
+                    <div class="form-group col-md-4">
+                      <label>Branch</label>
+                      <select class="form-control" [(ngModel)]="model.branchId" [disabled]="!model.companyId">
+                        <option [ngValue]="undefined">— none —</option>
+                        @for (b of filteredBranches(); track b) {
+                          <option [ngValue]="b.id">{{ b.name }}
+                          </option>
+                        }
+                      </select>
+                    </div>
+                    <div class="form-group col-md-4">
+                      <label>Department</label>
+                      <select class="form-control" [(ngModel)]="model.departmentId">
+                        <option [ngValue]="undefined">— select —</option>
+                        @for (d of initial?.departments; track d) {
+                          <option [ngValue]="d.id">{{ d.name }}
+                          </option>
+                        }
+                      </select>
+                    </div>
+                    <div class="form-group col-md-4">
+                      <label>Designation</label>
+                      <select class="form-control" [(ngModel)]="model.designationId">
+                        <option [ngValue]="undefined">— select —</option>
+                        @for (d of initial?.designations; track d) {
+                          <option [ngValue]="d.id">{{ d.name }}
+                          </option>
+                        }
+                      </select>
+                    </div>
+                    <div class="form-group col-md-4">
+                      <label>Reporting Manager</label>
+                      <select class="form-control" [(ngModel)]="model.reportingManagerId">
+                        <option [ngValue]="undefined">— none —</option>
+                        @for (m of initial?.reportingManagers; track m) {
+                          <option [ngValue]="m.id">{{ m.name
+                          }}</option>
+                        }
+                      </select>
+                    </div>
+                    <div class="form-group col-md-3">
+                      <label>Employment Type</label>
+                      <select class="form-control" [(ngModel)]="model.employmentType">
+                        <option [ngValue]="undefined">— select —</option>
+                        @for (t of initial?.employmentTypes; track t) {
+                          <option [ngValue]="+t.id!">{{ t.name
+                          }}</option>
+                        }
+                      </select>
+                    </div>
+                    <div class="form-group col-md-3">
+                      <label>Status</label>
+                      <select class="form-control" [(ngModel)]="model.employmentStatus">
+                        @for (s of initial?.employmentStatuses; track s) {
+                          <option [ngValue]="+s.id!">{{
+                          s.name }}</option>
+                        }
+                      </select>
+                    </div>
+                    <div class="form-group col-md-3">
+                      <label>Date of Joining</label>
+                      <input type="date" class="form-control" [(ngModel)]="model.dateOfJoining" />
+                    </div>
+                    <div class="form-group col-md-3">
+                      <label>Probation End</label>
+                      <input type="date" class="form-control" [(ngModel)]="model.probationEndDate" />
+                    </div>
+                    <div class="form-group col-md-4">
+                      <label>Confirmation Date</label>
+                      <input type="date" class="form-control" [(ngModel)]="model.confirmationDate" />
+                    </div>
+                    <div class="form-group col-md-4">
+                      <label>Work Location</label>
+                      <input class="form-control" [(ngModel)]="model.workLocation" />
+                    </div>
+                    <div class="form-group col-md-2">
+                      <label>Basic Salary</label>
+                      <input type="number" class="form-control" [(ngModel)]="model.basicSalary" />
+                    </div>
+                    <div class="form-group col-md-2">
+                      <label>Currency</label>
+                      <input class="form-control" [(ngModel)]="model.salaryCurrency" placeholder="AED" />
+                    </div>
+                  </div>
+                </div>
+              }
+              <!-- ============ Tab 2: Contact & Address ============ -->
+              @if (activeTab === 2) {
+                <div>
+                  <div class="row">
+                    <div class="form-group col-md-4">
+                      <label>Official Email</label>
+                      <input type="email" class="form-control" [(ngModel)]="model.officialEmail" />
+                    </div>
+                    <div class="form-group col-md-4">
+                      <label>Personal Email</label>
+                      <input type="email" class="form-control" [(ngModel)]="model.personalEmail" />
+                    </div>
+                    <div class="form-group col-md-2">
+                      <label>Mobile</label>
+                      <input class="form-control" [(ngModel)]="model.mobileNumber" />
+                    </div>
+                    <div class="form-group col-md-2">
+                      <label>Alternate Phone</label>
+                      <input class="form-control" [(ngModel)]="model.alternatePhoneNumber" />
+                    </div>
+                  </div>
+                  <h5 class="mt-3">Addresses</h5>
+                  @for (a of model.addresses; track a; let i = $index) {
+                    <div class="nested-block">
+                      <div class="row">
+                        <div class="form-group col-md-2">
+                          <label>Type</label>
+                          <select class="form-control" [(ngModel)]="a.addressType">
+                            <option [ngValue]="1">Permanent</option>
+                            <option [ngValue]="2">Current</option>
+                            <option [ngValue]="3">Office</option>
+                            <option [ngValue]="4">Other</option>
+                          </select>
+                        </div>
+                        <div class="form-group col-md-5"><label>Line 1</label>
+                        <input class="form-control" [(ngModel)]="a.line1" />
+                      </div>
+                      <div class="form-group col-md-5"><label>Line 2</label>
+                      <input class="form-control" [(ngModel)]="a.line2" />
+                    </div>
+                    <div class="form-group col-md-3"><label>City</label>
+                    <input class="form-control" [(ngModel)]="a.city" />
+                  </div>
+                  <div class="form-group col-md-3"><label>State</label>
+                  <input class="form-control" [(ngModel)]="a.state" />
+                </div>
+                <div class="form-group col-md-3"><label>Country</label>
+                <input class="form-control" [(ngModel)]="a.country" />
+              </div>
+              <div class="form-group col-md-2"><label>Postal</label>
+              <input class="form-control" [(ngModel)]="a.postalCode" />
+            </div>
+            <!-- <div class="col-md-1 d-flex align-items-end">
+            <button type="button" class="btn btn-sm btn-danger"
+            (click)="removeAt('addresses', i)">×</button>
+          </div> -->
+          <div class="form-group col-md-1">
+            <label class="d-none d-md-block">&nbsp;</label>
+            <button type="button" class="btn btn-danger btn-circle btn-sm" title="Remove"
+              (click)="removeAt('addresses', i)">
+              <i class="fas fa-minus"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+    }
+    <button type="button" class="btn btn-sm btn-outline-primary" (click)="addAddress()">
+      <i class="fas fa-plus"></i> Add Address
+    </button>
+  </div>
+}
+<!-- ============ Tab 3: Education ============ -->
+<!-- <div *ngIf="activeTab === 3">
+<div *ngFor="let e of model.educations; let i = index" class="nested-block">
+  <div class="row">
+    <div class="form-group col-md-3"><label>Qualification</label>
+    <input class="form-control" [(ngModel)]="e.qualification" />
+  </div>
+  <div class="form-group col-md-3"><label>Institution</label>
+  <input class="form-control" [(ngModel)]="e.institution" />
+</div>
+<div class="form-group col-md-3"><label>University / Board</label>
+<input class="form-control" [(ngModel)]="e.university" />
+</div>
+<div class="form-group col-md-3"><label>Specialization</label>
+<input class="form-control" [(ngModel)]="e.specialization" />
+</div>
+<div class="form-group col-md-2"><label>Start Year</label>
+<input type="number" class="form-control" [(ngModel)]="e.startYear" />
+</div>
+<div class="form-group col-md-2"><label>End Year</label>
+<input type="number" class="form-control" [(ngModel)]="e.endYear" />
+</div>
+<div class="form-group col-md-2"><label>Grade / %</label>
+<input type="number" step="0.01" class="form-control" [(ngModel)]="e.grade" />
+</div>
+<div class="col-md-1 d-flex align-items-end">
+  <button type="button" class="btn btn-sm btn-danger"
+  (click)="removeAt('educations', i)">×</button>
+</div>
+</div>
+</div>
+<button type="button" class="btn btn-sm btn-outline-primary" (click)="addEducation()">
+  <i class="fas fa-plus"></i> Add Education
+</button>
+</div> -->
+@if (activeTab === 3) {
+  <div>
+    @for (e of model.educations; track e; let i = $index) {
+      <div class="nested-block">
+        <div class="row">
+          <div class="form-group col-md-3">
+            <label>Qualification</label>
+            <input class="form-control" [(ngModel)]="e.qualification" />
+          </div>
+          <div class="form-group col-md-3">
+            <label>Institution</label>
+            <input class="form-control" [(ngModel)]="e.institution" />
+          </div>
+          <div class="form-group col-md-3">
+            <label>University / Board</label>
+            <input class="form-control" [(ngModel)]="e.university" />
+          </div>
+          <div class="form-group col-md-3">
+            <label>Specialization</label>
+            <input class="form-control" [(ngModel)]="e.specialization" />
+          </div>
+          <div class="form-group col-md-2">
+            <label>Start Year</label>
+            <input type="number" class="form-control" [(ngModel)]="e.startYear" />
+          </div>
+          <div class="form-group col-md-2">
+            <label>End Year</label>
+            <input type="number" class="form-control" [(ngModel)]="e.endYear" />
+          </div>
+          <div class="form-group col-md-2">
+            <label>Grade / %</label>
+            <input type="number" step="0.01" class="form-control" [(ngModel)]="e.grade" />
+          </div>
+          <div class="form-group col-md-1">
+            <label class="d-none d-md-block">&nbsp;</label>
+            <button type="button" class="btn btn-danger btn-circle btn-sm" title="Remove"
+              (click)="removeAt('educations', i)">
+              <i class="fas fa-minus"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+    }
+    <button type="button" class="btn btn-sm btn-outline-primary" (click)="addEducation()">
+      <i class="fas fa-plus"></i> Add Education
+    </button>
+  </div>
+}
+<!-- ============ Tab 4: Experience ============ -->
+@if (activeTab === 4) {
+  <div>
+    @for (x of model.experiences; track x; let i = $index) {
+      <div class="nested-block">
+        <div class="row">
+          <div class="form-group col-md-4"><label>Company</label>
+          <input class="form-control" [(ngModel)]="x.companyName" />
+        </div>
+        <div class="form-group col-md-4"><label>Designation</label>
+        <input class="form-control" [(ngModel)]="x.designation" />
+      </div>
+      <div class="form-group col-md-2"><label>Start</label>
+      <input type="date" class="form-control" [(ngModel)]="x.startDate" />
+    </div>
+    <div class="form-group col-md-2"><label>End</label>
+    <input type="date" class="form-control" [(ngModel)]="x.endDate" />
+  </div>
+  <div class="form-group col-md-11"><label>Responsibilities</label>
+  <textarea class="form-control" rows="2"
+  [(ngModel)]="x.responsibilities"></textarea>
+</div>
+<!-- <div class="col-md-1 d-flex align-items-end">
+<button type="button" class="btn btn-sm btn-danger"
+(click)="removeAt('experiences', i)">×</button>
+</div> -->
+<div class="form-group col-md-1">
+  <label class="d-none d-md-block">&nbsp;</label>
+  <button type="button" class="btn btn-danger btn-circle btn-sm" title="Remove"
+    (click)="removeAt('experiences', i)">
+    <i class="fas fa-minus"></i>
+  </button>
+</div>
+</div>
+</div>
+}
+<button type="button" class="btn btn-sm btn-outline-primary" (click)="addExperience()">
+  <i class="fas fa-plus"></i> Add Experience
+</button>
+</div>
+}
+<!-- ============ Tab 5: Skills ============ -->
+@if (activeTab === 5) {
+  <div>
+    @for (s of model.skills; track s; let i = $index) {
+      <div class="nested-block">
+        <div class="row">
+          <div class="form-group col-md-5"><label>Skill</label>
+          <input class="form-control" [(ngModel)]="s.skillName" />
+        </div>
+        <div class="form-group col-md-3">
+          <label>Proficiency</label>
+          <select class="form-control" [(ngModel)]="s.proficiencyLevel">
+            <option>Beginner</option>
+            <option>Intermediate</option>
+            <option>Advanced</option>
+            <option>Expert</option>
+          </select>
+        </div>
+        <div class="form-group col-md-3"><label>Years</label>
+        <input type="number" class="form-control" [(ngModel)]="s.yearsOfExperience" />
+      </div>
+      <!-- <div class="col-md-1 d-flex align-items-end">
+      <button type="button" class="btn btn-sm btn-danger"
+      (click)="removeAt('skills', i)">×</button>
+    </div> -->
+    <div class="form-group col-md-1">
+      <label class="d-none d-md-block">&nbsp;</label>
+      <button type="button" class="btn btn-danger btn-circle btn-sm" title="Remove"
+        (click)="removeAt('skills', i)">
+        <i class="fas fa-minus"></i>
+      </button>
+    </div>
+  </div>
+</div>
+}
+<button type="button" class="btn btn-sm btn-outline-primary" (click)="addSkill()">
+  <i class="fas fa-plus"></i> Add Skill
+</button>
+</div>
+}
+<!-- ============ Tab 6: Training & Certs ============ -->
+@if (activeTab === 6) {
+  <div>
+    <h5>Trainings</h5>
+    @for (t of model.trainings; track t; let i = $index) {
+      <div class="nested-block">
+        <div class="row">
+          <div class="form-group col-md-4"><label>Training</label>
+          <input class="form-control" [(ngModel)]="t.trainingName" />
+        </div>
+        <div class="form-group col-md-3"><label>Provider</label>
+        <input class="form-control" [(ngModel)]="t.provider" />
+      </div>
+      <div class="form-group col-md-2"><label>Start</label>
+      <input type="date" class="form-control" [(ngModel)]="t.startDate" />
+    </div>
+    <div class="form-group col-md-2"><label>End</label>
+    <input type="date" class="form-control" [(ngModel)]="t.endDate" />
+  </div>
+  <!-- <div class="col-md-1 d-flex align-items-end">
+  <button type="button" class="btn btn-sm btn-danger"
+  (click)="removeAt('trainings', i)">×</button>
+</div> -->
+<div class="form-group col-md-1">
+  <label class="d-none d-md-block">&nbsp;</label>
+  <button type="button" class="btn btn-danger btn-circle btn-sm" title="Remove"
+    (click)="removeAt('trainings', i)">
+    <i class="fas fa-minus"></i>
+  </button>
+</div>
+</div>
+</div>
+}
+<button type="button" class="btn btn-sm btn-outline-primary mb-3" (click)="addTraining()">
+  <i class="fas fa-plus"></i> Add Training
+</button>
+<h5>Certifications</h5>
+@for (c of model.certifications; track c; let i = $index) {
+  <div class="nested-block">
+    <div class="row">
+      <div class="form-group col-md-4"><label>Name</label>
+      <input class="form-control" [(ngModel)]="c.certificationName" />
+    </div>
+    <div class="form-group col-md-3"><label>Authority</label>
+    <input class="form-control" [(ngModel)]="c.issuingAuthority" />
+  </div>
+  <div class="form-group col-md-3"><label>Cert #</label>
+  <input class="form-control" [(ngModel)]="c.certificationNumber" />
+</div>
+<div class="form-group col-md-1"><label>Issued</label>
+<input type="date" class="form-control" [(ngModel)]="c.issueDate" />
+</div>
+<!-- <div class="form-group col-md-1 d-flex align-items-end">
+<button type="button" class="btn btn-sm btn-danger"
+(click)="removeAt('certifications', i)">×</button>
+</div> -->
+<div class="form-group col-md-1">
+  <label class="d-none d-md-block">&nbsp;</label>
+  <button type="button" class="btn btn-danger btn-circle btn-sm" title="Remove"
+    (click)="removeAt('certifications', i)">
+    <i class="fas fa-minus"></i>
+  </button>
+</div>
+</div>
+</div>
+}
+<button type="button" class="btn btn-sm btn-outline-primary" (click)="addCertification()">
+  <i class="fas fa-plus"></i> Add Certification
+</button>
+</div>
+}
+<!-- ============ Tab 7: Documents ============ -->
+@if (activeTab === 7) {
+  <div>
+    @for (d of model.documents; track d; let i = $index) {
+      <div class="nested-block">
+        <div class="row">
+          <div class="form-group col-md-3"><label>Type</label>
+          <input class="form-control" [(ngModel)]="d.documentType"
+            placeholder="Passport / NID / Visa / Offer Letter" />
+        </div>
+        <div class="form-group col-md-3"><label>Number</label>
+        <input class="form-control" [(ngModel)]="d.documentNumber" />
+      </div>
+      <div class="form-group col-md-2"><label>Issue Date</label>
+      <input type="date" class="form-control" [(ngModel)]="d.issueDate" />
+    </div>
+    <div class="form-group col-md-2"><label>Expiry</label>
+    <input type="date" class="form-control" [(ngModel)]="d.expiryDate" />
+  </div>
+  <div class="form-group col-md-2"><label>File URL</label>
+  <input class="form-control" [(ngModel)]="d.fileUrl" />
+</div>
+</div>
+</div>
+}
+<button type="button" class="btn btn-sm btn-outline-primary" (click)="addDocument()">
+  <i class="fas fa-plus"></i> Add Document
+</button>
+</div>
+}
+<!-- ============ Tab 8: Bank ============ -->
+@if (activeTab === 8) {
+  <div>
+    @if (model.bankInfo; as b) {
+      <div class="row">
+        <div class="form-group col-md-3"><label>Bank Name</label>
+        <input class="form-control" [(ngModel)]="b.bankName" />
+      </div>
+      <div class="form-group col-md-3"><label>Branch</label>
+      <input class="form-control" [(ngModel)]="b.branchName" />
+    </div>
+    <div class="form-group col-md-3"><label>Account Holder</label>
+    <input class="form-control" [(ngModel)]="b.accountHolderName" />
+  </div>
+  <div class="form-group col-md-3"><label>Account Number</label>
+  <input class="form-control" [(ngModel)]="b.accountNumber" />
+</div>
+<div class="form-group col-md-3"><label>IBAN</label>
+<input class="form-control" [(ngModel)]="b.ibanNumber" />
+</div>
+<div class="form-group col-md-3"><label>SWIFT</label>
+<input class="form-control" [(ngModel)]="b.swiftCode" />
+</div>
+<div class="form-group col-md-3"><label>Routing Number</label>
+<input class="form-control" [(ngModel)]="b.routingNumber" />
+</div>
+<div class="form-group col-md-3"><label>Currency</label>
+<input class="form-control" [(ngModel)]="b.currency" />
+</div>
+</div>
+}
+</div>
+}
+<!-- ============ Tab 9: Emergency ============ -->
+@if (activeTab === 9) {
+  <div>
+    @for (c of model.emergencyContacts; track c; let i = $index) {
+      <div class="nested-block">
+        <div class="row">
+          <div class="form-group col-md-3"><label>Name</label>
+          <input class="form-control" [(ngModel)]="c.name" />
+        </div>
+        <div class="form-group col-md-2"><label>Relationship</label>
+        <input class="form-control" [(ngModel)]="c.relationship" />
+      </div>
+      <div class="form-group col-md-2"><label>Primary Phone</label>
+      <input class="form-control" [(ngModel)]="c.primaryPhone" />
+    </div>
+    <div class="form-group col-md-2"><label>Alt. Phone</label>
+    <input class="form-control" [(ngModel)]="c.alternatePhone" />
+  </div>
+  <div class="form-group col-md-2"><label>Email</label>
+  <input class="form-control" [(ngModel)]="c.email" />
+</div>
+<!-- <div class="col-md-1 d-flex align-items-end">
+<button type="button" class="btn btn-sm btn-danger"
+(click)="removeAt('emergencyContacts', i)">×</button>
+</div> -->
+<div class="form-group col-md-1">
+  <label class="d-none d-md-block">&nbsp;</label>
+  <button type="button" class="btn btn-danger btn-circle btn-sm" title="Remove"
+    (click)="removeAt('emergencyContacts', i)">
+    <i class="fas fa-minus"></i>
+  </button>
+</div>
+</div>
+</div>
+}
+<button type="button" class="btn btn-sm btn-outline-primary" (click)="addEmergency()">
+  <i class="fas fa-plus"></i> Add Emergency Contact
+</button>
+</div>
+}
+</div>
+<div class="card-footer">
+  <button type="button" class="btn btn-sm btn-warning mr-2" (click)="cancelForm()">
+    Cancel
+  </button>
+  <button type="button" class="btn btn-sm btn-primary" (click)="saveEmployee()"
+    [disabled]="saving || (isEdit ? !isUpdate : !isCreate)">
+    <i class="fas fa-save"></i>
+    {{ saving ? 'Saving...' : (isEdit ? 'Update Employee' : 'Save Employee') }}
+  </button>
+</div>
+</div>
+</div>
+}
+</div>
+</section>
+</div>
+}
+
+@if (!isView) {
+  <div class="content-wrapper">
+    <div class="alert alert-danger text-center">
+      {{ pageDisplayMessage }}
+    </div>
+  </div>
+}
+
+<app-confirm-dialog #confirmDialog [title]="'Confirm Removal'" [message]="deleteConfirmationMessage"
+  [confirmButtonText]="'Remove'" [confirmButtonClass]="'btn-danger'" (confirmed)="executeDelete()">
+</app-confirm-dialog>

@@ -15,90 +15,116 @@
 
   <section class="content">
     <div class="container-fluid">
-      <div *ngIf="!isView" class="alert alert-warning">{{ pageDisplayMessage }}</div>
+      @if (!isView) {
+        <div class="alert alert-warning">{{ pageDisplayMessage }}</div>
+      }
 
       <!-- RECALCULATE -->
-      <div class="card card-outline card-warning" *ngIf="isView && showReprocess">
-        <div class="card-header"><h3 class="card-title mt-1">Recalculate daily attendance from punches</h3></div>
-        <div class="card-body">
-          <p class="text-muted small">Check-in = earliest accepted punch of the work day, check-out = latest. Days entered by HR (Excel upload, approved regularization) are not changed.</p>
-          <div class="row">
-            <div class="col-md-3 form-group"><label>From</label><input type="date" class="form-control" [(ngModel)]="reprocessFrom"></div>
-            <div class="col-md-3 form-group"><label>To</label><input type="date" class="form-control" [(ngModel)]="reprocessTo"></div>
-            <div class="col-md-4 form-group">
-              <label>Employee</label>
-              <select class="form-control" [(ngModel)]="reprocessEmployeeId">
-                <option value="">All employees</option>
-                <option *ngFor="let e of employees" [value]="e.id">{{ e.fullName }} ({{ e.employeeCode }})</option>
-              </select>
-            </div>
-          </div>
-        </div>
-        <div class="card-footer">
-          <button class="btn btn-warning" (click)="reprocess()"><i class="fas fa-sync-alt mr-1"></i> Recalculate</button>
-          <button class="btn btn-default ml-2" (click)="toggleReprocess()">Close</button>
-        </div>
-      </div>
-
-      <!-- LIST -->
-      <div class="card card-outline card-primary" *ngIf="isView">
-        <div class="card-header d-flex justify-content-between align-items-center">
-          <h3 class="card-title mt-1">Check-ins and check-outs received</h3>
-          <div>
-            <button class="btn btn-default btn-sm mr-2" (click)="loadPunchesPaging()"><i class="fas fa-redo mr-1"></i> Refresh</button>
-            <button class="btn btn-warning btn-sm" *ngIf="isUpdate && !showReprocess" (click)="toggleReprocess()"><i class="fas fa-sync-alt mr-1"></i> Recalculate</button>
-          </div>
-        </div>
-        <div class="card-body">
-          <div class="row mb-3">
-            <div class="col-md-5">
-              <div class="input-group input-group-sm">
-                <input type="text" class="form-control" placeholder="Employee, PIN, status, source, or a date (yyyy-mm-dd)…" [(ngModel)]="searchTerm" (keyup.enter)="search()">
-                <span class="input-group-append"><button class="btn btn-default" (click)="search()"><i class="fas fa-search"></i></button></span>
+      @if (isView && showReprocess) {
+        <div class="card card-outline card-warning">
+          <div class="card-header"><h3 class="card-title mt-1">Recalculate daily attendance from punches</h3></div>
+          <div class="card-body">
+            <p class="text-muted small">Check-in = earliest accepted punch of the work day, check-out = latest. Days entered by HR (Excel upload, approved regularization) are not changed.</p>
+            <div class="row">
+              <div class="col-md-3 form-group"><label>From</label><input type="date" class="form-control" [(ngModel)]="reprocessFrom"></div>
+              <div class="col-md-3 form-group"><label>To</label><input type="date" class="form-control" [(ngModel)]="reprocessTo"></div>
+              <div class="col-md-4 form-group">
+                <label>Employee</label>
+                <select class="form-control" [(ngModel)]="reprocessEmployeeId">
+                  <option value="">All employees</option>
+                  @for (e of employees; track e) {
+                    <option [value]="e.id">{{ e.fullName }} ({{ e.employeeCode }})</option>
+                  }
+                </select>
               </div>
             </div>
-            <div class="col-md-7 text-right">
-              <label class="mr-2 mb-0">Page size</label>
-              <select class="form-control form-control-sm d-inline-block" style="width:auto" (change)="changePageSize($event)">
-                <option *ngFor="let s of pageSizeList" [value]="s" [selected]="s === pageSize">{{ s }}</option>
-              </select>
+          </div>
+          <div class="card-footer">
+            <button class="btn btn-warning" (click)="reprocess()"><i class="fas fa-sync-alt mr-1"></i> Recalculate</button>
+            <button class="btn btn-default ml-2" (click)="toggleReprocess()">Close</button>
+          </div>
+        </div>
+      }
+
+      <!-- LIST -->
+      @if (isView) {
+        <div class="card card-outline card-primary">
+          <div class="card-header d-flex justify-content-between align-items-center">
+            <h3 class="card-title mt-1">Check-ins and check-outs received</h3>
+            <div>
+              <button class="btn btn-default btn-sm mr-2" (click)="loadPunchesPaging()"><i class="fas fa-redo mr-1"></i> Refresh</button>
+              @if (isUpdate && !showReprocess) {
+                <button class="btn btn-warning btn-sm" (click)="toggleReprocess()"><i class="fas fa-sync-alt mr-1"></i> Recalculate</button>
+              }
             </div>
           </div>
-          <div class="table-responsive">
-            <table class="table table-hover table-bordered list-table">
-              <thead>
-                <tr><th>Time (office)</th><th>Work Day</th><th>Employee</th><th>Source</th><th>Biometric</th><th>Where</th><th class="text-center">Status</th></tr>
-              </thead>
-              <tbody>
-                <tr *ngIf="punchList.length === 0"><td colspan="7" class="text-center text-muted">No punches received yet.</td></tr>
-                <tr *ngFor="let p of punchList">
-                  <td>{{ p.punchLocalTime | date: 'dd MMM yyyy HH:mm:ss' }} <small class="text-muted">({{ punchTypeName(p.punchTypeId) }})</small></td>
-                  <td>{{ p.attendanceDate | date: 'dd MMM yyyy' }}</td>
-                  <td>
-                    <span *ngIf="p.employeeName">{{ p.employeeName }}<div><small class="text-muted">{{ p.employeeCode }}</small></div></span>
-                    <span *ngIf="!p.employeeName" class="text-muted">Unknown PIN {{ p.deviceUserPin }}</span>
-                  </td>
-                  <td>{{ p.sourceName }}<div *ngIf="p.deviceName"><small class="text-muted">{{ p.deviceName }}</small></div></td>
-                  <td>{{ p.biometricTypeName || '—' }}</td>
-                  <td><small>{{ p.locationCheck || p.clientIp }}</small></td>
-                  <td class="text-center">
-                    <span class="badge" [ngClass]="statusBadge(p.statusId)">{{ p.statusName }}</span>
-                    <div *ngIf="p.rejectReason"><small class="text-danger">{{ p.rejectReason }}</small></div>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
+          <div class="card-body">
+            <div class="row mb-3">
+              <div class="col-md-5">
+                <div class="input-group input-group-sm">
+                  <input type="text" class="form-control" placeholder="Employee, PIN, status, source, or a date (yyyy-mm-dd)…" [(ngModel)]="searchTerm" (keyup.enter)="search()">
+                  <span class="input-group-append"><button class="btn btn-default" (click)="search()"><i class="fas fa-search"></i></button></span>
+                </div>
+              </div>
+              <div class="col-md-7 text-right">
+                <label class="mr-2 mb-0">Page size</label>
+                <select class="form-control form-control-sm d-inline-block" style="width:auto" (change)="changePageSize($event)">
+                  @for (s of pageSizeList; track s) {
+                    <option [value]="s" [selected]="s === pageSize">{{ s }}</option>
+                  }
+                </select>
+              </div>
+            </div>
+            <div class="table-responsive">
+              <table class="table table-hover table-bordered list-table">
+                <thead>
+                  <tr><th>Time (office)</th><th>Work Day</th><th>Employee</th><th>Source</th><th>Biometric</th><th>Where</th><th class="text-center">Status</th></tr>
+                </thead>
+                <tbody>
+                  @if (punchList.length === 0) {
+                    <tr><td colspan="7" class="text-center text-muted">No punches received yet.</td></tr>
+                  }
+                  @for (p of punchList; track p) {
+                    <tr>
+                      <td>{{ p.punchLocalTime | date: 'dd MMM yyyy HH:mm:ss' }} <small class="text-muted">({{ punchTypeName(p.punchTypeId) }})</small></td>
+                      <td>{{ p.attendanceDate | date: 'dd MMM yyyy' }}</td>
+                      <td>
+                        @if (p.employeeName) {
+                          <span>{{ p.employeeName }}<div><small class="text-muted">{{ p.employeeCode }}</small></div></span>
+                        }
+                        @if (!p.employeeName) {
+                          <span class="text-muted">Unknown PIN {{ p.deviceUserPin }}</span>
+                        }
+                      </td>
+                      <td>{{ p.sourceName }}@if (p.deviceName) {
+                        <div><small class="text-muted">{{ p.deviceName }}</small></div>
+                      }</td>
+                      <td>{{ p.biometricTypeName || '—' }}</td>
+                      <td><small>{{ p.locationCheck || p.clientIp }}</small></td>
+                      <td class="text-center">
+                        <span class="badge" [ngClass]="statusBadge(p.statusId)">{{ p.statusName }}</span>
+                        @if (p.rejectReason) {
+                          <div><small class="text-danger">{{ p.rejectReason }}</small></div>
+                        }
+                      </td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          </div>
+          <div class="card-footer clearfix">
+            <span class="float-left text-muted mt-1">Showing {{ startPage }}–{{ endPage }} of {{ totalRows }}</span>
+            <ul class="pagination pagination-sm m-0 float-right">
+              <li class="page-item" [class.disabled]="currentPage === 1"><a class="page-link" (click)="changePage(currentPage - 1)">«</a></li>
+              @for (x of [].constructor(pageCount); track $index; let i = $index) {
+                <li class="page-item" [class.active]="currentPage === i + 1"><a class="page-link" (click)="changePage(i + 1)">{{ i + 1 }}</a></li>
+              }
+              <li class="page-item" [class.disabled]="currentPage === pageCount"><a class="page-link" (click)="changePage(currentPage + 1)">»</a></li>
+            </ul>
           </div>
         </div>
-        <div class="card-footer clearfix">
-          <span class="float-left text-muted mt-1">Showing {{ startPage }}–{{ endPage }} of {{ totalRows }}</span>
-          <ul class="pagination pagination-sm m-0 float-right">
-            <li class="page-item" [class.disabled]="currentPage === 1"><a class="page-link" (click)="changePage(currentPage - 1)">«</a></li>
-            <li class="page-item" *ngFor="let x of [].constructor(pageCount); let i = index" [class.active]="currentPage === i + 1"><a class="page-link" (click)="changePage(i + 1)">{{ i + 1 }}</a></li>
-            <li class="page-item" [class.disabled]="currentPage === pageCount"><a class="page-link" (click)="changePage(currentPage + 1)">»</a></li>
-          </ul>
-        </div>
-      </div>
+      }
     </div>
   </section>
 </div>

@@ -10,7 +10,7 @@ import { LeaveApplicationComponent } from './leave-application/leave-application
 import { ConfirmDialogComponent } from '@app/shared/confirm-dialog/confirm-dialog.component';
 
 /**
- * Leave business module — mirrors HumanResourcesModule shape. Each component
+ * Leave business module — mirrors CoreHRModule shape. Each component
  * hosts its own list + form via an internal viewMode flag.
  */
 @NgModule({

@@ -2,300 +2,337 @@
 <ngx-spinner size="medium" type="ball-clip-rotate-pulse">
   <p class="text-white">Please Wait..</p>
 </ngx-spinner>
-<div class="content-wrapper" *ngIf="isView">
-  <!-- Content Header (Page header) -->
-  <section class="content-header">
-    <div class="container-fluid">
-      <div class="row mb-2">
-        <div class="col-sm-6">
-          <h1>User Menu Management</h1>
-        </div>
-        <div class="col-sm-6">
-          <ol class="breadcrumb float-sm-right">
-            <li class="breadcrumb-item"><a href="#" [routerLink]="['/business/home']">Home</a></li>
-            <li class="breadcrumb-item active">User Menu</li>
-          </ol>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <section class="content">
-    <div class="container-fluid">
-      <div class="card card-default">
-        <div class="card-header">
-          <h3 class="card-title">Create/Edit/Delete User Menu</h3>
-
-          <div class="card-tools">
-            <button type="button" class="btn btn-tool" data-card-widget="collapse">
-              <i class="fas fa-minus"></i>
-            </button>
-            <button type="button" class="btn btn-tool" data-card-widget="remove">
-              <i class="fas fa-times"></i>
-            </button>
+@if (isView) {
+  <div class="content-wrapper">
+    <!-- Content Header (Page header) -->
+    <section class="content-header">
+      <div class="container-fluid">
+        <div class="row mb-2">
+          <div class="col-sm-6">
+            <h1>User Menu Management</h1>
           </div>
-        </div>
-        <form [formGroup]="appUserMenuForm" (ngSubmit)="createUpdateAppUserMenu(appUserMenuForm.value)">
-          <div class="card-body">
-            <div class="row">
-              <input type="hidden" formControlName="Id" />
-              <input type="hidden" formControlName="CreateUpdateBy" />
-              <div class="col-md-3 col-sm-3 col-lg-3">
-                <div class="form-group">
-                  <label for="txtName">Menu Name<label style="color: red; margin-bottom: 0rem;">*</label></label>
-                  <input type="text" id="txtName" name="Name" formControlName="Name" class="form-control" />
-                  <div *ngIf="appUserMenuForm.get('Name').touched && appUserMenuForm.get('Name').invalid"
-                    class="error-message">
-                    <div *ngIf="appUserMenuForm.get('Name').errors?.required" class="text-danger">Menu Name is
-                      required.</div>
-                    <div *ngIf="appUserMenuForm.get('Name').errors?.englishText" class="text-danger">{{
-                      appUserMenuForm.get('Name').errors?.englishText }}</div>
-                  </div>
-                </div>
-              </div>
-
-              <div class="col-md-3 col-sm-3 col-lg-3">
-                <div class="form-group">
-                  <label for="txtCssClass">CSS Class <span style="color: red;">*</span></label>
-                  <input type="text" class="form-control" id="txtCssClass" formControlName="CssClass"
-                    list="cssClassOptions" (input)="onCssClassInput($event)" />
-                  <datalist id="cssClassOptions">
-                    <option *ngFor="let cssClass of filteredCssClassList" [value]="cssClass.name"></option>
-                  </datalist>
-                  <div *ngIf="appUserMenuForm.get('CssClass').invalid && appUserMenuForm.get('CssClass').touched"
-                    class="text-danger">
-                    CSS Class is required.
-                  </div>
-                </div>
-              </div>
-              <div class="col-md-3 col-sm-3 col-lg-3">
-                <div class="form-group form-check">
-                  <input type="checkbox" id="chkIsRouteLink" name="IsRouteLink" formControlName="IsRouteLink"
-                    class="form-check-input" />
-                  <label for="chkIsRouteLink" class="form-check-label" style="font-weight: bold;">Is RouteLink</label>
-                </div>
-              </div>
-              <div class="col-md-3 col-sm-3 col-lg-3">
-                <div class="form-group">
-                  <label for="txtRouteLink">Route Link <span style="color: red;">*</span></label>
-                  <input type="text" class="form-control" id="txtRouteLink" formControlName="RouteLink"
-                    list="routeLinkOptions" (input)="onCssClassInput($event)" />
-                  <datalist id="routeLinkOptions">
-                    <option *ngFor="let routeLink of filteredRouteLinkList" [value]="routeLink.name"></option>
-                  </datalist>
-                  <div *ngIf="appUserMenuForm.get('RouteLink').invalid && appUserMenuForm.get('RouteLink').touched"
-                    class="text-danger">
-                    Route Link is required for a component or a routed module.
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div class="row">
-              <div class="col-md-3 col-sm-3 col-lg-3">
-                <div class="form-group">
-                  <label for="txtRouteLinkClass">Route Link Class <span style="color: red;">*</span></label>
-                  <input type="text" class="form-control" id="txtRouteLinkClass" formControlName="RouteLinkClass"
-                    list="routeLinkClassOptions" (input)="onRouteLinkClassInput($event)" />
-                  <datalist id="routeLinkClassOptions">
-                    <option *ngFor="let routeLinkClass of filteredRouteLinkClassList" [value]="routeLinkClass.name">
-                    </option>
-                  </datalist>
-                  <div
-                    *ngIf="appUserMenuForm.get('RouteLinkClass').invalid && appUserMenuForm.get('RouteLinkClass').touched"
-                    class="text-danger">
-                    Route Link Class is required.
-                  </div>
-                </div>
-              </div>
-              <div class="col-md-3 col-sm-3 col-lg-3">
-                <div class="form-group">
-                  <label for="txtIcon">Icon <span style="color: red;">*</span></label>
-                  <input type="text" class="form-control" id="txtIcon" formControlName="Icon" list="iconOptions"
-                    (input)="onIconInput($event)" />
-                  <datalist id="iconOptions">
-                    <option *ngFor="let icon of filteredIconList" [value]="icon.name"></option>
-                  </datalist>
-                  <div *ngIf="appUserMenuForm.get('Icon').invalid && appUserMenuForm.get('Icon').touched"
-                    class="text-danger">
-                    Icon is required.
-                  </div>
-                </div>
-              </div>
-              <div class="col-md-3 col-sm-3 col-lg-3">
-                <div class="form-group">
-                  <label for="ddlParentId">Parent Menu<span *ngIf="!appUserMenuForm.get('IsHeader').value"
-                      style="color: red;"> *</span></label>
-                  <select class="form-control" id="ddlParentId" name="ParentId" formControlName="ParentId">
-                    <option value="" disabled selected>{{ appUserMenuForm.get('IsHeader').value ? 'No parent (top level)' :
-                      'Please select' }}</option>
-                    <option *ngFor="let parentMenu of filteredParentMenuList" value={{parentMenu.Id}}>
-                      {{parentMenu.Name}}
-                    </option>
-                  </select>
-                  <div *ngIf="appUserMenuForm.get('ParentId').invalid && appUserMenuForm.get('ParentId').touched"
-                    class="text-danger">
-                    Parent Menu is required.
-                  </div>
-                  <small class="form-text text-muted">{{ parentMenuHint }}</small>
-                </div>
-              </div>
-              <div class="col-md-3 col-sm-3 col-lg-3">
-                <div class="form-group">
-                  <label for="txtDropdownIcon">Dropdown Icon</label>
-                  <input type="text" class="form-control" id="txtDropdownIcon" formControlName="DropdownIcon"
-                    list="dropdownIconOptions" (input)="onDropdownIconInput($event)" />
-                  <datalist id="dropdownIconOptions">
-                    <option *ngFor="let dropdownIcon of filteredDropdownIconList" [value]="dropdownIcon.name"></option>
-                  </datalist>
-                </div>
-              </div>
-            </div>
-
-            <div class="row">
-              <div class="col-md-3 col-sm-3 col-lg-3">
-                <div class="form-group">
-                  <label for="txtSerialNo">Serial No.<label style="color: red; margin-bottom: 0rem;">*</label></label>
-                  <input type="text" class="form-control" id="txtSerialNo" name="SerialNo" formControlName="SerialNo"
-                    [attr.disabled]="isSerialNoDisabled ? true : null" />
-                  <div *ngIf="appUserMenuForm.get('SerialNo').touched && appUserMenuForm.get('SerialNo').invalid"
-                    class="error-message">
-                    <div *ngIf="appUserMenuForm.get('SerialNo').errors?.required" class="text-danger">Serial No is
-                      required.</div>
-                    <div *ngIf="appUserMenuForm.get('SerialNo').errors?.englishText" class="text-danger">{{
-                      appUserMenuForm.get('SerialNo').errors?.englishText }}</div>
-                  </div>
-                </div>
-              </div>
-              <!-- Menu type: exactly one of Header > Module > Sub Module > Component -->
-              <div class="col-md-9 col-sm-9 col-lg-9">
-                <label class="d-block">Menu Type <span style="color: red;">*</span></label>
-                <div class="form-check form-check-inline">
-                  <input type="checkbox" id="chkIsHeader" name="IsHeader" formControlName="IsHeader"
-                    class="form-check-input" (change)="onMenuTypeChange('IsHeader')" />
-                  <label for="chkIsHeader" class="form-check-label" style="font-weight: bold;">Is Header</label>
-                </div>
-                <div class="form-check form-check-inline">
-                  <input type="checkbox" id="chkIsModule" name="IsModule" formControlName="IsModule"
-                    class="form-check-input" (change)="onMenuTypeChange('IsModule')" />
-                  <label for="chkIsModule" class="form-check-label" style="font-weight: bold;">Is Module</label>
-                </div>
-                <div class="form-check form-check-inline">
-                  <input type="checkbox" id="chkIsSubModule" name="IsSubModule" formControlName="IsSubModule"
-                    class="form-check-input" (change)="onMenuTypeChange('IsSubModule')" />
-                  <label for="chkIsSubModule" class="form-check-label" style="font-weight: bold;">Is Sub Module</label>
-                </div>
-                <div class="form-check form-check-inline">
-                  <input type="checkbox" id="chkIsComponent" name="IsComponent" formControlName="IsComponent"
-                    class="form-check-input" (change)="onMenuTypeChange('IsComponent')" />
-                  <label for="chkIsComponent" class="form-check-label" style="font-weight: bold;">Is Component</label>
-                </div>
-                <div *ngIf="appUserMenuForm.errors?.menuType && appUserMenuForm.touched" class="text-danger">
-                  Select one menu type.
-                </div>
-                <small class="form-text text-muted">
-                  Header: sidebar section &middot; Module: a microservice (e.g. Security, Human Resources) &middot;
-                  Sub Module: a group inside a module (e.g. Recruitment) &middot; Component: a screen with a route link.
-                </small>
-              </div>
-            </div>
-
-            <div class="row">
-              <div class="col-md-3 col-sm-3 col-lg-3">
-                <div class="form-group form-check">
-                  <input type="checkbox" id="chkIsActive" name="IsActive" formControlName="IsActive"
-                    class="form-check-input" />
-                  <label for="chkIsActive" class="form-check-label" style="font-weight: bold;">Is Active</label>
-                </div>
-              </div>
-
-              <div class="col-9  col-sm-9 col-lg-9">
-                <div class="form-group">
-                  <label for="txtRemark">Remark</label>
-                  <textarea id="txtRemark" name="Remark" formControlName="Remark" class="form-control" rows="5"
-                    resize="false"></textarea>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div class="card-footer text-right">
-            <button type="submit" [disabled]="isEdit? !isUpdate:!isCreate" class="btn btn-sm btn-primary mr-1">{{isEdit?
-              'Update':'Save'}}</button>
-            <button type="button" [disabled]="isEdit? !isUpdate:!isCreate" class="btn btn-sm btn-warning"
-              (click)="resetForm();">Clear</button>
-          </div>
-        </form>
-
-      </div>
-      <!-- Datatable Div Starts -->
-      <div class="row">
-        <div class="col-12">
-          <div class="card">
-            <!-- Loading indicator -->
-            <div *ngIf="loading" class="overlay">
-              <i class="fas fa-spinner fa-spin"></i>
-            </div>
-
-            <!-- Error message -->
-            <div *ngIf="error_message" class="alert alert-danger m-2">
-              {{ error_message }}
-            </div>
-
-            <div class="card-body table-responsive p-2">
-              <table id="appUserMenuTable" class="table table-hover text-nowrap" width="100%">
-                <thead>
-                  <tr>
-                    <th>Menu Name</th>
-                    <th>Header?</th>
-                    <th>Module?</th>
-                    <th>Sub Module?</th>
-                    <th>Component?</th>
-                    <th>Route Link</th>
-                    <th>Parent Menu</th>
-                    <th>Active</th>
-                    <th>Action</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr *ngFor="let menu of appUserMenuList">
-                    <td>{{ menu.Name }}</td>
-                    <td>{{ menu.IsHeader ? 'Yes' : 'No' }}</td>
-                    <td>{{ menu.IsModule ? 'Yes' : 'No' }}</td>
-                    <td>{{ menu.IsSubModule ? 'Yes' : 'No' }}</td>
-                    <td>{{ menu.IsComponent ? 'Yes' : 'No' }}</td>
-                    <td>{{ menu.RouteLink }}</td>
-                    <td>{{ menu.ParentName }}</td>
-                    <td>{{ menu.IsActive ? 'Yes' : 'No' }}</td>
-                    <td>
-                      <ul class="list-inline m-0">
-                        <li class="list-inline-item">
-                          <i class="fa fa-edit" [ngClass]="{ 'disabled-icon': !isUpdate }"
-                            [style.cursor]="isUpdate ? 'pointer' : 'not-allowed'"
-                            (click)="isUpdate && editAppUserMenu(menu)" title="Edit"></i>
-                        </li>
-                        <li class="list-inline-item">
-                          <i class="fa fa-trash" [ngClass]="{ 'disabled-icon': !isDelete }"
-                            [style.cursor]="isDelete ? 'pointer' : 'not-allowed'"
-                            (click)="isDelete && deleteAppUserMenu(menu.Id)" title="Delete"></i>
-                        </li>
-                      </ul>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
+          <div class="col-sm-6">
+            <ol class="breadcrumb float-sm-right">
+              <li class="breadcrumb-item"><a href="#" [routerLink]="['/business/home']">Home</a></li>
+              <li class="breadcrumb-item active">User Menu</li>
+            </ol>
           </div>
         </div>
       </div>
-    </div>
-  </section>
-</div>
-<div class="content-wrapper" *ngIf="!isView">
-  <div class="alert alert-danger text-center">
-    {{ pageDisplayMessage }}
-  </div>
-</div>
+    </section>
+    <section class="content">
+      <div class="container-fluid">
+        <div class="card card-default">
+          <div class="card-header">
+            <h3 class="card-title">Create/Edit/Delete User Menu</h3>
+            <div class="card-tools">
+              <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                <i class="fas fa-minus"></i>
+              </button>
+              <button type="button" class="btn btn-tool" data-card-widget="remove">
+                <i class="fas fa-times"></i>
+              </button>
+            </div>
+          </div>
+          <form [formGroup]="appUserMenuForm" (ngSubmit)="createUpdateAppUserMenu(appUserMenuForm.value)">
+            <div class="card-body">
+              <div class="row">
+                <input type="hidden" formControlName="Id" />
+                <input type="hidden" formControlName="CreateUpdateBy" />
+                <div class="col-md-3 col-sm-3 col-lg-3">
+                  <div class="form-group">
+                    <label for="txtName">Menu Name<label style="color: red; margin-bottom: 0rem;">*</label></label>
+                    <input type="text" id="txtName" name="Name" formControlName="Name" class="form-control" />
+                    @if (appUserMenuForm.get('Name').touched && appUserMenuForm.get('Name').invalid) {
+                      <div
+                        class="error-message">
+                        @if (appUserMenuForm.get('Name').errors?.required) {
+                          <div class="text-danger">Menu Name is
+                          required.</div>
+                        }
+                        @if (appUserMenuForm.get('Name').errors?.englishText) {
+                          <div class="text-danger">{{
+                          appUserMenuForm.get('Name').errors?.englishText }}</div>
+                        }
+                      </div>
+                    }
+                  </div>
+                </div>
+                <div class="col-md-3 col-sm-3 col-lg-3">
+                  <div class="form-group">
+                    <label for="txtCssClass">CSS Class <span style="color: red;">*</span></label>
+                    <input type="text" class="form-control" id="txtCssClass" formControlName="CssClass"
+                      list="cssClassOptions" (input)="onCssClassInput($event)" />
+                      <datalist id="cssClassOptions">
+                        @for (cssClass of filteredCssClassList; track cssClass) {
+                          <option [value]="cssClass.name"></option>
+                        }
+                      </datalist>
+                      @if (appUserMenuForm.get('CssClass').invalid && appUserMenuForm.get('CssClass').touched) {
+                        <div
+                          class="text-danger">
+                          CSS Class is required.
+                        </div>
+                      }
+                    </div>
+                  </div>
+                  <div class="col-md-3 col-sm-3 col-lg-3">
+                    <div class="form-group form-check">
+                      <input type="checkbox" id="chkIsRouteLink" name="IsRouteLink" formControlName="IsRouteLink"
+                        class="form-check-input" />
+                        <label for="chkIsRouteLink" class="form-check-label" style="font-weight: bold;">Is RouteLink</label>
+                      </div>
+                    </div>
+                    <div class="col-md-3 col-sm-3 col-lg-3">
+                      <div class="form-group">
+                        <label for="txtRouteLink">Route Link <span style="color: red;">*</span></label>
+                        <input type="text" class="form-control" id="txtRouteLink" formControlName="RouteLink"
+                          list="routeLinkOptions" (input)="onCssClassInput($event)" />
+                          <datalist id="routeLinkOptions">
+                            @for (routeLink of filteredRouteLinkList; track routeLink) {
+                              <option [value]="routeLink.name"></option>
+                            }
+                          </datalist>
+                          @if (appUserMenuForm.get('RouteLink').invalid && appUserMenuForm.get('RouteLink').touched) {
+                            <div
+                              class="text-danger">
+                              Route Link is required for a component or a routed module.
+                            </div>
+                          }
+                        </div>
+                      </div>
+                    </div>
+                    <div class="row">
+                      <div class="col-md-3 col-sm-3 col-lg-3">
+                        <div class="form-group">
+                          <label for="txtRouteLinkClass">Route Link Class <span style="color: red;">*</span></label>
+                          <input type="text" class="form-control" id="txtRouteLinkClass" formControlName="RouteLinkClass"
+                            list="routeLinkClassOptions" (input)="onRouteLinkClassInput($event)" />
+                            <datalist id="routeLinkClassOptions">
+                              @for (routeLinkClass of filteredRouteLinkClassList; track routeLinkClass) {
+                                <option [value]="routeLinkClass.name">
+                                </option>
+                              }
+                            </datalist>
+                            @if (appUserMenuForm.get('RouteLinkClass').invalid && appUserMenuForm.get('RouteLinkClass').touched) {
+                              <div
+                                class="text-danger">
+                                Route Link Class is required.
+                              </div>
+                            }
+                          </div>
+                        </div>
+                        <div class="col-md-3 col-sm-3 col-lg-3">
+                          <div class="form-group">
+                            <label for="txtIcon">Icon <span style="color: red;">*</span></label>
+                            <input type="text" class="form-control" id="txtIcon" formControlName="Icon" list="iconOptions"
+                              (input)="onIconInput($event)" />
+                              <datalist id="iconOptions">
+                                @for (icon of filteredIconList; track icon) {
+                                  <option [value]="icon.name"></option>
+                                }
+                              </datalist>
+                              @if (appUserMenuForm.get('Icon').invalid && appUserMenuForm.get('Icon').touched) {
+                                <div
+                                  class="text-danger">
+                                  Icon is required.
+                                </div>
+                              }
+                            </div>
+                          </div>
+                          <div class="col-md-3 col-sm-3 col-lg-3">
+                            <div class="form-group">
+                              <label for="ddlParentId">Parent Menu@if (!appUserMenuForm.get('IsHeader').value) {
+                                <span
+                                style="color: red;"> *</span>
+                              }</label>
+                              <select class="form-control" id="ddlParentId" name="ParentId" formControlName="ParentId">
+                                <option value="" disabled selected>{{ appUserMenuForm.get('IsHeader').value ? 'No parent (top level)' :
+                                'Please select' }}</option>
+                                @for (parentMenu of filteredParentMenuList; track parentMenu) {
+                                  <option value={{parentMenu.Id}}>
+                                    {{parentMenu.Name}}
+                                  </option>
+                                }
+                              </select>
+                              @if (appUserMenuForm.get('ParentId').invalid && appUserMenuForm.get('ParentId').touched) {
+                                <div
+                                  class="text-danger">
+                                  Parent Menu is required.
+                                </div>
+                              }
+                              <small class="form-text text-muted">{{ parentMenuHint }}</small>
+                            </div>
+                          </div>
+                          <div class="col-md-3 col-sm-3 col-lg-3">
+                            <div class="form-group">
+                              <label for="txtDropdownIcon">Dropdown Icon</label>
+                              <input type="text" class="form-control" id="txtDropdownIcon" formControlName="DropdownIcon"
+                                list="dropdownIconOptions" (input)="onDropdownIconInput($event)" />
+                                <datalist id="dropdownIconOptions">
+                                  @for (dropdownIcon of filteredDropdownIconList; track dropdownIcon) {
+                                    <option [value]="dropdownIcon.name"></option>
+                                  }
+                                </datalist>
+                              </div>
+                            </div>
+                          </div>
+                          <div class="row">
+                            <div class="col-md-3 col-sm-3 col-lg-3">
+                              <div class="form-group">
+                                <label for="txtSerialNo">Serial No.<label style="color: red; margin-bottom: 0rem;">*</label></label>
+                                <input type="text" class="form-control" id="txtSerialNo" name="SerialNo" formControlName="SerialNo"
+                                  [attr.disabled]="isSerialNoDisabled ? true : null" />
+                                  @if (appUserMenuForm.get('SerialNo').touched && appUserMenuForm.get('SerialNo').invalid) {
+                                    <div
+                                      class="error-message">
+                                      @if (appUserMenuForm.get('SerialNo').errors?.required) {
+                                        <div class="text-danger">Serial No is
+                                        required.</div>
+                                      }
+                                      @if (appUserMenuForm.get('SerialNo').errors?.englishText) {
+                                        <div class="text-danger">{{
+                                        appUserMenuForm.get('SerialNo').errors?.englishText }}</div>
+                                      }
+                                    </div>
+                                  }
+                                </div>
+                              </div>
+                              <!-- Menu type: exactly one of Header > Module > Sub Module > Component -->
+                              <div class="col-md-9 col-sm-9 col-lg-9">
+                                <label class="d-block">Menu Type <span style="color: red;">*</span></label>
+                                <div class="form-check form-check-inline">
+                                  <input type="checkbox" id="chkIsHeader" name="IsHeader" formControlName="IsHeader"
+                                    class="form-check-input" (change)="onMenuTypeChange('IsHeader')" />
+                                    <label for="chkIsHeader" class="form-check-label" style="font-weight: bold;">Is Header</label>
+                                  </div>
+                                  <div class="form-check form-check-inline">
+                                    <input type="checkbox" id="chkIsModule" name="IsModule" formControlName="IsModule"
+                                      class="form-check-input" (change)="onMenuTypeChange('IsModule')" />
+                                      <label for="chkIsModule" class="form-check-label" style="font-weight: bold;">Is Module</label>
+                                    </div>
+                                    <div class="form-check form-check-inline">
+                                      <input type="checkbox" id="chkIsSubModule" name="IsSubModule" formControlName="IsSubModule"
+                                        class="form-check-input" (change)="onMenuTypeChange('IsSubModule')" />
+                                        <label for="chkIsSubModule" class="form-check-label" style="font-weight: bold;">Is Sub Module</label>
+                                      </div>
+                                      <div class="form-check form-check-inline">
+                                        <input type="checkbox" id="chkIsComponent" name="IsComponent" formControlName="IsComponent"
+                                          class="form-check-input" (change)="onMenuTypeChange('IsComponent')" />
+                                          <label for="chkIsComponent" class="form-check-label" style="font-weight: bold;">Is Component</label>
+                                        </div>
+                                        @if (appUserMenuForm.errors?.menuType && appUserMenuForm.touched) {
+                                          <div class="text-danger">
+                                            Select one menu type.
+                                          </div>
+                                        }
+                                        <small class="form-text text-muted">
+                                          Header: sidebar section &middot; Module: a microservice (e.g. Security, Human Resources) &middot;
+                                          Sub Module: a group inside a module (e.g. Recruitment) &middot; Component: a screen with a route link.
+                                        </small>
+                                      </div>
+                                    </div>
+                                    <div class="row">
+                                      <div class="col-md-3 col-sm-3 col-lg-3">
+                                        <div class="form-group form-check">
+                                          <input type="checkbox" id="chkIsActive" name="IsActive" formControlName="IsActive"
+                                            class="form-check-input" />
+                                            <label for="chkIsActive" class="form-check-label" style="font-weight: bold;">Is Active</label>
+                                          </div>
+                                        </div>
+                                        <div class="col-9  col-sm-9 col-lg-9">
+                                          <div class="form-group">
+                                            <label for="txtRemark">Remark</label>
+                                            <textarea id="txtRemark" name="Remark" formControlName="Remark" class="form-control" rows="5"
+                                            resize="false"></textarea>
+                                          </div>
+                                        </div>
+                                      </div>
+                                    </div>
+                                    <div class="card-footer text-right">
+                                      <button type="submit" [disabled]="isEdit? !isUpdate:!isCreate" class="btn btn-sm btn-primary mr-1">{{isEdit?
+                                      'Update':'Save'}}</button>
+                                      <button type="button" [disabled]="isEdit? !isUpdate:!isCreate" class="btn btn-sm btn-warning"
+                                      (click)="resetForm();">Clear</button>
+                                    </div>
+                                  </form>
+                                </div>
+                                <!-- Datatable Div Starts -->
+                                <div class="row">
+                                  <div class="col-12">
+                                    <div class="card">
+                                      <!-- Loading indicator -->
+                                      @if (loading) {
+                                        <div class="overlay">
+                                          <i class="fas fa-spinner fa-spin"></i>
+                                        </div>
+                                      }
+                                      <!-- Error message -->
+                                      @if (error_message) {
+                                        <div class="alert alert-danger m-2">
+                                          {{ error_message }}
+                                        </div>
+                                      }
+                                      <div class="card-body table-responsive p-2">
+                                        <table id="appUserMenuTable" class="table table-hover text-nowrap" width="100%">
+                                          <thead>
+                                            <tr>
+                                              <th>Menu Name</th>
+                                              <th>Header?</th>
+                                              <th>Module?</th>
+                                              <th>Sub Module?</th>
+                                              <th>Component?</th>
+                                              <th>Route Link</th>
+                                              <th>Parent Menu</th>
+                                              <th>Active</th>
+                                              <th>Action</th>
+                                            </tr>
+                                          </thead>
+                                          <tbody>
+                                            @for (menu of appUserMenuList; track menu) {
+                                              <tr>
+                                                <td>{{ menu.Name }}</td>
+                                                <td>{{ menu.IsHeader ? 'Yes' : 'No' }}</td>
+                                                <td>{{ menu.IsModule ? 'Yes' : 'No' }}</td>
+                                                <td>{{ menu.IsSubModule ? 'Yes' : 'No' }}</td>
+                                                <td>{{ menu.IsComponent ? 'Yes' : 'No' }}</td>
+                                                <td>{{ menu.RouteLink }}</td>
+                                                <td>{{ menu.ParentName }}</td>
+                                                <td>{{ menu.IsActive ? 'Yes' : 'No' }}</td>
+                                                <td>
+                                                  <ul class="list-inline m-0">
+                                                    <li class="list-inline-item">
+                                                      <i class="fa fa-edit" [ngClass]="{ 'disabled-icon': !isUpdate }"
+                                                        [style.cursor]="isUpdate ? 'pointer' : 'not-allowed'"
+                                                      (click)="isUpdate && editAppUserMenu(menu)" title="Edit"></i>
+                                                    </li>
+                                                    <li class="list-inline-item">
+                                                      <i class="fa fa-trash" [ngClass]="{ 'disabled-icon': !isDelete }"
+                                                        [style.cursor]="isDelete ? 'pointer' : 'not-allowed'"
+                                                      (click)="isDelete && deleteAppUserMenu(menu.Id)" title="Delete"></i>
+                                                    </li>
+                                                  </ul>
+                                                </td>
+                                              </tr>
+                                            }
+                                          </tbody>
+                                        </table>
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            </section>
+                          </div>
+                        }
+                        @if (!isView) {
+                          <div class="content-wrapper">
+                            <div class="alert alert-danger text-center">
+                              {{ pageDisplayMessage }}
+                            </div>
+                          </div>
+                        }
 
-<app-confirm-dialog #confirmDialog [title]="'Confirm Deletion'" [message]="deleteConfirmationMessage"
-    [confirmButtonText]="'Delete'" [confirmButtonClass]="'btn-danger'" (confirmed)="executeDelete()">
-</app-confirm-dialog>
+                        <app-confirm-dialog #confirmDialog [title]="'Confirm Deletion'" [message]="deleteConfirmationMessage"
+                          [confirmButtonText]="'Delete'" [confirmButtonClass]="'btn-danger'" (confirmed)="executeDelete()">
+                        </app-confirm-dialog>

@@ -14,7 +14,7 @@ import { AttendanceZoneComponent } from './attendance-zone/attendance-zone.compo
 import { ConfirmDialogComponent } from '@app/shared/confirm-dialog/confirm-dialog.component';
 
 /**
- * Attendance business module — mirrors HumanResourcesModule shape.
+ * Attendance business module — mirrors CoreHRModule shape.
  * Shift / Overtime each host list + form via an internal viewMode flag; Summary
  * is a single read-only screen.
  */

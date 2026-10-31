@@ -11,7 +11,7 @@ import { LoanComponent } from './loan/loan.component';
 import { ConfirmDialogComponent } from '@app/shared/confirm-dialog/confirm-dialog.component';
 
 /**
- * Payroll business module — mirrors HumanResourcesModule shape. Each component
+ * Payroll business module — mirrors CoreHRModule shape. Each component
  * hosts its own list + form via an internal viewMode flag; the payroll-run
  * component adds a 'payslips' view + a payslip-detail modal.
  */

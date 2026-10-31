@@ -176,7 +176,7 @@ export class JobPostingComponent implements OnInit {
       .subscribe({ next: (r: any) => this.afterAction(r), error: (e) => this.handleError(e) });
   }
   openPipeline(row: any): void {
-    this.router.navigate(['/business/recruitment/pipeline']);
+    this.router.navigate(['/business/humanresources/recruitment/pipeline']);
   }
 
   private afterAction(res: any): void {

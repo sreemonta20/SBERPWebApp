@@ -21,155 +21,178 @@
     <div class="container-fluid">
 
       <!-- permission guard -->
-      <div *ngIf="!isView" class="alert alert-warning">{{ pageDisplayMessage }}</div>
+      @if (!isView) {
+        <div class="alert alert-warning">{{ pageDisplayMessage }}</div>
+      }
 
       <!-- ============================= LIST ============================= -->
-      <div class="card card-outline card-primary" *ngIf="isView && viewMode === 'list'">
-        <div class="card-header d-flex justify-content-between align-items-center">
-          <h3 class="card-title mt-1">Requisition List</h3>
-          <button class="btn btn-primary btn-sm" *ngIf="isCreate" (click)="openCreateForm()">
-            <i class="fas fa-plus mr-1"></i> New Requisition
-          </button>
-        </div>
-
-        <div class="card-body">
-          <div class="row mb-3">
-            <div class="col-md-4">
-              <div class="input-group input-group-sm">
-                <input type="text" class="form-control" placeholder="Search by code…"
-                       [(ngModel)]="searchTerm" (keyup.enter)="search()">
-                <span class="input-group-append">
-                  <button class="btn btn-default" (click)="search()"><i class="fas fa-search"></i></button>
-                </span>
-              </div>
-            </div>
-            <div class="col-md-8 text-right">
-              <label class="mr-2 mb-0">Page size</label>
-              <select class="form-control form-control-sm d-inline-block" style="width:auto"
-                      (change)="changePageSize($event)">
-                <option *ngFor="let s of pageSizeList" [value]="s">{{ s }}</option>
-              </select>
-            </div>
+      @if (isView && viewMode === 'list') {
+        <div class="card card-outline card-primary">
+          <div class="card-header d-flex justify-content-between align-items-center">
+            <h3 class="card-title mt-1">Requisition List</h3>
+            @if (isCreate) {
+              <button class="btn btn-primary btn-sm" (click)="openCreateForm()">
+                <i class="fas fa-plus mr-1"></i> New Requisition
+              </button>
+            }
           </div>
-
-          <div class="table-responsive">
-            <table class="table table-hover table-bordered list-table">
-              <thead>
-                <tr>
-                  <th>Code</th><th>Position</th><th>Department</th>
-                  <th class="text-center">Vacancies</th><th class="text-center">Postings</th>
-                  <th class="text-center">Status</th><th class="text-center" style="width:170px">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr *ngIf="requisitionList.length === 0">
-                  <td colspan="7" class="text-center text-muted">No requisition records found.</td>
-                </tr>
-                <tr *ngFor="let r of requisitionList">
-                  <td>{{ r.requisitionCode }}</td>
-                  <td>{{ r.positionTitle }}</td>
-                  <td>{{ r.departmentName }}</td>
-                  <td class="text-center">{{ r.numberOfVacancies }}</td>
-                  <td class="text-center">{{ r.postingCount }}</td>
-                  <td class="text-center"><span [class]="statusBadgeClass(r.statusId)">{{ r.statusName }}</span></td>
-                  <td class="text-center action-icons">
-                    <a title="Edit" *ngIf="isUpdate && r.statusId <= STATUS.Pending" (click)="editRequisition(r)">
-                      <i class="fas fa-edit text-primary"></i></a>
-                    <a title="Submit" *ngIf="isUpdate && r.statusId === STATUS.Draft" (click)="submit(r)">
-                      <i class="fas fa-paper-plane text-info"></i></a>
-                    <a title="Approve" *ngIf="isUpdate && r.statusId === STATUS.Pending" (click)="approve(r)">
-                      <i class="fas fa-check text-success"></i></a>
-                    <a title="Reject" *ngIf="isUpdate && r.statusId === STATUS.Pending" (click)="reject(r)">
-                      <i class="fas fa-times text-danger"></i></a>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-
-        <div class="card-footer clearfix">
-          <span class="float-left text-muted mt-1">Showing {{ startPage }}–{{ endPage }} of {{ totalRows }}</span>
-          <ul class="pagination pagination-sm m-0 float-right">
-            <li class="page-item" [class.disabled]="currentPage === 1">
-              <a class="page-link" (click)="changePage(currentPage - 1)">«</a>
-            </li>
-            <li class="page-item" *ngFor="let p of [].constructor(pageCount); let i = index"
-                [class.active]="currentPage === i + 1">
-              <a class="page-link" (click)="changePage(i + 1)">{{ i + 1 }}</a>
-            </li>
-            <li class="page-item" [class.disabled]="currentPage === pageCount">
-              <a class="page-link" (click)="changePage(currentPage + 1)">»</a>
-            </li>
-          </ul>
-        </div>
-      </div>
-
-      <!-- ============================= FORM ============================= -->
-      <div class="card card-outline card-primary" *ngIf="isView && viewMode === 'form'">
-        <div class="card-header">
-          <h3 class="card-title mt-1">{{ isEdit ? 'Edit' : 'New' }} Requisition</h3>
-        </div>
-        <form [formGroup]="requisitionForm" (ngSubmit)="saveRequisition()">
           <div class="card-body">
-            <div class="row">
-              <div class="col-md-6 form-group">
-                <label>Position <span class="text-danger">*</span></label>
-                <select class="form-control" formControlName="positionId">
-                  <option [ngValue]="''">-- Select position --</option>
-                  <option *ngFor="let p of positions" [ngValue]="p.id">{{ p.title }} ({{ p.positionCode }})</option>
-                </select>
-              </div>
-              <div class="col-md-3 form-group">
-                <label>Vacancies <span class="text-danger">*</span></label>
-                <input type="number" min="1" class="form-control" formControlName="numberOfVacancies">
-              </div>
-              <div class="col-md-3 form-group">
-                <label>Required By</label>
-                <input type="date" class="form-control" formControlName="requiredByDate">
-              </div>
-            </div>
-            <div class="row">
-              <div class="col-md-3 form-group">
-                <label>Min Experience (yrs)</label>
-                <input type="number" min="0" class="form-control" formControlName="minExperienceYears">
-              </div>
-              <div class="col-md-3 form-group">
-                <label>Budget Min</label>
-                <input type="number" class="form-control" formControlName="budgetMin">
-              </div>
-              <div class="col-md-3 form-group">
-                <label>Budget Max</label>
-                <input type="number" class="form-control" formControlName="budgetMax">
-              </div>
-              <div class="col-md-3 form-group">
-                <label class="d-block">Replacement?</label>
-                <div class="custom-control custom-switch mt-2">
-                  <input type="checkbox" class="custom-control-input" id="isReplacement" formControlName="isReplacement">
-                  <label class="custom-control-label" for="isReplacement">Backfill an exit</label>
+            <div class="row mb-3">
+              <div class="col-md-4">
+                <div class="input-group input-group-sm">
+                  <input type="text" class="form-control" placeholder="Search by code…"
+                    [(ngModel)]="searchTerm" (keyup.enter)="search()">
+                  <span class="input-group-append">
+                    <button class="btn btn-default" (click)="search()"><i class="fas fa-search"></i></button>
+                  </span>
                 </div>
               </div>
-            </div>
-            <div class="row">
-              <div class="col-md-6 form-group">
-                <label>Required Qualification</label>
-                <input type="text" class="form-control" formControlName="requiredQualification">
+              <div class="col-md-8 text-right">
+                <label class="mr-2 mb-0">Page size</label>
+                <select class="form-control form-control-sm d-inline-block" style="width:auto"
+                  (change)="changePageSize($event)">
+                  @for (s of pageSizeList; track s) {
+                    <option [value]="s">{{ s }}</option>
+                  }
+                </select>
               </div>
-              <div class="col-md-6 form-group">
-                <label>Justification</label>
-                <textarea rows="2" class="form-control" formControlName="justification"></textarea>
-              </div>
             </div>
-          </div>
-          <div class="card-footer">
-            <button type="submit" class="btn btn-primary"><i class="fas fa-save mr-1"></i> Save</button>
-            <button type="button" class="btn btn-default ml-2" (click)="cancelForm()">Cancel</button>
-          </div>
-        </form>
-      </div>
+            <div class="table-responsive">
+              <table class="table table-hover table-bordered list-table">
+                <thead>
+                  <tr>
+                    <th>Code</th><th>Position</th><th>Department</th>
+                    <th class="text-center">Vacancies</th><th class="text-center">Postings</th>
+                    <th class="text-center">Status</th><th class="text-center" style="width:170px">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @if (requisitionList.length === 0) {
+                    <tr>
+                      <td colspan="7" class="text-center text-muted">No requisition records found.</td>
+                    </tr>
+                  }
+                  @for (r of requisitionList; track r) {
+                    <tr>
+                      <td>{{ r.requisitionCode }}</td>
+                      <td>{{ r.positionTitle }}</td>
+                      <td>{{ r.departmentName }}</td>
+                      <td class="text-center">{{ r.numberOfVacancies }}</td>
+                      <td class="text-center">{{ r.postingCount }}</td>
+                      <td class="text-center"><span [class]="statusBadgeClass(r.statusId)">{{ r.statusName }}</span></td>
+                      <td class="text-center action-icons">
+                        @if (isUpdate && r.statusId <= STATUS.Pending) {
+                          <a title="Edit" (click)="editRequisition(r)">
+                            <i class="fas fa-edit text-primary"></i></a>
+                          }
+                          @if (isUpdate && r.statusId === STATUS.Draft) {
+                            <a title="Submit" (click)="submit(r)">
+                              <i class="fas fa-paper-plane text-info"></i></a>
+                            }
+                            @if (isUpdate && r.statusId === STATUS.Pending) {
+                              <a title="Approve" (click)="approve(r)">
+                                <i class="fas fa-check text-success"></i></a>
+                              }
+                              @if (isUpdate && r.statusId === STATUS.Pending) {
+                                <a title="Reject" (click)="reject(r)">
+                                  <i class="fas fa-times text-danger"></i></a>
+                                }
+                              </td>
+                            </tr>
+                          }
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                  <div class="card-footer clearfix">
+                    <span class="float-left text-muted mt-1">Showing {{ startPage }}–{{ endPage }} of {{ totalRows }}</span>
+                    <ul class="pagination pagination-sm m-0 float-right">
+                      <li class="page-item" [class.disabled]="currentPage === 1">
+                        <a class="page-link" (click)="changePage(currentPage - 1)">«</a>
+                      </li>
+                      @for (p of [].constructor(pageCount); track p; let i = $index) {
+                        <li class="page-item"
+                          [class.active]="currentPage === i + 1">
+                          <a class="page-link" (click)="changePage(i + 1)">{{ i + 1 }}</a>
+                        </li>
+                      }
+                      <li class="page-item" [class.disabled]="currentPage === pageCount">
+                        <a class="page-link" (click)="changePage(currentPage + 1)">»</a>
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+              }
 
-    </div>
-  </section>
-</div>
+              <!-- ============================= FORM ============================= -->
+              @if (isView && viewMode === 'form') {
+                <div class="card card-outline card-primary">
+                  <div class="card-header">
+                    <h3 class="card-title mt-1">{{ isEdit ? 'Edit' : 'New' }} Requisition</h3>
+                  </div>
+                  <form [formGroup]="requisitionForm" (ngSubmit)="saveRequisition()">
+                    <div class="card-body">
+                      <div class="row">
+                        <div class="col-md-6 form-group">
+                          <label>Position <span class="text-danger">*</span></label>
+                          <select class="form-control" formControlName="positionId">
+                            <option [ngValue]="''">-- Select position --</option>
+                            @for (p of positions; track p) {
+                              <option [ngValue]="p.id">{{ p.title }} ({{ p.positionCode }})</option>
+                            }
+                          </select>
+                        </div>
+                        <div class="col-md-3 form-group">
+                          <label>Vacancies <span class="text-danger">*</span></label>
+                          <input type="number" min="1" class="form-control" formControlName="numberOfVacancies">
+                        </div>
+                        <div class="col-md-3 form-group">
+                          <label>Required By</label>
+                          <input type="date" class="form-control" formControlName="requiredByDate">
+                        </div>
+                      </div>
+                      <div class="row">
+                        <div class="col-md-3 form-group">
+                          <label>Min Experience (yrs)</label>
+                          <input type="number" min="0" class="form-control" formControlName="minExperienceYears">
+                        </div>
+                        <div class="col-md-3 form-group">
+                          <label>Budget Min</label>
+                          <input type="number" class="form-control" formControlName="budgetMin">
+                        </div>
+                        <div class="col-md-3 form-group">
+                          <label>Budget Max</label>
+                          <input type="number" class="form-control" formControlName="budgetMax">
+                        </div>
+                        <div class="col-md-3 form-group">
+                          <label class="d-block">Replacement?</label>
+                          <div class="custom-control custom-switch mt-2">
+                            <input type="checkbox" class="custom-control-input" id="isReplacement" formControlName="isReplacement">
+                            <label class="custom-control-label" for="isReplacement">Backfill an exit</label>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="row">
+                        <div class="col-md-6 form-group">
+                          <label>Required Qualification</label>
+                          <input type="text" class="form-control" formControlName="requiredQualification">
+                        </div>
+                        <div class="col-md-6 form-group">
+                          <label>Justification</label>
+                          <textarea rows="2" class="form-control" formControlName="justification"></textarea>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="card-footer">
+                      <button type="submit" class="btn btn-primary"><i class="fas fa-save mr-1"></i> Save</button>
+                      <button type="button" class="btn btn-default ml-2" (click)="cancelForm()">Cancel</button>
+                    </div>
+                  </form>
+                </div>
+              }
 
-<app-confirm-dialog #confirmDialog [message]="deleteConfirmationMessage"></app-confirm-dialog>
+            </div>
+          </section>
+        </div>
+
+        <app-confirm-dialog #confirmDialog [message]="deleteConfirmationMessage"></app-confirm-dialog>

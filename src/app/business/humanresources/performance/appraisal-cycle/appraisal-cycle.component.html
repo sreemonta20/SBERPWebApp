@@ -15,91 +15,117 @@
 
   <section class="content">
     <div class="container-fluid">
-      <div *ngIf="!isView" class="alert alert-warning">{{ pageDisplayMessage }}</div>
+      @if (!isView) {
+        <div class="alert alert-warning">{{ pageDisplayMessage }}</div>
+      }
 
       <!-- LIST -->
-      <div class="card card-outline card-primary" *ngIf="isView && viewMode === 'list'">
-        <div class="card-header d-flex justify-content-between align-items-center">
-          <h3 class="card-title mt-1">Cycle List</h3>
-          <button class="btn btn-primary btn-sm" *ngIf="isCreate" (click)="openCreateForm()"><i class="fas fa-plus mr-1"></i> New Cycle</button>
-        </div>
-        <div class="card-body">
-          <div class="row mb-3">
-            <div class="col-md-4">
-              <div class="input-group input-group-sm">
-                <input type="text" class="form-control" placeholder="Search by code / name…" [(ngModel)]="searchTerm" (keyup.enter)="search()">
-                <span class="input-group-append"><button class="btn btn-default" (click)="search()"><i class="fas fa-search"></i></button></span>
+      @if (isView && viewMode === 'list') {
+        <div class="card card-outline card-primary">
+          <div class="card-header d-flex justify-content-between align-items-center">
+            <h3 class="card-title mt-1">Cycle List</h3>
+            @if (isCreate) {
+              <button class="btn btn-primary btn-sm" (click)="openCreateForm()"><i class="fas fa-plus mr-1"></i> New Cycle</button>
+            }
+          </div>
+          <div class="card-body">
+            <div class="row mb-3">
+              <div class="col-md-4">
+                <div class="input-group input-group-sm">
+                  <input type="text" class="form-control" placeholder="Search by code / name…" [(ngModel)]="searchTerm" (keyup.enter)="search()">
+                  <span class="input-group-append"><button class="btn btn-default" (click)="search()"><i class="fas fa-search"></i></button></span>
+                </div>
+              </div>
+              <div class="col-md-8 text-right">
+                <label class="mr-2 mb-0">Page size</label>
+                <select class="form-control form-control-sm d-inline-block" style="width:auto" (change)="changePageSize($event)">
+                  @for (s of pageSizeList; track s) {
+                    <option [value]="s">{{ s }}</option>
+                  }
+                </select>
               </div>
             </div>
-            <div class="col-md-8 text-right">
-              <label class="mr-2 mb-0">Page size</label>
-              <select class="form-control form-control-sm d-inline-block" style="width:auto" (change)="changePageSize($event)">
-                <option *ngFor="let s of pageSizeList" [value]="s">{{ s }}</option>
-              </select>
+            <div class="table-responsive">
+              <table class="table table-hover table-bordered list-table">
+                <thead>
+                  <tr><th>Code</th><th>Name</th><th>Period</th><th class="text-center">Scale</th><th class="text-center">Reviews</th><th class="text-center">Status</th><th class="text-center" style="width:170px">Actions</th></tr>
+                </thead>
+                <tbody>
+                  @if (list.length === 0) {
+                    <tr><td colspan="7" class="text-center text-muted">No appraisal cycles found.</td></tr>
+                  }
+                  @for (c of list; track c) {
+                    <tr>
+                      <td>{{ c.cycleCode }}</td>
+                      <td>{{ c.name }}</td>
+                      <td>{{ c.periodStart | date:'mediumDate' }} – {{ c.periodEnd | date:'mediumDate' }}</td>
+                      <td class="text-center">1–{{ c.ratingScaleMax }}</td>
+                      <td class="text-center">{{ c.reviewCount || 0 }}</td>
+                      <td class="text-center"><span [class]="statusBadgeClass(c.statusId)">{{ c.statusName }}</span></td>
+                      <td class="text-center action-icons">
+                        @if (isUpdate && c.statusId !== STATUS.Closed) {
+                          <a title="Edit" (click)="edit(c)"><i class="fas fa-edit text-primary"></i></a>
+                        }
+                        @if (isUpdate && c.statusId === STATUS.Draft) {
+                          <a title="Activate" (click)="activate(c)"><i class="fas fa-play text-success"></i></a>
+                        }
+                        @if (isUpdate && c.statusId === STATUS.Active) {
+                          <a title="Initiate reviews" (click)="initiate(c)"><i class="fas fa-users-cog text-info"></i></a>
+                        }
+                        @if (isUpdate && c.statusId === STATUS.Active) {
+                          <a title="Close" (click)="closeCycle(c)"><i class="fas fa-lock text-dark"></i></a>
+                        }
+                        @if (isDelete && c.statusId === STATUS.Draft) {
+                          <a title="Delete" (click)="remove(c)"><i class="fas fa-trash text-danger"></i></a>
+                        }
+                      </td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
             </div>
           </div>
-          <div class="table-responsive">
-            <table class="table table-hover table-bordered list-table">
-              <thead>
-                <tr><th>Code</th><th>Name</th><th>Period</th><th class="text-center">Scale</th><th class="text-center">Reviews</th><th class="text-center">Status</th><th class="text-center" style="width:170px">Actions</th></tr>
-              </thead>
-              <tbody>
-                <tr *ngIf="list.length === 0"><td colspan="7" class="text-center text-muted">No appraisal cycles found.</td></tr>
-                <tr *ngFor="let c of list">
-                  <td>{{ c.cycleCode }}</td>
-                  <td>{{ c.name }}</td>
-                  <td>{{ c.periodStart | date:'mediumDate' }} – {{ c.periodEnd | date:'mediumDate' }}</td>
-                  <td class="text-center">1–{{ c.ratingScaleMax }}</td>
-                  <td class="text-center">{{ c.reviewCount || 0 }}</td>
-                  <td class="text-center"><span [class]="statusBadgeClass(c.statusId)">{{ c.statusName }}</span></td>
-                  <td class="text-center action-icons">
-                    <a title="Edit" *ngIf="isUpdate && c.statusId !== STATUS.Closed" (click)="edit(c)"><i class="fas fa-edit text-primary"></i></a>
-                    <a title="Activate" *ngIf="isUpdate && c.statusId === STATUS.Draft" (click)="activate(c)"><i class="fas fa-play text-success"></i></a>
-                    <a title="Initiate reviews" *ngIf="isUpdate && c.statusId === STATUS.Active" (click)="initiate(c)"><i class="fas fa-users-cog text-info"></i></a>
-                    <a title="Close" *ngIf="isUpdate && c.statusId === STATUS.Active" (click)="closeCycle(c)"><i class="fas fa-lock text-dark"></i></a>
-                    <a title="Delete" *ngIf="isDelete && c.statusId === STATUS.Draft" (click)="remove(c)"><i class="fas fa-trash text-danger"></i></a>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
+          <div class="card-footer clearfix">
+            <span class="float-left text-muted mt-1">Showing {{ startPage }}–{{ endPage }} of {{ totalRows }}</span>
+            <ul class="pagination pagination-sm m-0 float-right">
+              <li class="page-item" [class.disabled]="currentPage === 1"><a class="page-link" (click)="changePage(currentPage - 1)">«</a></li>
+              @for (x of [].constructor(pageCount); track $index; let i = $index) {
+                <li class="page-item" [class.active]="currentPage === i + 1"><a class="page-link" (click)="changePage(i + 1)">{{ i + 1 }}</a></li>
+              }
+              <li class="page-item" [class.disabled]="currentPage === pageCount"><a class="page-link" (click)="changePage(currentPage + 1)">»</a></li>
+            </ul>
           </div>
         </div>
-        <div class="card-footer clearfix">
-          <span class="float-left text-muted mt-1">Showing {{ startPage }}–{{ endPage }} of {{ totalRows }}</span>
-          <ul class="pagination pagination-sm m-0 float-right">
-            <li class="page-item" [class.disabled]="currentPage === 1"><a class="page-link" (click)="changePage(currentPage - 1)">«</a></li>
-            <li class="page-item" *ngFor="let x of [].constructor(pageCount); let i = index" [class.active]="currentPage === i + 1"><a class="page-link" (click)="changePage(i + 1)">{{ i + 1 }}</a></li>
-            <li class="page-item" [class.disabled]="currentPage === pageCount"><a class="page-link" (click)="changePage(currentPage + 1)">»</a></li>
-          </ul>
-        </div>
-      </div>
+      }
 
       <!-- FORM -->
-      <div class="card card-outline card-primary" *ngIf="isView && viewMode === 'form'">
-        <div class="card-header"><h3 class="card-title mt-1">{{ isEdit ? 'Edit' : 'New' }} Appraisal Cycle</h3></div>
-        <form [formGroup]="form" (ngSubmit)="save()">
-          <div class="card-body">
-            <div class="row">
-              <div class="col-md-3 form-group"><label>Code <span class="text-danger">*</span></label><input class="form-control" formControlName="cycleCode"></div>
-              <div class="col-md-6 form-group"><label>Name <span class="text-danger">*</span></label><input class="form-control" formControlName="name" placeholder="e.g. H1 2026 Appraisal"></div>
-              <div class="col-md-3 form-group"><label>Rating Scale Max</label><input type="number" min="1" max="10" class="form-control" formControlName="ratingScaleMax"></div>
+      @if (isView && viewMode === 'form') {
+        <div class="card card-outline card-primary">
+          <div class="card-header"><h3 class="card-title mt-1">{{ isEdit ? 'Edit' : 'New' }} Appraisal Cycle</h3></div>
+          <form [formGroup]="form" (ngSubmit)="save()">
+            <div class="card-body">
+              <div class="row">
+                <div class="col-md-3 form-group"><label>Code <span class="text-danger">*</span></label><input class="form-control" formControlName="cycleCode"></div>
+                <div class="col-md-6 form-group"><label>Name <span class="text-danger">*</span></label><input class="form-control" formControlName="name" placeholder="e.g. H1 2026 Appraisal"></div>
+                <div class="col-md-3 form-group"><label>Rating Scale Max</label><input type="number" min="1" max="10" class="form-control" formControlName="ratingScaleMax"></div>
+              </div>
+              <div class="row">
+                <div class="col-md-3 form-group"><label>Period Start <span class="text-danger">*</span></label><input type="date" class="form-control" formControlName="periodStart"></div>
+                <div class="col-md-3 form-group"><label>Period End <span class="text-danger">*</span></label><input type="date" class="form-control" formControlName="periodEnd"></div>
+                <div class="col-md-3 form-group"><label>Goal Due Date</label><input type="date" class="form-control" formControlName="goalDueDate"></div>
+                <div class="col-md-3 form-group"><label>Review Due Date</label><input type="date" class="form-control" formControlName="reviewDueDate"></div>
+              </div>
+              <div class="row">
+                <div class="col-md-12 form-group"><label>Description</label><textarea rows="2" class="form-control" formControlName="description"></textarea></div>
+              </div>
             </div>
-            <div class="row">
-              <div class="col-md-3 form-group"><label>Period Start <span class="text-danger">*</span></label><input type="date" class="form-control" formControlName="periodStart"></div>
-              <div class="col-md-3 form-group"><label>Period End <span class="text-danger">*</span></label><input type="date" class="form-control" formControlName="periodEnd"></div>
-              <div class="col-md-3 form-group"><label>Goal Due Date</label><input type="date" class="form-control" formControlName="goalDueDate"></div>
-              <div class="col-md-3 form-group"><label>Review Due Date</label><input type="date" class="form-control" formControlName="reviewDueDate"></div>
+            <div class="card-footer">
+              <button type="submit" class="btn btn-primary"><i class="fas fa-save mr-1"></i> Save</button>
+              <button type="button" class="btn btn-default ml-2" (click)="cancelForm()">Cancel</button>
             </div>
-            <div class="row">
-              <div class="col-md-12 form-group"><label>Description</label><textarea rows="2" class="form-control" formControlName="description"></textarea></div>
-            </div>
-          </div>
-          <div class="card-footer">
-            <button type="submit" class="btn btn-primary"><i class="fas fa-save mr-1"></i> Save</button>
-            <button type="button" class="btn btn-default ml-2" (click)="cancelForm()">Cancel</button>
-          </div>
-        </form>
-      </div>
+          </form>
+        </div>
+      }
     </div>
   </section>
 </div>

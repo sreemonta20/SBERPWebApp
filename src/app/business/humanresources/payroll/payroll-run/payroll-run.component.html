@@ -15,160 +15,196 @@
 
   <section class="content">
     <div class="container-fluid">
-      <div *ngIf="!isView" class="alert alert-warning">{{ pageDisplayMessage }}</div>
+      @if (!isView) {
+        <div class="alert alert-warning">{{ pageDisplayMessage }}</div>
+      }
 
       <!-- LIST -->
-      <div class="card card-outline card-primary" *ngIf="isView && viewMode === 'list'">
-        <div class="card-header d-flex justify-content-between align-items-center">
-          <h3 class="card-title mt-1">Run List</h3>
-          <button class="btn btn-primary btn-sm" *ngIf="isCreate" (click)="openProcessForm()"><i class="fas fa-cogs mr-1"></i> Process Payroll</button>
-        </div>
-        <div class="card-body">
-          <div class="row mb-3">
-            <div class="col-md-4">
-              <div class="input-group input-group-sm">
-                <input type="text" class="form-control" placeholder="Search by run code…" [(ngModel)]="searchTerm" (keyup.enter)="search()">
-                <span class="input-group-append"><button class="btn btn-default" (click)="search()"><i class="fas fa-search"></i></button></span>
-              </div>
-            </div>
-            <div class="col-md-8 text-right">
-              <label class="mr-2 mb-0">Page size</label>
-              <select class="form-control form-control-sm d-inline-block" style="width:auto" (change)="changePageSize($event)">
-                <option *ngFor="let s of pageSizeList" [value]="s">{{ s }}</option>
-              </select>
-            </div>
+      @if (isView && viewMode === 'list') {
+        <div class="card card-outline card-primary">
+          <div class="card-header d-flex justify-content-between align-items-center">
+            <h3 class="card-title mt-1">Run List</h3>
+            @if (isCreate) {
+              <button class="btn btn-primary btn-sm" (click)="openProcessForm()"><i class="fas fa-cogs mr-1"></i> Process Payroll</button>
+            }
           </div>
-          <div class="table-responsive">
-            <table class="table table-hover table-bordered list-table">
-              <thead>
-                <tr><th>Run</th><th>Period</th><th class="text-center">Emps</th><th class="text-right">Gross</th><th class="text-right">Deductions</th><th class="text-right">Net</th><th class="text-center">Status</th><th class="text-center" style="width:180px">Actions</th></tr>
-              </thead>
-              <tbody>
-                <tr *ngIf="list.length === 0"><td colspan="8" class="text-center text-muted">No payroll runs found.</td></tr>
-                <tr *ngFor="let r of list">
-                  <td>{{ r.runCode }}</td>
-                  <td>{{ monthName(r.payMonth) }} {{ r.payYear }}</td>
-                  <td class="text-center">{{ r.employeeCount || 0 }}</td>
-                  <td class="text-right">{{ r.totalGross | number:'1.2-2' }}</td>
-                  <td class="text-right">{{ r.totalDeductions | number:'1.2-2' }}</td>
-                  <td class="text-right"><strong>{{ r.totalNet | number:'1.2-2' }}</strong></td>
-                  <td class="text-center"><span [class]="statusBadgeClass(r.statusId)">{{ r.statusName }}</span></td>
-                  <td class="text-center action-icons">
-                    <a title="View payslips" (click)="viewPayslips(r)"><i class="fas fa-file-invoice-dollar text-info"></i></a>
-                    <a title="Approve" *ngIf="isUpdate && r.statusId === STATUS.Processed" (click)="approve(r)"><i class="fas fa-check text-primary"></i></a>
-                    <a title="Mark paid" *ngIf="isUpdate && r.statusId === STATUS.Approved" (click)="markPaid(r)"><i class="fas fa-money-check-alt text-success"></i></a>
-                    <a title="Cancel" *ngIf="isUpdate && (r.statusId === STATUS.Draft || r.statusId === STATUS.Processed)" (click)="cancel(r)"><i class="fas fa-ban text-danger"></i></a>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-        <div class="card-footer clearfix">
-          <span class="float-left text-muted mt-1">Showing {{ startPage }}–{{ endPage }} of {{ totalRows }}</span>
-          <ul class="pagination pagination-sm m-0 float-right">
-            <li class="page-item" [class.disabled]="currentPage === 1"><a class="page-link" (click)="changePage(currentPage - 1)">«</a></li>
-            <li class="page-item" *ngFor="let x of [].constructor(pageCount); let i = index" [class.active]="currentPage === i + 1"><a class="page-link" (click)="changePage(i + 1)">{{ i + 1 }}</a></li>
-            <li class="page-item" [class.disabled]="currentPage === pageCount"><a class="page-link" (click)="changePage(currentPage + 1)">»</a></li>
-          </ul>
-        </div>
-      </div>
-
-      <!-- PROCESS FORM -->
-      <div class="card card-outline card-primary" *ngIf="isView && viewMode === 'form'">
-        <div class="card-header"><h3 class="card-title mt-1">Process Payroll</h3></div>
-        <form [formGroup]="form" (ngSubmit)="process()">
           <div class="card-body">
-            <p class="text-muted">Processing generates a draft payslip for every active employee who has a current salary structure. You can re-process a draft until it's approved.</p>
-            <div class="row">
-              <div class="col-md-3 form-group">
-                <label>Month <span class="text-danger">*</span></label>
-                <select class="form-control" formControlName="payMonth" (change)="onPeriodChange()">
-                  <option *ngFor="let m of months" [ngValue]="m.v">{{ m.n }}</option>
+            <div class="row mb-3">
+              <div class="col-md-4">
+                <div class="input-group input-group-sm">
+                  <input type="text" class="form-control" placeholder="Search by run code…" [(ngModel)]="searchTerm" (keyup.enter)="search()">
+                  <span class="input-group-append"><button class="btn btn-default" (click)="search()"><i class="fas fa-search"></i></button></span>
+                </div>
+              </div>
+              <div class="col-md-8 text-right">
+                <label class="mr-2 mb-0">Page size</label>
+                <select class="form-control form-control-sm d-inline-block" style="width:auto" (change)="changePageSize($event)">
+                  @for (s of pageSizeList; track s) {
+                    <option [value]="s">{{ s }}</option>
+                  }
                 </select>
               </div>
-              <div class="col-md-3 form-group"><label>Year <span class="text-danger">*</span></label><input type="number" class="form-control" formControlName="payYear" (change)="onPeriodChange()"></div>
-              <div class="col-md-3 form-group"><label>Period Start <span class="text-danger">*</span></label><input type="date" class="form-control" formControlName="periodStart"></div>
-              <div class="col-md-3 form-group"><label>Period End <span class="text-danger">*</span></label><input type="date" class="form-control" formControlName="periodEnd"></div>
             </div>
-            <div class="row">
-              <div class="col-md-3 form-group"><label>Working Days <span class="text-danger">*</span></label><input type="number" step="0.5" class="form-control" formControlName="workingDays"></div>
+            <div class="table-responsive">
+              <table class="table table-hover table-bordered list-table">
+                <thead>
+                  <tr><th>Run</th><th>Period</th><th class="text-center">Emps</th><th class="text-right">Gross</th><th class="text-right">Deductions</th><th class="text-right">Net</th><th class="text-center">Status</th><th class="text-center" style="width:180px">Actions</th></tr>
+                </thead>
+                <tbody>
+                  @if (list.length === 0) {
+                    <tr><td colspan="8" class="text-center text-muted">No payroll runs found.</td></tr>
+                  }
+                  @for (r of list; track r) {
+                    <tr>
+                      <td>{{ r.runCode }}</td>
+                      <td>{{ monthName(r.payMonth) }} {{ r.payYear }}</td>
+                      <td class="text-center">{{ r.employeeCount || 0 }}</td>
+                      <td class="text-right">{{ r.totalGross | number:'1.2-2' }}</td>
+                      <td class="text-right">{{ r.totalDeductions | number:'1.2-2' }}</td>
+                      <td class="text-right"><strong>{{ r.totalNet | number:'1.2-2' }}</strong></td>
+                      <td class="text-center"><span [class]="statusBadgeClass(r.statusId)">{{ r.statusName }}</span></td>
+                      <td class="text-center action-icons">
+                        <a title="View payslips" (click)="viewPayslips(r)"><i class="fas fa-file-invoice-dollar text-info"></i></a>
+                        @if (isUpdate && r.statusId === STATUS.Processed) {
+                          <a title="Approve" (click)="approve(r)"><i class="fas fa-check text-primary"></i></a>
+                        }
+                        @if (isUpdate && r.statusId === STATUS.Approved) {
+                          <a title="Mark paid" (click)="markPaid(r)"><i class="fas fa-money-check-alt text-success"></i></a>
+                        }
+                        @if (isUpdate && (r.statusId === STATUS.Draft || r.statusId === STATUS.Processed)) {
+                          <a title="Cancel" (click)="cancel(r)"><i class="fas fa-ban text-danger"></i></a>
+                        }
+                      </td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
             </div>
           </div>
-          <div class="card-footer">
-            <button type="submit" class="btn btn-primary"><i class="fas fa-cogs mr-1"></i> Run Payroll</button>
-            <button type="button" class="btn btn-default ml-2" (click)="cancelForm()">Cancel</button>
+          <div class="card-footer clearfix">
+            <span class="float-left text-muted mt-1">Showing {{ startPage }}–{{ endPage }} of {{ totalRows }}</span>
+            <ul class="pagination pagination-sm m-0 float-right">
+              <li class="page-item" [class.disabled]="currentPage === 1"><a class="page-link" (click)="changePage(currentPage - 1)">«</a></li>
+              @for (x of [].constructor(pageCount); track $index; let i = $index) {
+                <li class="page-item" [class.active]="currentPage === i + 1"><a class="page-link" (click)="changePage(i + 1)">{{ i + 1 }}</a></li>
+              }
+              <li class="page-item" [class.disabled]="currentPage === pageCount"><a class="page-link" (click)="changePage(currentPage + 1)">»</a></li>
+            </ul>
           </div>
-        </form>
-      </div>
+        </div>
+      }
+
+      <!-- PROCESS FORM -->
+      @if (isView && viewMode === 'form') {
+        <div class="card card-outline card-primary">
+          <div class="card-header"><h3 class="card-title mt-1">Process Payroll</h3></div>
+          <form [formGroup]="form" (ngSubmit)="process()">
+            <div class="card-body">
+              <p class="text-muted">Processing generates a draft payslip for every active employee who has a current salary structure. You can re-process a draft until it's approved.</p>
+              <div class="row">
+                <div class="col-md-3 form-group">
+                  <label>Month <span class="text-danger">*</span></label>
+                  <select class="form-control" formControlName="payMonth" (change)="onPeriodChange()">
+                    @for (m of months; track m) {
+                      <option [ngValue]="m.v">{{ m.n }}</option>
+                    }
+                  </select>
+                </div>
+                <div class="col-md-3 form-group"><label>Year <span class="text-danger">*</span></label><input type="number" class="form-control" formControlName="payYear" (change)="onPeriodChange()"></div>
+                <div class="col-md-3 form-group"><label>Period Start <span class="text-danger">*</span></label><input type="date" class="form-control" formControlName="periodStart"></div>
+                <div class="col-md-3 form-group"><label>Period End <span class="text-danger">*</span></label><input type="date" class="form-control" formControlName="periodEnd"></div>
+              </div>
+              <div class="row">
+                <div class="col-md-3 form-group"><label>Working Days <span class="text-danger">*</span></label><input type="number" step="0.5" class="form-control" formControlName="workingDays"></div>
+              </div>
+            </div>
+            <div class="card-footer">
+              <button type="submit" class="btn btn-primary"><i class="fas fa-cogs mr-1"></i> Run Payroll</button>
+              <button type="button" class="btn btn-default ml-2" (click)="cancelForm()">Cancel</button>
+            </div>
+          </form>
+        </div>
+      }
 
       <!-- PAYSLIPS OF A RUN -->
-      <div class="card card-outline card-info" *ngIf="isView && viewMode === 'payslips'">
-        <div class="card-header d-flex justify-content-between align-items-center">
-          <h3 class="card-title mt-1">Payslips — {{ monthName(selectedRun?.payMonth) }} {{ selectedRun?.payYear }} ({{ selectedRun?.runCode }})</h3>
-          <div>
-            <button class="btn btn-outline-primary btn-sm mr-2" *ngIf="isCreate && selectedRun?.statusId !== STATUS.Approved && selectedRun?.statusId !== STATUS.Paid" (click)="reprocess()"><i class="fas fa-redo mr-1"></i> Re-process</button>
-            <button class="btn btn-default btn-sm" (click)="cancelForm()"><i class="fas fa-arrow-left mr-1"></i> Back</button>
+      @if (isView && viewMode === 'payslips') {
+        <div class="card card-outline card-info">
+          <div class="card-header d-flex justify-content-between align-items-center">
+            <h3 class="card-title mt-1">Payslips — {{ monthName(selectedRun?.payMonth) }} {{ selectedRun?.payYear }} ({{ selectedRun?.runCode }})</h3>
+            <div>
+              @if (isCreate && selectedRun?.statusId !== STATUS.Approved && selectedRun?.statusId !== STATUS.Paid) {
+                <button class="btn btn-outline-primary btn-sm mr-2" (click)="reprocess()"><i class="fas fa-redo mr-1"></i> Re-process</button>
+              }
+              <button class="btn btn-default btn-sm" (click)="cancelForm()"><i class="fas fa-arrow-left mr-1"></i> Back</button>
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="table-responsive">
+              <table class="table table-hover table-bordered list-table">
+                <thead>
+                  <tr><th>Payslip</th><th>Employee</th><th class="text-center">Paid Days</th><th class="text-center">LOP</th><th class="text-right">Gross</th><th class="text-right">Deductions</th><th class="text-right">Loan</th><th class="text-right">Net</th><th class="text-center">View</th></tr>
+                </thead>
+                <tbody>
+                  @if (payslips.length === 0) {
+                    <tr><td colspan="9" class="text-center text-muted">No payslips in this run.</td></tr>
+                  }
+                  @for (p of payslips; track p) {
+                    <tr>
+                      <td>{{ p.PayslipCode || p.payslipCode }}</td>
+                      <td>{{ p.EmployeeName || p.employeeName }}<div><small class="text-muted">{{ p.EmployeeCode || p.employeeCode }}</small></div></td>
+                      <td class="text-center">{{ p.PaidDays ?? p.paidDays }}</td>
+                      <td class="text-center">{{ p.LopDays ?? p.lopDays }}</td>
+                      <td class="text-right">{{ (p.GrossEarnings ?? p.grossEarnings) | number:'1.2-2' }}</td>
+                      <td class="text-right">{{ (p.TotalDeductions ?? p.totalDeductions) | number:'1.2-2' }}</td>
+                      <td class="text-right">{{ (p.LoanDeduction ?? p.loanDeduction) | number:'1.2-2' }}</td>
+                      <td class="text-right"><strong>{{ (p.NetPay ?? p.netPay) | number:'1.2-2' }}</strong></td>
+                      <td class="text-center action-icons"><a title="Payslip detail" (click)="openPayslip(p)"><i class="fas fa-eye text-info"></i></a></td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
-        <div class="card-body">
-          <div class="table-responsive">
-            <table class="table table-hover table-bordered list-table">
-              <thead>
-                <tr><th>Payslip</th><th>Employee</th><th class="text-center">Paid Days</th><th class="text-center">LOP</th><th class="text-right">Gross</th><th class="text-right">Deductions</th><th class="text-right">Loan</th><th class="text-right">Net</th><th class="text-center">View</th></tr>
-              </thead>
-              <tbody>
-                <tr *ngIf="payslips.length === 0"><td colspan="9" class="text-center text-muted">No payslips in this run.</td></tr>
-                <tr *ngFor="let p of payslips">
-                  <td>{{ p.PayslipCode || p.payslipCode }}</td>
-                  <td>{{ p.EmployeeName || p.employeeName }}<div><small class="text-muted">{{ p.EmployeeCode || p.employeeCode }}</small></div></td>
-                  <td class="text-center">{{ p.PaidDays ?? p.paidDays }}</td>
-                  <td class="text-center">{{ p.LopDays ?? p.lopDays }}</td>
-                  <td class="text-right">{{ (p.GrossEarnings ?? p.grossEarnings) | number:'1.2-2' }}</td>
-                  <td class="text-right">{{ (p.TotalDeductions ?? p.totalDeductions) | number:'1.2-2' }}</td>
-                  <td class="text-right">{{ (p.LoanDeduction ?? p.loanDeduction) | number:'1.2-2' }}</td>
-                  <td class="text-right"><strong>{{ (p.NetPay ?? p.netPay) | number:'1.2-2' }}</strong></td>
-                  <td class="text-center action-icons"><a title="Payslip detail" (click)="openPayslip(p)"><i class="fas fa-eye text-info"></i></a></td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </div>
+      }
     </div>
   </section>
 </div>
 
 <!-- PAYSLIP DETAIL MODAL -->
-<div class="payslip-overlay" *ngIf="payslipDetail" (click)="closePayslip()">
-  <div class="payslip-card" (click)="$event.stopPropagation()">
-    <div class="payslip-head">
-      <div>
-        <h4 class="mb-0">{{ payslipDetail.EmployeeName || payslipDetail.employeeName }}</h4>
-        <small class="text-muted">{{ payslipDetail.PayslipCode || payslipDetail.payslipCode }} · {{ monthName(payslipDetail.PayMonth || payslipDetail.payMonth) }} {{ payslipDetail.PayYear || payslipDetail.payYear }}</small>
+@if (payslipDetail) {
+  <div class="payslip-overlay" (click)="closePayslip()">
+    <div class="payslip-card" (click)="$event.stopPropagation()">
+      <div class="payslip-head">
+        <div>
+          <h4 class="mb-0">{{ payslipDetail.EmployeeName || payslipDetail.employeeName }}</h4>
+          <small class="text-muted">{{ payslipDetail.PayslipCode || payslipDetail.payslipCode }} · {{ monthName(payslipDetail.PayMonth || payslipDetail.payMonth) }} {{ payslipDetail.PayYear || payslipDetail.payYear }}</small>
+        </div>
+        <a class="text-muted close-x" (click)="closePayslip()"><i class="fas fa-times"></i></a>
       </div>
-      <a class="text-muted close-x" (click)="closePayslip()"><i class="fas fa-times"></i></a>
-    </div>
-    <div class="payslip-body">
-      <div class="row mb-2">
-        <div class="col-6"><small class="text-muted">Paid Days</small><div>{{ payslipDetail.PaidDays ?? payslipDetail.paidDays }}</div></div>
-        <div class="col-6"><small class="text-muted">LOP Days</small><div>{{ payslipDetail.LopDays ?? payslipDetail.lopDays }}</div></div>
-      </div>
-      <table class="table table-sm">
-        <tbody>
-          <tr *ngFor="let l of (payslipDetail.Lines || payslipDetail.lines || [])">
-            <td>{{ l.ComponentName || l.componentName }}</td>
-            <td class="text-center"><span class="badge" [class.badge-success]="(l.ComponentTypeId ?? l.componentTypeId) === 1" [class.badge-danger]="(l.ComponentTypeId ?? l.componentTypeId) === 2">{{ (l.ComponentTypeId ?? l.componentTypeId) === 1 ? 'Earning' : 'Deduction' }}</span></td>
-            <td class="text-right">{{ (l.Amount ?? l.amount) | number:'1.2-2' }}</td>
-          </tr>
-        </tbody>
-      </table>
-      <div class="net-row">
-        <span>Net Pay</span>
-        <strong>{{ (payslipDetail.NetPay ?? payslipDetail.netPay) | number:'1.2-2' }} {{ payslipDetail.Currency || payslipDetail.currency }}</strong>
+      <div class="payslip-body">
+        <div class="row mb-2">
+          <div class="col-6"><small class="text-muted">Paid Days</small><div>{{ payslipDetail.PaidDays ?? payslipDetail.paidDays }}</div></div>
+          <div class="col-6"><small class="text-muted">LOP Days</small><div>{{ payslipDetail.LopDays ?? payslipDetail.lopDays }}</div></div>
+        </div>
+        <table class="table table-sm">
+          <tbody>
+            @for (l of (payslipDetail.Lines || payslipDetail.lines || []); track l) {
+              <tr>
+                <td>{{ l.ComponentName || l.componentName }}</td>
+                <td class="text-center"><span class="badge" [class.badge-success]="(l.ComponentTypeId ?? l.componentTypeId) === 1" [class.badge-danger]="(l.ComponentTypeId ?? l.componentTypeId) === 2">{{ (l.ComponentTypeId ?? l.componentTypeId) === 1 ? 'Earning' : 'Deduction' }}</span></td>
+                <td class="text-right">{{ (l.Amount ?? l.amount) | number:'1.2-2' }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+        <div class="net-row">
+          <span>Net Pay</span>
+          <strong>{{ (payslipDetail.NetPay ?? payslipDetail.netPay) | number:'1.2-2' }} {{ payslipDetail.Currency || payslipDetail.currency }}</strong>
+        </div>
       </div>
     </div>
   </div>
-</div>
+}
 
 <app-confirm-dialog #confirmDialog [message]="deleteConfirmationMessage" (confirmed)="executeStatus()"></app-confirm-dialog>

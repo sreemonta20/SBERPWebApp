@@ -1,28 +1,42 @@
-import { Injectable } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
+import { Inject, Injectable, PLATFORM_ID } from '@angular/core';
+
+/**
+ * JSON wrapper around window.sessionStorage. When the app is rendered on the server (prerendering
+ * the login page for hydration) there is no sessionStorage: reads return null and writes are
+ * ignored, so the server simply renders the "not signed in" state.
+ */
 @Injectable({
   providedIn: 'root',
 })
 export class SessionStorageService {
-  constructor() {}
+  private readonly storage: Storage | null;
 
-  // public set(key: string, value: string) {
-  //   sessionStorage.setItem(key, value);
-  // }
+  constructor(@Inject(PLATFORM_ID) platformId: object) {
+    this.storage = isPlatformBrowser(platformId) ? window.sessionStorage : null;
+  }
+
   public set(key: string, value: any) {
-    sessionStorage.setItem(key, JSON.stringify(value));
+    this.storage?.setItem(key, JSON.stringify(value));
   }
-  // get(key: string): string {
-  //   return sessionStorage.getItem(key) as string;
-  // }
+
   get(key: string): any {
-    return JSON.parse(sessionStorage.getItem(key));
+    const raw = this.storage?.getItem(key);
+    if (raw == null) {
+      return null;
+    }
+    try {
+      return JSON.parse(raw);
+    } catch {
+      return null; // a hand-edited / corrupt entry must not break the app start
+    }
   }
+
   remove(key: string) {
-    // this.sessionStorgaeModel[key]=null;
-    sessionStorage.removeItem(key);
+    this.storage?.removeItem(key);
   }
+
   clear() {
-    // this.sessionStorgaeModel=new SessionStorageModel();
-    sessionStorage.clear();
+    this.storage?.clear();
   }
 }

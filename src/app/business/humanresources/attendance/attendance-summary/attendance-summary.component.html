@@ -15,54 +15,64 @@
 
   <section class="content">
     <div class="container-fluid">
-      <div *ngIf="!isView" class="alert alert-warning">{{ pageDisplayMessage }}</div>
+      @if (!isView) {
+        <div class="alert alert-warning">{{ pageDisplayMessage }}</div>
+      }
 
-      <div class="card card-outline card-primary" *ngIf="isView">
-        <div class="card-header">
-          <div class="row align-items-center">
-            <div class="col-md-3">
-              <label class="mb-0 mr-2">Month</label>
-              <input type="month" class="form-control form-control-sm d-inline-block" style="width:60%" [(ngModel)]="month" (change)="load()">
+      @if (isView) {
+        <div class="card card-outline card-primary">
+          <div class="card-header">
+            <div class="row align-items-center">
+              <div class="col-md-3">
+                <label class="mb-0 mr-2">Month</label>
+                <input type="month" class="form-control form-control-sm d-inline-block" style="width:60%" [(ngModel)]="month" (change)="load()">
+              </div>
+              <div class="col-md-4">
+                <label class="mb-0 mr-2">Department</label>
+                <select class="form-control form-control-sm d-inline-block" style="width:60%" [(ngModel)]="departmentId" (change)="load()">
+                  <option value="">All</option>
+                  @for (d of departments; track d) {
+                    <option [value]="d.id">{{ d.name }}</option>
+                  }
+                </select>
+              </div>
+              <div class="col-md-5 text-right text-muted"><span>{{ rows.length }} employee(s)</span></div>
             </div>
-            <div class="col-md-4">
-              <label class="mb-0 mr-2">Department</label>
-              <select class="form-control form-control-sm d-inline-block" style="width:60%" [(ngModel)]="departmentId" (change)="load()">
-                <option value="">All</option>
-                <option *ngFor="let d of departments" [value]="d.id">{{ d.name }}</option>
-              </select>
+          </div>
+          <div class="card-body">
+            <div class="table-responsive">
+              <table class="table table-hover table-bordered list-table">
+                <thead>
+                  <tr>
+                    <th>Code</th><th>Employee</th><th>Department</th>
+                    <th class="text-center">Present</th><th class="text-center">Absent</th>
+                    <th class="text-center">Leave</th><th class="text-center">Half</th>
+                    <th class="text-center">Late</th><th class="text-center">Total Hrs</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @if (rows.length === 0) {
+                    <tr><td colspan="9" class="text-center text-muted">No data for the selected month.</td></tr>
+                  }
+                  @for (r of rows; track r) {
+                    <tr>
+                      <td>{{ r.employeeCode }}</td>
+                      <td>{{ r.fullName }}</td>
+                      <td>{{ r.departmentName }}</td>
+                      <td class="text-center"><span class="badge badge-success">{{ r.presentDays }}</span></td>
+                      <td class="text-center"><span class="badge badge-danger">{{ r.absentDays }}</span></td>
+                      <td class="text-center"><span class="badge badge-info">{{ r.leaveDays }}</span></td>
+                      <td class="text-center">{{ r.halfDays }}</td>
+                      <td class="text-center"><span class="badge badge-warning">{{ r.lateDays }}</span></td>
+                      <td class="text-center">{{ r.totalHours }}</td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
             </div>
-            <div class="col-md-5 text-right text-muted"><span>{{ rows.length }} employee(s)</span></div>
           </div>
         </div>
-        <div class="card-body">
-          <div class="table-responsive">
-            <table class="table table-hover table-bordered list-table">
-              <thead>
-                <tr>
-                  <th>Code</th><th>Employee</th><th>Department</th>
-                  <th class="text-center">Present</th><th class="text-center">Absent</th>
-                  <th class="text-center">Leave</th><th class="text-center">Half</th>
-                  <th class="text-center">Late</th><th class="text-center">Total Hrs</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr *ngIf="rows.length === 0"><td colspan="9" class="text-center text-muted">No data for the selected month.</td></tr>
-                <tr *ngFor="let r of rows">
-                  <td>{{ r.employeeCode }}</td>
-                  <td>{{ r.fullName }}</td>
-                  <td>{{ r.departmentName }}</td>
-                  <td class="text-center"><span class="badge badge-success">{{ r.presentDays }}</span></td>
-                  <td class="text-center"><span class="badge badge-danger">{{ r.absentDays }}</span></td>
-                  <td class="text-center"><span class="badge badge-info">{{ r.leaveDays }}</span></td>
-                  <td class="text-center">{{ r.halfDays }}</td>
-                  <td class="text-center"><span class="badge badge-warning">{{ r.lateDays }}</span></td>
-                  <td class="text-center">{{ r.totalHours }}</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </div>
+      }
     </div>
   </section>
 </div>

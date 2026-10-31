@@ -9,7 +9,8 @@ import {
 } from '@angular/core';
 import { NavigationEnd, Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
-import { CommonModule, DOCUMENT } from '@angular/common';
+import { DOCUMENT } from '@angular/common';
+import { ScriptLoaderService } from '@app/core/services/script-loader.service';
 declare var $: any;
 
 @Component({
@@ -24,7 +25,8 @@ export class ControlSettingsComponent implements OnInit, AfterViewInit, OnDestro
     private elementRef: ElementRef,
     public router: Router,
     private http: HttpClient,
-    private renderer: Renderer2
+    private renderer: Renderer2,
+    private scriptLoader: ScriptLoaderService
   ) {
     
   }
@@ -32,7 +34,8 @@ export class ControlSettingsComponent implements OnInit, AfterViewInit, OnDestro
   ngOnInit(): void {}
 
   ngAfterViewInit() {
-    this.loadScripts(['assets/js/demo.js']);
+    // AdminLTE control-sidebar options; executed once per app session, not on every layout init
+    this.scriptLoader.load(['assets/js/demo.js']).catch((error) => console.error(error));
   }
 
   loadScripts(urls: string[]) {

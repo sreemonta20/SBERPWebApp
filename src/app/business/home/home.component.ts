@@ -19,9 +19,19 @@ import {
   SessionStorageService,
   ValidationFormsService,
 } from '@app/core/services/index';
+import { ScriptLoaderService } from '@app/core/services/script-loader.service';
 import { NgxSpinnerService } from 'ngx-spinner';
 import { Subject, filter, take, takeUntil, tap } from 'rxjs';
 declare var $: any;
+
+/** Chart.js and jQuery Mapael (+ its Raphael / mousewheel / USA map dependencies), in load order. */
+const DASHBOARD_LIBRARIES = [
+  'assets/plugins/chart.js/Chart.min.js',
+  'assets/plugins/jquery-mousewheel/jquery.mousewheel.js',
+  'assets/plugins/raphael/raphael.min.js',
+  'assets/plugins/jquery-mapael/jquery.mapael.min.js',
+  'assets/plugins/jquery-mapael/maps/usa_states.min.js',
+];
 
 @Component({
   selector: 'app-home',
@@ -41,7 +51,6 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
 
   // Subscription management
   private destroy$ = new Subject<void>();
-  private scriptsLoaded: HTMLScriptElement[] = [];
   constructor(
     @Inject(DOCUMENT) private document: Document,
     private elementRef: ElementRef,
@@ -53,7 +62,8 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
     private validationService: ValidationFormsService,
     private spinnerService: NgxSpinnerService,
     private commonService: CommonService,
-    private titleService: Title
+    private titleService: Title,
+    private scriptLoader: ScriptLoaderService
   ) {
   }
 
@@ -63,7 +73,12 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   ngAfterViewInit() {
-    this.loadScripts(['assets/js/pages/dashboard2.js']);
+    // the chart / map libraries are only needed here: loaded once, on the first visit to the
+    // dashboard (they used to be in angular.json "scripts", i.e. downloaded by every page)
+    this.scriptLoader
+      .load(DASHBOARD_LIBRARIES)
+      .then(() => this.scriptLoader.run('assets/js/pages/dashboard2.js'))
+      .catch((error) => console.error('Dashboard charts could not be loaded.', error));
   }
 
   private loadUserData(): void {
@@ -93,32 +108,9 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
     this.isDelete = permissionModel.IsDelete;
   }
 
-  loadScripts(urls: string[]) {
-    for (const url of urls) {
-      const script = this.renderer.createElement('script');
-      script.src = url;
-      script.type = 'text/javascript';
-      this.renderer.appendChild(document.body, script);
-      this.scriptsLoaded.push(script);
-    }
-  }
-
-  cleanupScripts(): void {
-    // Remove dynamically added scripts to prevent memory leaks
-    this.scriptsLoaded.forEach(script => {
-      if (script.parentNode) {
-        this.renderer.removeChild(script.parentNode, script);
-      }
-    });
-    this.scriptsLoaded = [];
-  }
-
   ngOnDestroy(): void {
     // Complete the subject to notify all subscriptions to unsubscribe
     this.destroy$.next();
     this.destroy$.complete();
-    
-    // Clean up dynamically added scripts
-    this.cleanupScripts();
   }
 }

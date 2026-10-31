@@ -1,16 +1,3 @@
-<!-- <!doctype html>
-<html lang="en">
-<head>
-  <meta charset="utf-8">
-  <title>SBWebApp</title>
-  <base href="/">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="icon" type="image/x-icon" href="favicon.ico">
-</head>
-<body>
-  <app-root></app-root>
-</body>
-</html> -->
 <!doctype html>
 <html lang="en">
 
@@ -20,10 +7,19 @@
   <base href="/">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="icon" type="image/x-icon" href="favicon.ico">
+  <!-- Old hash URLs (/#/business/home) from bookmarks / e-mails -> path URLs (/business/home),
+       before Angular starts. The app switched from HashLocationStrategy to path routing. -->
+  <script>
+    if (location.hash.indexOf('#/') === 0) {
+      history.replaceState(null, '', location.hash.substring(1));
+    }
+  </script>
+  <!-- open the font connections early: the stylesheet and the font files come from two hosts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet"
     href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
 </head>
-
 
 <body class="text-sm" style="height: auto;">
   <app-root></app-root>

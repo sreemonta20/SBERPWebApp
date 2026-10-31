@@ -8,7 +8,7 @@ import { OnboardingComponent } from './onboarding/onboarding.component';
 import { ConfirmDialogComponent } from '@app/shared/confirm-dialog/confirm-dialog.component';
 
 /**
- * Onboarding business module — same shape as HumanResourcesModule.
+ * Onboarding business module — same shape as CoreHRModule.
  * NOTE: NotificationBellComponent is intentionally NOT declared here — it lives
  * in the navbar (shared/layout), so declare it in the module that owns your
  * topbar (e.g. a SharedModule or the layout module) and render it there.

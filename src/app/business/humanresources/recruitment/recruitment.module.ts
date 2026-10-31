@@ -10,7 +10,7 @@ import { ApplicantPipelineComponent } from './applicant-pipeline/applicant-pipel
 import { ConfirmDialogComponent } from '@app/shared/confirm-dialog/confirm-dialog.component';
 
 /**
- * Recruitment business module — mirrors HumanResourcesModule in shape.
+ * Recruitment business module — mirrors CoreHRModule in shape.
  * Position / Requisition / JobPosting / Pipeline each host both list and form
  * (or board) views internally via a viewMode flag, so no -list / -form split.
  */

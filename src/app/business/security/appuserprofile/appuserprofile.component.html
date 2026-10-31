@@ -1,275 +1,297 @@
 <!-- Content Wrapper. Contains page content -->
 <ngx-spinner size="medium" type="ball-clip-rotate-pulse">
-    <p class="text-white">Please Wait..</p>
+  <p class="text-white">Please Wait..</p>
 </ngx-spinner>
 
-<div class="content-wrapper" *ngIf="isView">
+@if (isView) {
+  <div class="content-wrapper">
     <!-- Content Header (Page header) -->
     <section class="content-header">
-        <div class="container-fluid">
-            <div class="row mb-2">
-                <div class="col-sm-6">
-                    <h1>User Profile Management</h1>
-                </div>
-                <div class="col-sm-6">
-                    <ol class="breadcrumb float-sm-right">
-                        <li class="breadcrumb-item"><a href="#" [routerLink]="['/business/home']">Home</a></li>
-                        <li class="breadcrumb-item active">User Profile</li>
-                    </ol>
-                </div>
-            </div>
+      <div class="container-fluid">
+        <div class="row mb-2">
+          <div class="col-sm-6">
+            <h1>User Profile Management</h1>
+          </div>
+          <div class="col-sm-6">
+            <ol class="breadcrumb float-sm-right">
+              <li class="breadcrumb-item"><a href="#" [routerLink]="['/business/home']">Home</a></li>
+              <li class="breadcrumb-item active">User Profile</li>
+            </ol>
+          </div>
         </div>
+      </div>
     </section>
-
     <section class="content">
-        <div class="container-fluid">
-            <!-- Main Card -->
-            <!-- class="card card-primary card-outline" -->
-            <div class="card card-default">
-                <div class="card-header">
-                    <h3 class="card-title">Create/Edit/Delete User Profile</h3>
-                    <div class="card-tools">
-                        <button type="button" class="btn btn-tool" data-card-widget="collapse">
-                            <i class="fas fa-minus"></i>
-                        </button>
-                        <button type="button" class="btn btn-tool" data-card-widget="remove">
-                            <i class="fas fa-times"></i>
-                        </button>
-                    </div>
-                </div>
-
-                <form [formGroup]="appUserProfileForm" autocomplete="off"
-                    (ngSubmit)="createUpdateAppUserProfile(appUserProfileForm.value)">
-                    <div class="card-body">
-
-                        <!-- Profile Information Card (Collapsible) -->
-                        <div class="card card-info">
-                            <div class="card-header">
-                                <h3 class="card-title">Profile Information</h3>
-                                <div class="card-tools">
-                                    <button type="button" class="btn btn-tool" data-card-widget="collapse">
-                                        <i class="fas fa-minus"></i>
-                                    </button>
-                                </div>
-                            </div>
-                            <div class="card-body">
-                                <input type="hidden" formControlName="Id" />
-                                <input type="hidden" formControlName="CreateUpdateBy" />
-
-                                <div class="row">
-                                <!-- Profile photo (optional): uploaded after the profile is saved -->
-                                <div class="col-md-2 text-center mb-3 profile-photo-panel">
-                                    <img [src]="photoPreviewUrl" class="img-circle elevation-2 profile-photo"
-                                        alt="Profile photo">
-                                    <div class="mt-2">
-                                        <span *ngIf="photoStatus === 'uploaded'" class="badge badge-success">
-                                            <i class="fas fa-check-circle"></i> Photo uploaded
-                                        </span>
-                                        <span *ngIf="photoStatus === 'pending'" class="badge badge-warning">
-                                            New photo: uploads on {{ isEdit ? 'Update' : 'Save' }}
-                                        </span>
-                                        <span *ngIf="photoStatus === 'remove'" class="badge badge-secondary">
-                                            Photo removed on Update
-                                        </span>
-                                        <span *ngIf="photoStatus === 'none'" class="badge badge-light">No photo</span>
-                                    </div>
-                                    <input #photoInput type="file" class="d-none" [accept]="photoAccept"
-                                        (change)="onPhotoSelected($event)">
-                                    <div class="btn-group btn-group-sm mt-2">
-                                        <button type="button" class="btn btn-outline-primary" title="Choose photo"
-                                            (click)="photoInput.value = ''; photoInput.click()"
-                                            [disabled]="isEdit ? !isUpdate : !isCreate">
-                                            <i class="fas fa-camera"></i> {{ photoStatus === 'none' ? 'Upload' : 'Change' }}
-                                        </button>
-                                        <button type="button" class="btn btn-outline-danger" title="Remove photo"
-                                            *ngIf="photoStatus === 'uploaded' || photoStatus === 'pending'"
-                                            (click)="removePhoto()" [disabled]="isEdit ? !isUpdate : !isCreate">
-                                            <i class="fas fa-trash"></i>
-                                        </button>
-                                    </div>
-                                    <small class="form-text text-muted">Optional. JPG or PNG, max {{ photoMaxSizeMB }} MB.</small>
-                                    <small *ngIf="editingEmployeeId" class="form-text text-info">
-                                        Linked to an employee: an employee photo, when uploaded, is shown in the
-                                        top bar and sidebar instead.
-                                    </small>
-                                </div>
-
-                                <div class="col-md-10">
-                                <div class="row">
-                                    <div class="col-md-3">
-                                        <div class="form-group">
-                                            <label>Full Name <span class="text-danger">*</span></label>
-                                            <input type="text" formControlName="FullName" class="form-control"
-                                                placeholder="Full Name">
-                                            <div *ngIf="appUserProfileForm.get('FullName')?.touched && appUserProfileForm.get('FullName')?.invalid"
-                                                class="text-danger small mt-1">
-                                                <div *ngIf="appUserProfileForm.get('FullName')?.errors?.required">
-                                                    Full Name is required.
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <div class="col-md-3">
-                                        <div class="form-group">
-                                            <label>Role Name <small class="text-muted">(designation / position)</small></label>
-                                            <input type="text" formControlName="JobTitle" class="form-control" maxlength="100"
-                                                autocomplete="off" placeholder="e.g. Chief Executive Officer">
-                                            <div *ngIf="appUserProfileForm.get('JobTitle')?.invalid" class="text-danger small mt-1">
-                                                Maximum 100 characters.
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <div class="col-md-3">
-                                        <div class="form-group">
-                                            <label>Email <span class="text-danger">*</span></label>
-                                            <input type="email" formControlName="Email" class="form-control"
-                                                placeholder="Email">
-                                            <div *ngIf="appUserProfileForm.get('Email')?.touched && appUserProfileForm.get('Email')?.invalid"
-                                                class="text-danger small mt-1">
-                                                <div *ngIf="appUserProfileForm.get('Email')?.errors?.required">
-                                                    Email is required.
-                                                </div>
-                                                <div *ngIf="appUserProfileForm.get('Email')?.errors?.email">
-                                                    Enter a valid email address.
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <div class="col-md-2">
-                                        <div class="form-group">
-                                            <label>User Role <span class="text-danger">*</span></label>
-                                            <select id="userRoleSelect" formControlName="AppUserRoleId"
-                                                class="form-control" style="width: 100%;">
-                                                <option [ngValue]="null" disabled>Please select</option>
-                                                <option *ngFor="let userRole of userRolesList" [ngValue]="userRole.Id">
-                                                    {{ userRole.Name }}
-                                                </option>
-                                            </select>
-                                        </div>
-                                    </div>
-
-                                    <div class="col-md-1">
-                                        <div class="form-group">
-                                            <div class="form-check mt-4">
-                                                <input class="form-check-input" type="checkbox"
-                                                    formControlName="IsActive" id="chkIsActive">
-                                                <label class="form-check-label font-weight-bold" for="chkIsActive">
-                                                    Is Active
-                                                </label>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div class="row">
-                                    <div class="col-md-12">
-                                        <div class="form-group">
-                                            <label>Address</label>
-                                            <textarea formControlName="Address" class="form-control" rows="4"
-                                                placeholder="Enter address"></textarea>
-                                        </div>
-                                    </div>
-                                </div>
-                                </div>
-                                </div>
-                            </div>
-                            <!-- /.card-body -->
-                        </div>
-                        <!-- /.Profile Information Card -->
-
-                        <!-- User Credentials Card (Collapsible) -->
-                        <div class="card card-warning">
-                            <div class="card-header">
-                                <h3 class="card-title">User Credentials</h3>
-                                <div class="card-tools">
-                                    <button type="button" class="btn btn-tool" data-card-widget="collapse">
-                                        <i class="fas fa-minus"></i>
-                                    </button>
-                                </div>
-                            </div>
-                            <div class="card-body">
-                                <div class="row">
-                                    <div class="col-md-4">
-                                        <div class="form-group">
-                                            <label>User Name <span class="text-danger">*</span></label>
-                                            <input type="text" formControlName="UserName" class="form-control"
-                                                autocomplete="off" placeholder="User Name">
-                                            <div *ngIf="appUserProfileForm.get('UserName')?.touched && appUserProfileForm.get('UserName')?.invalid"
-                                                class="text-danger small mt-1">
-                                                <div *ngIf="appUserProfileForm.get('UserName')?.errors?.required">
-                                                    User Name is required.
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <div class="col-md-4">
-                                        <div class="form-group">
-                                            <label>
-                                                Password
-                                                <span *ngIf="!isEdit" class="text-danger">*</span>
-                                                <span *ngIf="isEdit" class="text-muted small">(Leave blank to keep
-                                                    current)</span>
-                                            </label>
-                                            <input type="password" formControlName="Password" class="form-control"
-                                                autocomplete="new-password" placeholder="Password">
-                                        </div>
-                                    </div>
-
-                                    <div class="col-md-4">
-                                        <div class="form-group">
-                                            <label>Confirm Password</label>
-                                            <input type="password" formControlName="ConfirmPassword"
-                                                class="form-control" autocomplete="new-password" placeholder="Confirm Password">
-                                            <div *ngIf="appUserProfileForm.hasError('mismatch')"
-                                                class="text-danger small mt-1">
-                                                Passwords do not match.
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <!-- /.card-body -->
-                        </div>
-                        <!-- /.User Credentials Card -->
-
-                    </div>
-                    <!-- /.card-body -->
-
-                    <div class="card-footer text-right">
-                        <button type="button" class="btn btn-warning mr-2" (click)="resetForm()"
-                            [disabled]="isEdit ? !isUpdate : !isCreate">
-                            Clear
-                        </button>
-                        <button type="submit" class="btn btn-primary"
-                            [disabled]="isEdit ? !isUpdate : !isCreate">
-                            {{ isEdit ? 'Update' : 'Save' }}
-                        </button>
-                    </div>
-                </form>
+      <div class="container-fluid">
+        <!-- Main Card -->
+        <!-- class="card card-primary card-outline" -->
+        <div class="card card-default">
+          <div class="card-header">
+            <h3 class="card-title">Create/Edit/Delete User Profile</h3>
+            <div class="card-tools">
+              <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                <i class="fas fa-minus"></i>
+              </button>
+              <button type="button" class="btn btn-tool" data-card-widget="remove">
+                <i class="fas fa-times"></i>
+              </button>
             </div>
-            <!-- /.Main Card -->
-
-            <div class="row">
-                <div class="col-12">
-                    <div class="card">
-                        <!-- Loading indicator -->
-                        <div *ngIf="loading" class="overlay">
-                            <i class="fas fa-spinner fa-spin"></i>
+          </div>
+          <form [formGroup]="appUserProfileForm" autocomplete="off"
+            (ngSubmit)="createUpdateAppUserProfile(appUserProfileForm.value)">
+            <div class="card-body">
+              <!-- Profile Information Card (Collapsible) -->
+              <div class="card card-info">
+                <div class="card-header">
+                  <h3 class="card-title">Profile Information</h3>
+                  <div class="card-tools">
+                    <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                      <i class="fas fa-minus"></i>
+                    </button>
+                  </div>
+                </div>
+                <div class="card-body">
+                  <input type="hidden" formControlName="Id" />
+                  <input type="hidden" formControlName="CreateUpdateBy" />
+                  <div class="row">
+                    <!-- Profile photo (optional): uploaded after the profile is saved -->
+                    <div class="col-md-2 text-center mb-3 profile-photo-panel">
+                      <img [src]="photoPreviewUrl" class="img-circle elevation-2 profile-photo"
+                        alt="Profile photo">
+                        <div class="mt-2">
+                          @if (photoStatus === 'uploaded') {
+                            <span class="badge badge-success">
+                              <i class="fas fa-check-circle"></i> Photo uploaded
+                            </span>
+                          }
+                          @if (photoStatus === 'pending') {
+                            <span class="badge badge-warning">
+                              New photo: uploads on {{ isEdit ? 'Update' : 'Save' }}
+                            </span>
+                          }
+                          @if (photoStatus === 'remove') {
+                            <span class="badge badge-secondary">
+                              Photo removed on Update
+                            </span>
+                          }
+                          @if (photoStatus === 'none') {
+                            <span class="badge badge-light">No photo</span>
+                          }
                         </div>
-
-                        <!-- Error message -->
-                        <div *ngIf="error_message" class="alert alert-danger m-2">
-                            {{ error_message }}
+                        <input #photoInput type="file" class="d-none" [accept]="photoAccept"
+                          (change)="onPhotoSelected($event)">
+                          <div class="btn-group btn-group-sm mt-2">
+                            <button type="button" class="btn btn-outline-primary" title="Choose photo"
+                              (click)="photoInput.value = ''; photoInput.click()"
+                              [disabled]="isEdit ? !isUpdate : !isCreate">
+                              <i class="fas fa-camera"></i> {{ photoStatus === 'none' ? 'Upload' : 'Change' }}
+                            </button>
+                            @if (photoStatus === 'uploaded' || photoStatus === 'pending') {
+                              <button type="button" class="btn btn-outline-danger" title="Remove photo"
+                                (click)="removePhoto()" [disabled]="isEdit ? !isUpdate : !isCreate">
+                                <i class="fas fa-trash"></i>
+                              </button>
+                            }
+                          </div>
+                          <small class="form-text text-muted">Optional. JPG or PNG, max {{ photoMaxSizeMB }} MB.</small>
+                          @if (editingEmployeeId) {
+                            <small class="form-text text-info">
+                              Linked to an employee: an employee photo, when uploaded, is shown in the
+                              top bar and sidebar instead.
+                            </small>
+                          }
                         </div>
-
-                        <div class="card-body table-responsive p-2">
-                            <table id="appUserProfileTable" class="table table-hover text-nowrap" width="100%">
-                                <thead>
-                                    <tr>
+                        <div class="col-md-10">
+                          <div class="row">
+                            <div class="col-md-3">
+                              <div class="form-group">
+                                <label>Full Name <span class="text-danger">*</span></label>
+                                <input type="text" formControlName="FullName" class="form-control"
+                                  placeholder="Full Name">
+                                  @if (appUserProfileForm.get('FullName')?.touched && appUserProfileForm.get('FullName')?.invalid) {
+                                    <div
+                                      class="text-danger small mt-1">
+                                      @if (appUserProfileForm.get('FullName')?.errors?.required) {
+                                        <div>
+                                          Full Name is required.
+                                        </div>
+                                      }
+                                    </div>
+                                  }
+                                </div>
+                              </div>
+                              <div class="col-md-3">
+                                <div class="form-group">
+                                  <label>Role Name <small class="text-muted">(designation / position)</small></label>
+                                  <input type="text" formControlName="JobTitle" class="form-control" maxlength="100"
+                                    autocomplete="off" placeholder="e.g. Chief Executive Officer">
+                                    @if (appUserProfileForm.get('JobTitle')?.invalid) {
+                                      <div class="text-danger small mt-1">
+                                        Maximum 100 characters.
+                                      </div>
+                                    }
+                                  </div>
+                                </div>
+                                <div class="col-md-3">
+                                  <div class="form-group">
+                                    <label>Email <span class="text-danger">*</span></label>
+                                    <input type="email" formControlName="Email" class="form-control"
+                                      placeholder="Email">
+                                      @if (appUserProfileForm.get('Email')?.touched && appUserProfileForm.get('Email')?.invalid) {
+                                        <div
+                                          class="text-danger small mt-1">
+                                          @if (appUserProfileForm.get('Email')?.errors?.required) {
+                                            <div>
+                                              Email is required.
+                                            </div>
+                                          }
+                                          @if (appUserProfileForm.get('Email')?.errors?.email) {
+                                            <div>
+                                              Enter a valid email address.
+                                            </div>
+                                          }
+                                        </div>
+                                      }
+                                    </div>
+                                  </div>
+                                  <div class="col-md-2">
+                                    <div class="form-group">
+                                      <label>User Role <span class="text-danger">*</span></label>
+                                      <select id="userRoleSelect" formControlName="AppUserRoleId"
+                                        class="form-control" style="width: 100%;">
+                                        <option [ngValue]="null" disabled>Please select</option>
+                                        @for (userRole of userRolesList; track userRole) {
+                                          <option [ngValue]="userRole.Id">
+                                            {{ userRole.Name }}
+                                          </option>
+                                        }
+                                      </select>
+                                    </div>
+                                  </div>
+                                  <div class="col-md-1">
+                                    <div class="form-group">
+                                      <div class="form-check mt-4">
+                                        <input class="form-check-input" type="checkbox"
+                                          formControlName="IsActive" id="chkIsActive">
+                                          <label class="form-check-label font-weight-bold" for="chkIsActive">
+                                            Is Active
+                                          </label>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </div>
+                                  <div class="row">
+                                    <div class="col-md-12">
+                                      <div class="form-group">
+                                        <label>Address</label>
+                                        <textarea formControlName="Address" class="form-control" rows="4"
+                                        placeholder="Enter address"></textarea>
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                            <!-- /.card-body -->
+                          </div>
+                          <!-- /.Profile Information Card -->
+                          <!-- User Credentials Card (Collapsible) -->
+                          <div class="card card-warning">
+                            <div class="card-header">
+                              <h3 class="card-title">User Credentials</h3>
+                              <div class="card-tools">
+                                <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                                  <i class="fas fa-minus"></i>
+                                </button>
+                              </div>
+                            </div>
+                            <div class="card-body">
+                              <div class="row">
+                                <div class="col-md-4">
+                                  <div class="form-group">
+                                    <label>User Name <span class="text-danger">*</span></label>
+                                    <input type="text" formControlName="UserName" class="form-control"
+                                      autocomplete="off" placeholder="User Name">
+                                      @if (appUserProfileForm.get('UserName')?.touched && appUserProfileForm.get('UserName')?.invalid) {
+                                        <div
+                                          class="text-danger small mt-1">
+                                          @if (appUserProfileForm.get('UserName')?.errors?.required) {
+                                            <div>
+                                              User Name is required.
+                                            </div>
+                                          }
+                                        </div>
+                                      }
+                                    </div>
+                                  </div>
+                                  <div class="col-md-4">
+                                    <div class="form-group">
+                                      <label>
+                                        Password
+                                        @if (!isEdit) {
+                                          <span class="text-danger">*</span>
+                                        }
+                                        @if (isEdit) {
+                                          <span class="text-muted small">(Leave blank to keep
+                                          current)</span>
+                                        }
+                                      </label>
+                                      <input type="password" formControlName="Password" class="form-control"
+                                        autocomplete="new-password" placeholder="Password">
+                                      </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                      <div class="form-group">
+                                        <label>Confirm Password</label>
+                                        <input type="password" formControlName="ConfirmPassword"
+                                          class="form-control" autocomplete="new-password" placeholder="Confirm Password">
+                                          @if (appUserProfileForm.hasError('mismatch')) {
+                                            <div
+                                              class="text-danger small mt-1">
+                                              Passwords do not match.
+                                            </div>
+                                          }
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </div>
+                                  <!-- /.card-body -->
+                                </div>
+                                <!-- /.User Credentials Card -->
+                              </div>
+                              <!-- /.card-body -->
+                              <div class="card-footer text-right">
+                                <button type="button" class="btn btn-warning mr-2" (click)="resetForm()"
+                                  [disabled]="isEdit ? !isUpdate : !isCreate">
+                                  Clear
+                                </button>
+                                <button type="submit" class="btn btn-primary"
+                                  [disabled]="isEdit ? !isUpdate : !isCreate">
+                                  {{ isEdit ? 'Update' : 'Save' }}
+                                </button>
+                              </div>
+                            </form>
+                          </div>
+                          <!-- /.Main Card -->
+                          <div class="row">
+                            <div class="col-12">
+                              <div class="card">
+                                <!-- Loading indicator -->
+                                @if (loading) {
+                                  <div class="overlay">
+                                    <i class="fas fa-spinner fa-spin"></i>
+                                  </div>
+                                }
+                                <!-- Error message -->
+                                @if (error_message) {
+                                  <div class="alert alert-danger m-2">
+                                    {{ error_message }}
+                                  </div>
+                                }
+                                <div class="card-body table-responsive p-2">
+                                  <table id="appUserProfileTable" class="table table-hover text-nowrap" width="100%">
+                                    <thead>
+                                      <tr>
                                         <th>Photo</th>
                                         <th>Full Name</th>
                                         <th>Role Name</th>
@@ -278,26 +300,29 @@
                                         <th>User Name</th>
                                         <th>Active</th>
                                         <th>Action</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                </tbody>
-                            </table>
+                                      </tr>
+                                    </thead>
+                                    <tbody>
+                                    </tbody>
+                                  </table>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
                         </div>
+                      </section>
                     </div>
-                </div>
-            </div>
-        </div>
-    </section>
-</div>
+                  }
 
-<!-- Access Denied -->
-<div class="content-wrapper" *ngIf="!isView">
-    <div class="alert alert-danger text-center">
-        {{ pageDisplayMessage }}
-    </div>
-</div>
+                  <!-- Access Denied -->
+                  @if (!isView) {
+                    <div class="content-wrapper">
+                      <div class="alert alert-danger text-center">
+                        {{ pageDisplayMessage }}
+                      </div>
+                    </div>
+                  }
 
-<app-confirm-dialog #confirmDialog [title]="'Confirm Deletion'" [message]="deleteConfirmationMessage"
-    [confirmButtonText]="'Delete'" [confirmButtonClass]="'btn-danger'" (confirmed)="executeDelete()">
-</app-confirm-dialog>
+                  <app-confirm-dialog #confirmDialog [title]="'Confirm Deletion'" [message]="deleteConfirmationMessage"
+                    [confirmButtonText]="'Delete'" [confirmButtonClass]="'btn-danger'" (confirmed)="executeDelete()">
+                  </app-confirm-dialog>

@@ -15,125 +15,144 @@
 
   <section class="content">
     <div class="container-fluid">
-      <div *ngIf="!isView" class="alert alert-warning">{{ pageDisplayMessage }}</div>
+      @if (!isView) {
+        <div class="alert alert-warning">{{ pageDisplayMessage }}</div>
+      }
 
       <!-- LIST -->
-      <div class="card card-outline card-primary" *ngIf="isView && viewMode === 'list'">
-        <div class="card-header"><h3 class="card-title mt-1">Review List</h3></div>
-        <div class="card-body">
-          <div class="row mb-3">
-            <div class="col-md-4">
-              <div class="input-group input-group-sm">
-                <input type="text" class="form-control" placeholder="Search by code / employee…" [(ngModel)]="searchTerm" (keyup.enter)="search()">
-                <span class="input-group-append"><button class="btn btn-default" (click)="search()"><i class="fas fa-search"></i></button></span>
+      @if (isView && viewMode === 'list') {
+        <div class="card card-outline card-primary">
+          <div class="card-header"><h3 class="card-title mt-1">Review List</h3></div>
+          <div class="card-body">
+            <div class="row mb-3">
+              <div class="col-md-4">
+                <div class="input-group input-group-sm">
+                  <input type="text" class="form-control" placeholder="Search by code / employee…" [(ngModel)]="searchTerm" (keyup.enter)="search()">
+                  <span class="input-group-append"><button class="btn btn-default" (click)="search()"><i class="fas fa-search"></i></button></span>
+                </div>
+              </div>
+              <div class="col-md-8 text-right">
+                <label class="mr-2 mb-0">Page size</label>
+                <select class="form-control form-control-sm d-inline-block" style="width:auto" (change)="changePageSize($event)">
+                  @for (s of pageSizeList; track s) {
+                    <option [value]="s">{{ s }}</option>
+                  }
+                </select>
               </div>
             </div>
-            <div class="col-md-8 text-right">
-              <label class="mr-2 mb-0">Page size</label>
-              <select class="form-control form-control-sm d-inline-block" style="width:auto" (change)="changePageSize($event)">
-                <option *ngFor="let s of pageSizeList" [value]="s">{{ s }}</option>
-              </select>
+            <div class="table-responsive">
+              <table class="table table-hover table-bordered list-table">
+                <thead>
+                  <tr><th>Code</th><th>Employee</th><th>Cycle</th><th>Reviewer</th><th class="text-center">Self</th><th class="text-center">Manager</th><th class="text-center">Status</th><th class="text-center" style="width:90px">Open</th></tr>
+                </thead>
+                <tbody>
+                  @if (list.length === 0) {
+                    <tr><td colspan="8" class="text-center text-muted">No reviews found.</td></tr>
+                  }
+                  @for (r of list; track r) {
+                    <tr>
+                      <td>{{ r.reviewCode }}</td>
+                      <td>{{ r.employeeName }}<div><small class="text-muted">{{ r.employeeCode }}</small></div></td>
+                      <td>{{ r.cycleName }}</td>
+                      <td>{{ r.reviewerName || '—' }}</td>
+                      <td class="text-center">{{ r.selfRating != null ? r.selfRating : '—' }}</td>
+                      <td class="text-center">{{ r.managerRating != null ? r.managerRating : '—' }}</td>
+                      <td class="text-center"><span [class]="statusBadgeClass(r.statusId)">{{ r.statusName }}</span></td>
+                      <td class="text-center action-icons"><a title="Open" (click)="open(r)"><i class="fas fa-external-link-alt text-primary"></i></a></td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
             </div>
           </div>
-          <div class="table-responsive">
-            <table class="table table-hover table-bordered list-table">
-              <thead>
-                <tr><th>Code</th><th>Employee</th><th>Cycle</th><th>Reviewer</th><th class="text-center">Self</th><th class="text-center">Manager</th><th class="text-center">Status</th><th class="text-center" style="width:90px">Open</th></tr>
-              </thead>
-              <tbody>
-                <tr *ngIf="list.length === 0"><td colspan="8" class="text-center text-muted">No reviews found.</td></tr>
-                <tr *ngFor="let r of list">
-                  <td>{{ r.reviewCode }}</td>
-                  <td>{{ r.employeeName }}<div><small class="text-muted">{{ r.employeeCode }}</small></div></td>
-                  <td>{{ r.cycleName }}</td>
-                  <td>{{ r.reviewerName || '—' }}</td>
-                  <td class="text-center">{{ r.selfRating != null ? r.selfRating : '—' }}</td>
-                  <td class="text-center">{{ r.managerRating != null ? r.managerRating : '—' }}</td>
-                  <td class="text-center"><span [class]="statusBadgeClass(r.statusId)">{{ r.statusName }}</span></td>
-                  <td class="text-center action-icons"><a title="Open" (click)="open(r)"><i class="fas fa-external-link-alt text-primary"></i></a></td>
-                </tr>
-              </tbody>
-            </table>
+          <div class="card-footer clearfix">
+            <span class="float-left text-muted mt-1">Showing {{ startPage }}–{{ endPage }} of {{ totalRows }}</span>
+            <ul class="pagination pagination-sm m-0 float-right">
+              <li class="page-item" [class.disabled]="currentPage === 1"><a class="page-link" (click)="changePage(currentPage - 1)">«</a></li>
+              @for (x of [].constructor(pageCount); track $index; let i = $index) {
+                <li class="page-item" [class.active]="currentPage === i + 1"><a class="page-link" (click)="changePage(i + 1)">{{ i + 1 }}</a></li>
+              }
+              <li class="page-item" [class.disabled]="currentPage === pageCount"><a class="page-link" (click)="changePage(currentPage + 1)">»</a></li>
+            </ul>
           </div>
         </div>
-        <div class="card-footer clearfix">
-          <span class="float-left text-muted mt-1">Showing {{ startPage }}–{{ endPage }} of {{ totalRows }}</span>
-          <ul class="pagination pagination-sm m-0 float-right">
-            <li class="page-item" [class.disabled]="currentPage === 1"><a class="page-link" (click)="changePage(currentPage - 1)">«</a></li>
-            <li class="page-item" *ngFor="let x of [].constructor(pageCount); let i = index" [class.active]="currentPage === i + 1"><a class="page-link" (click)="changePage(i + 1)">{{ i + 1 }}</a></li>
-            <li class="page-item" [class.disabled]="currentPage === pageCount"><a class="page-link" (click)="changePage(currentPage + 1)">»</a></li>
-          </ul>
-        </div>
-      </div>
+      }
 
       <!-- DETAIL / RATING SCREEN -->
-      <div class="card card-outline card-primary" *ngIf="isView && viewMode === 'detail' && detail">
-        <div class="card-header d-flex justify-content-between align-items-center">
-          <h3 class="card-title mt-1">
-            {{ detail.ReviewCode || detail.reviewCode }} — {{ detail.EmployeeName || detail.employeeName }}
-            <span [class]="statusBadgeClass(detail.StatusId || detail.statusId)" class="ml-2">{{ detail.StatusName || detail.statusName }}</span>
-          </h3>
-          <button class="btn btn-default btn-sm" (click)="back()"><i class="fas fa-arrow-left mr-1"></i> Back</button>
+      @if (isView && viewMode === 'detail' && detail) {
+        <div class="card card-outline card-primary">
+          <div class="card-header d-flex justify-content-between align-items-center">
+            <h3 class="card-title mt-1">
+              {{ detail.ReviewCode || detail.reviewCode }} — {{ detail.EmployeeName || detail.employeeName }}
+              <span [class]="statusBadgeClass(detail.StatusId || detail.statusId)" class="ml-2">{{ detail.StatusName || detail.statusName }}</span>
+            </h3>
+            <button class="btn btn-default btn-sm" (click)="back()"><i class="fas fa-arrow-left mr-1"></i> Back</button>
+          </div>
+          <div class="card-body">
+            <div class="row mb-2">
+              <div class="col-md-4"><strong>Cycle:</strong> {{ detail.CycleName || detail.cycleName }}</div>
+              <div class="col-md-4"><strong>Reviewer:</strong> {{ detail.ReviewerName || detail.reviewerName || '—' }}</div>
+              <div class="col-md-4"><strong>Scale:</strong> 1–{{ scaleMax }}</div>
+            </div>
+            <!-- live preview strip -->
+            <div class="balance-strip mb-3">
+              <div class="bs-item"><span class="bs-label">Self (weighted)</span><span class="bs-value">{{ previewSelf }}</span></div>
+              <div class="bs-item"><span class="bs-label">Manager (weighted)</span><span class="bs-value">{{ previewManager }}</span></div>
+              <div class="bs-item"><span class="bs-label">Out of</span><span class="bs-value">{{ scaleMax }}</span></div>
+            </div>
+            <div class="table-responsive">
+              <table class="table table-bordered list-table rating-table">
+                <thead>
+                  <tr>
+                    <th style="width:90px">Type</th><th>Item</th><th class="text-center" style="width:90px">Weight</th>
+                    <th class="text-center" style="width:120px">Self</th><th class="text-center" style="width:120px">Manager</th><th>Comments</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (r of ratings; track r) {
+                    <tr>
+                      <td><span class="badge" [class.badge-info]="r.itemTypeId === 1" [class.badge-secondary]="r.itemTypeId === 2">{{ r.itemTypeId === 1 ? 'Goal' : 'Competency' }}</span></td>
+                      <td>{{ r.itemName }}</td>
+                      <td class="text-center">{{ r.weight }}%</td>
+                      <td class="text-center"><input type="number" class="form-control form-control-sm score-input" min="0" [max]="scaleMax" step="0.5" [(ngModel)]="r.selfScore"></td>
+                      <td class="text-center"><input type="number" class="form-control form-control-sm score-input" min="0" [max]="scaleMax" step="0.5" [(ngModel)]="r.managerScore"></td>
+                      <td><input class="form-control form-control-sm" [(ngModel)]="r.comments" placeholder="Optional"></td>
+                    </tr>
+                  }
+                  @if (ratings.length === 0) {
+                    <tr><td colspan="6" class="text-center text-muted">No rating lines. Initiate reviews from the cycle first.</td></tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+            <div class="row mt-2">
+              <div class="col-md-6 form-group"><label>Self Comments</label><textarea rows="3" class="form-control" [(ngModel)]="selfComments"></textarea></div>
+              <div class="col-md-6 form-group"><label>Manager Comments</label><textarea rows="3" class="form-control" [(ngModel)]="managerComments"></textarea></div>
+            </div>
+          </div>
+          <div class="card-footer">
+            @if (isUpdate) {
+              <button class="btn btn-primary" (click)="saveRatings()"><i class="fas fa-save mr-1"></i> Save Scores</button>
+            }
+            @if (isUpdate && (detail.StatusId || detail.statusId) <= STATUS.SelfAssessment) {
+              <button class="btn btn-info ml-2" (click)="submitSelf()">
+                <i class="fas fa-paper-plane mr-1"></i> Submit Self-Assessment
+              </button>
+            }
+            @if (isUpdate && (detail.StatusId || detail.statusId) === STATUS.ManagerReview) {
+              <button class="btn btn-success ml-2" (click)="completeManager()">
+                <i class="fas fa-check mr-1"></i> Complete Review
+              </button>
+            }
+            @if (isUpdate && (detail.StatusId || detail.statusId) === STATUS.Completed) {
+              <button class="btn btn-success ml-2" (click)="acknowledge()">
+                <i class="fas fa-thumbs-up mr-1"></i> Acknowledge
+              </button>
+            }
+            <button class="btn btn-default ml-2" (click)="back()">Close</button>
+          </div>
         </div>
-
-        <div class="card-body">
-          <div class="row mb-2">
-            <div class="col-md-4"><strong>Cycle:</strong> {{ detail.CycleName || detail.cycleName }}</div>
-            <div class="col-md-4"><strong>Reviewer:</strong> {{ detail.ReviewerName || detail.reviewerName || '—' }}</div>
-            <div class="col-md-4"><strong>Scale:</strong> 1–{{ scaleMax }}</div>
-          </div>
-
-          <!-- live preview strip -->
-          <div class="balance-strip mb-3">
-            <div class="bs-item"><span class="bs-label">Self (weighted)</span><span class="bs-value">{{ previewSelf }}</span></div>
-            <div class="bs-item"><span class="bs-label">Manager (weighted)</span><span class="bs-value">{{ previewManager }}</span></div>
-            <div class="bs-item"><span class="bs-label">Out of</span><span class="bs-value">{{ scaleMax }}</span></div>
-          </div>
-
-          <div class="table-responsive">
-            <table class="table table-bordered list-table rating-table">
-              <thead>
-                <tr>
-                  <th style="width:90px">Type</th><th>Item</th><th class="text-center" style="width:90px">Weight</th>
-                  <th class="text-center" style="width:120px">Self</th><th class="text-center" style="width:120px">Manager</th><th>Comments</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr *ngFor="let r of ratings">
-                  <td><span class="badge" [class.badge-info]="r.itemTypeId === 1" [class.badge-secondary]="r.itemTypeId === 2">{{ r.itemTypeId === 1 ? 'Goal' : 'Competency' }}</span></td>
-                  <td>{{ r.itemName }}</td>
-                  <td class="text-center">{{ r.weight }}%</td>
-                  <td class="text-center"><input type="number" class="form-control form-control-sm score-input" min="0" [max]="scaleMax" step="0.5" [(ngModel)]="r.selfScore"></td>
-                  <td class="text-center"><input type="number" class="form-control form-control-sm score-input" min="0" [max]="scaleMax" step="0.5" [(ngModel)]="r.managerScore"></td>
-                  <td><input class="form-control form-control-sm" [(ngModel)]="r.comments" placeholder="Optional"></td>
-                </tr>
-                <tr *ngIf="ratings.length === 0"><td colspan="6" class="text-center text-muted">No rating lines. Initiate reviews from the cycle first.</td></tr>
-              </tbody>
-            </table>
-          </div>
-
-          <div class="row mt-2">
-            <div class="col-md-6 form-group"><label>Self Comments</label><textarea rows="3" class="form-control" [(ngModel)]="selfComments"></textarea></div>
-            <div class="col-md-6 form-group"><label>Manager Comments</label><textarea rows="3" class="form-control" [(ngModel)]="managerComments"></textarea></div>
-          </div>
-        </div>
-
-        <div class="card-footer">
-          <button class="btn btn-primary" *ngIf="isUpdate" (click)="saveRatings()"><i class="fas fa-save mr-1"></i> Save Scores</button>
-
-          <button class="btn btn-info ml-2" *ngIf="isUpdate && (detail.StatusId || detail.statusId) <= STATUS.SelfAssessment" (click)="submitSelf()">
-            <i class="fas fa-paper-plane mr-1"></i> Submit Self-Assessment
-          </button>
-          <button class="btn btn-success ml-2" *ngIf="isUpdate && (detail.StatusId || detail.statusId) === STATUS.ManagerReview" (click)="completeManager()">
-            <i class="fas fa-check mr-1"></i> Complete Review
-          </button>
-          <button class="btn btn-success ml-2" *ngIf="isUpdate && (detail.StatusId || detail.statusId) === STATUS.Completed" (click)="acknowledge()">
-            <i class="fas fa-thumbs-up mr-1"></i> Acknowledge
-          </button>
-
-          <button class="btn btn-default ml-2" (click)="back()">Close</button>
-        </div>
-      </div>
+      }
     </div>
   </section>
 </div>

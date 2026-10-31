@@ -4,7 +4,10 @@
   "extends": "./tsconfig.json",
   "compilerOptions": {
     "outDir": "./out-tsc/app",
-    "types": ["node", "jquery"],
+    "types": [
+      "node",
+      "jquery"
+    ],
     "paths": {
       "@app/*": ["./src/app/*"],
       "@environments/*": ["./src/environments/*"],
@@ -12,7 +15,8 @@
     }
   },
   "files": [
-    "src/main.ts"
+    "src/main.ts",
+    "src/main.server.ts"
   ],
   "include": [
     "src/**/*.d.ts"

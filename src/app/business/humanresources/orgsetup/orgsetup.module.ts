@@ -13,7 +13,7 @@ import { PositionComponent } from './position/position.component';
 /**
  * Organization Setup (Module 0) — the structure an employee sits on: Cost Center,
  * Job Grade, Holiday Calendar and Position (the budgeted seat Recruitment hires
- * against). Company and Branch screens live in HumanResourcesModule (hr2).
+ * against). Company and Branch screens live in CoreHRModule (corehr/).
  */
 @NgModule({
   declarations: [
