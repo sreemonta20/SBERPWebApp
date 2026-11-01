@@ -1,44 +1,3 @@
-// import { inject } from '@angular/core';
-// import {
-//   HttpRequest,
-//   HttpHandlerFn,
-//   HttpEvent,
-//   HttpInterceptorFn,
-// } from '@angular/common/http';
-// import { from, Observable, switchMap, of } from 'rxjs';
-// import { CommonService } from '@app/core/services/index';
-
-// let accessToken = '';
-
-// export const AuthReqInterceptor: HttpInterceptorFn = (
-//   req: HttpRequest<any>,
-//   next: HttpHandlerFn
-// ): Observable<HttpEvent<any>> => {
-//   const commonService = inject(CommonService);
-
-//   try {
-//     const hasAuthorizationHeader = req.headers.has('Authorization');
-
-//     if (!hasAuthorizationHeader) {
-//       commonService.GetAccessToken().subscribe((access_token) => {
-//         accessToken = access_token;
-//       });
-
-//       if (commonService.isValid(accessToken)) {
-//         const clonedRequest = req.clone({
-//           setHeaders: {
-//             Authorization: `Bearer ${accessToken}`,
-//           },
-//         });
-//         return next(clonedRequest);
-//       }
-//     }
-//   } catch (err) {
-//     console.error('Auth interceptor error:', err);
-//   }
-
-//   return next(req);
-// };
 // auth.req.interceptor.ts
 import { inject } from '@angular/core';
 import {
@@ -53,6 +12,7 @@ import { catchError, switchMap, take } from 'rxjs/operators';
 
 import { CommonService } from '../services/common.service';
 import { AuthService } from '../services/auth.service';
+import { gatewayUrl } from '@environments/environment';
 
 // Anonymous auth endpoints, in lower case: they are compared with the lower-cased request URL.
 const LOGIN_URL = '/gateway/auth/authenticateuser';
@@ -86,6 +46,11 @@ export const AuthReqInterceptor: HttpInterceptorFn = (
   req: HttpRequest<any>,
   next: HttpHandlerFn
 ): Observable<HttpEvent<any>> => {
+  // the token is for our API only: no other host ever receives it
+  if (!req.url.startsWith(gatewayUrl)) {
+    return next(req);
+  }
+
   const commonService = inject(CommonService);
   const authService = inject(AuthService);
 

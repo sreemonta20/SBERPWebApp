@@ -101,7 +101,6 @@ export class AppUserMenuComponent implements OnInit, AfterViewInit, OnDestroy {
 
   public error_message: any;
 
-  // dtMainOptions: DataTables.Settings = {};
   @ViewChild('confirmDialog') confirmDialog!: ConfirmDialogComponent;
   deleteConfirmationMessage =
     MessageConstants.APP_USER_MENU_DELETE_CONFIRMATION_MSG;
@@ -135,14 +134,6 @@ export class AppUserMenuComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   ngAfterViewInit() {
-    // ($('#appUserMenuTable') as any).DataTable({
-    //   paging: true,
-    //   lengthChange: true,
-    //   searching: true,
-    //   ordering: true,
-    //   responsive: true,
-    // });
-    // this.getAllAppUserMenuPagingWithSearch();
   }
 
   loadPermission(url: any): void {
@@ -549,40 +540,6 @@ export class AppUserMenuComponent implements OnInit, AfterViewInit, OnDestroy {
     }
   }
 
-  // deleteAppUserMenu(roleId: string): void {
-  //   if (confirm(MessageConstants.APP_USER_MENU_DELETE_CONFIRMATION_MSG)) {
-  //     this.loadingService.setLoading(true);
-
-  //     this.securityService.deleteAppUserMenu(roleId).subscribe({
-  //       next: (response: DataResponse) => {
-  //         this.loadingService.setLoading(false);
-  //         if (response.Success) {
-  //           this.notifyService.showSuccess(
-  //             response.Message,
-  //             MessageConstants.GENERAL_SUCCESS_TITLE
-  //           );
-  //           this.getAllAppUserMenuPagingWithSearch();
-  //         } else {
-  //           this.notifyService.showError(
-  //             response.Message,
-  //             MessageConstants.GENERAL_ERROR_TITLE
-  //           );
-  //         }
-  //       },
-  //       error: (error) => {
-  //         this.loadingService.setLoading(false);
-  //         this.error_message = error.error;
-  //         this.notifyService.showError(
-  //           isCommonErrorShow
-  //             ? MessageConstants.INTERNAL_ERROR_MEG
-  //             : this.error_message,
-  //           MessageConstants.GENERAL_ERROR_TITLE
-  //         );
-  //       },
-  //     });
-  //   }
-  // }
-
   deleteAppUserMenu(roleId: string): void {
     this.itemIdToDelete = roleId;
     this.confirmDialog.open();
@@ -601,7 +558,6 @@ export class AppUserMenuComponent implements OnInit, AfterViewInit, OnDestroy {
             response.Message,
             MessageConstants.GENERAL_SUCCESS_TITLE
           );
-          // this.dataTable?.ajax.reload(null, false);
           this.getAllAppUserMenuPagingWithSearch();
         } else {
           this.notifyService.showError(
@@ -674,7 +630,6 @@ export class AppUserMenuComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    // Unsubscribe from the Subject (for takeUntil approach)
     this.destroy$.next();
     this.destroy$.complete();
 

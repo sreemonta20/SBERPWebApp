@@ -10,6 +10,7 @@ import { MessageConstants } from '@app/core/constants';
 import { isCommonErrorShow } from '@environments/environment';
 import { PagingSearchFilter } from '@app/core/interface/common';
 import { ConfirmDialogComponent } from '@app/shared/confirm-dialog/confirm-dialog.component';
+import { take } from 'rxjs';
 
 /**
  * Positions — the budgeted SEAT. Full CRUD plus headcount controls (assign/release
@@ -78,7 +79,7 @@ export class PositionComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    this.commonService.GetLoggedInUser().subscribe((u: User) => (this.appUserProfileId = u?.Id || ''));
+    this.commonService.GetLoggedInUser().pipe(take(1)).subscribe((u: User) => (this.appUserProfileId = u?.Id || ''));
     const p = this.commonService.getMenuPermission(this.router.url);
     this.isView = p.IsView; this.isCreate = p.IsCreate; this.isUpdate = p.IsUpdate; this.isDelete = p.IsDelete;
     this.initForm();
@@ -111,7 +112,6 @@ export class PositionComponent implements OnInit {
     this.branchService.getAllPaging(f).subscribe({ next: (r: any) => { if (r?.success) this.branches = r.result?.items || []; } });
     this.costCenterService.getAllPaging(f).subscribe({ next: (r: any) => { if (r?.success) this.costCenters = r.result?.items || []; } });
     this.jobGradeService.getAllPaging(f).subscribe({ next: (r: any) => { if (r?.success) this.grades = r.result?.items || []; } });
-    // departments + designations come from Core HR (existing HumanResourcesService helpers)
     if ((this.hrService as any).getAllDepartments) {
       (this.hrService as any).getAllDepartments().subscribe({ next: (r: any) => { this.departments = r?.result || r || []; } });
     }
@@ -245,7 +245,6 @@ export class PositionComponent implements OnInit {
       error: (err) => { this.loadingService.setLoading(false); this.handleError(err); },
     });
   }
-  indent(depth: number): string { return '&nbsp;'.repeat(depth * 4); }
 
   private handleError(err: any): void {
     this.error_message = err;

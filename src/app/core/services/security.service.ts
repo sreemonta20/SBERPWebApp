@@ -8,7 +8,6 @@ import {
   AppUserProfileRegisterRequest,
 } from '@app/core/class';
 import { PagingSearchFilter } from '@app/core/interface/common';
-// import { securityApiUrl } from '@environments/environment';
 import { gatewayUrl } from '@environments/environment';
 import { APIConstants } from '@app/core/constants';
 import { CommonService, SessionStorageService, ApiService } from '@app/core/services';
@@ -17,8 +16,6 @@ import { CommonService, SessionStorageService, ApiService } from '@app/core/serv
   providedIn: 'root',
 })
 export class SecurityService {
-  // public loggedInUser: UserResponse = new UserResponse();
-  // userMenus: MenuItem[];
   constructor(
     private commonService: CommonService,
     private http: HttpClient,
@@ -116,32 +113,6 @@ export class SecurityService {
       );
   }
 
-  // getAllAppUserMenuPagingWithSearch(
-  //   searchTerm: string,
-  //   sortColumnName: string,
-  //   sortColumnDirection: string,
-  //   pageNumber: number,
-  //   pageSize: number
-  // ): Observable<DataResponse | undefined> {
-  //   const params = new HttpParams()
-  //     .set('searchTerm', searchTerm)
-  //     .set('sortColumnName', sortColumnName)
-  //     .set('sortColumnDirection', sortColumnDirection)
-  //     .set('pageNumber', pageNumber)
-  //     .set('pageSize', pageSize);
-  //   return this.apiService
-  //     .getAll(
-  //       APIConstants.API_GET_ALL_APP_USER_MENU_PAGING_WITH_SEARCH_TERM_URL,
-  //       params
-  //     )
-  //     .pipe(
-  //       map((response: DataResponse) => {
-  //         if (response) {
-  //           return response;
-  //         }
-  //       })
-  //     );
-  // }
 
   getAllAppUserMenuPagingWithSearch(
     searchTerm: string,

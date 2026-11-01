@@ -38,7 +38,7 @@
             </div>
           </div>
           <form [formGroup]="appUserProfileForm" autocomplete="off"
-            (ngSubmit)="createUpdateAppUserProfile(appUserProfileForm.value)">
+            (ngSubmit)="createUpdateAppUserProfile(appUserProfileForm.getRawValue())">
             <div class="card-body">
               <!-- Profile Information Card (Collapsible) -->
               <div class="card card-info">
@@ -210,7 +210,7 @@
                                 <div class="col-md-4">
                                   <div class="form-group">
                                     <label>User Name <span class="text-danger">*</span></label>
-                                    <input type="text" formControlName="UserName" class="form-control"
+                                    <input type="text" formControlName="UserName" class="form-control" [readonly]="isSelfService"
                                       autocomplete="off" placeholder="User Name">
                                       @if (appUserProfileForm.get('UserName')?.touched && appUserProfileForm.get('UserName')?.invalid) {
                                         <div
@@ -273,7 +273,7 @@
                             </form>
                           </div>
                           <!-- /.Main Card -->
-                          <div class="row">
+                          <div class="row" [hidden]="isSelfService">
                             <div class="col-12">
                               <div class="card">
                                 <!-- Loading indicator -->

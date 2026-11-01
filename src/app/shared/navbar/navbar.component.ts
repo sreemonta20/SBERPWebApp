@@ -62,7 +62,6 @@ export class NavbarComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   ngAfterViewInit() {
-    // this.loadScripts(['assets/js/menu.js']);
   }
 
   loadScripts(urls: string[]) {

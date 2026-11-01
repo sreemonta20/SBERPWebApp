@@ -13,7 +13,6 @@ export const OnboardingAPIConstants = {
   API_COMPLETE_ONBOARDING_URL: '/gateway/hr/onboarding/completeOnboarding',
   API_CANCEL_ONBOARDING_URL: '/gateway/hr/onboarding/cancelOnboarding',
 
-  // Security notifications (AdminLTE bell)
   API_GET_USER_NOTIFICATIONS_URL: '/gateway/security/notification/getUserNotifications',
   API_MARK_NOTIFICATION_READ_URL: '/gateway/security/notification/markRead',
 };

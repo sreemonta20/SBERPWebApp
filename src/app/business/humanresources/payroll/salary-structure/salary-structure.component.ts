@@ -10,6 +10,7 @@ import { MessageConstants } from '@app/core/constants';
 import { isCommonErrorShow } from '@environments/environment';
 import { PagingSearchFilter } from '@app/core/interface/common';
 import { ConfirmDialogComponent } from '@app/shared/confirm-dialog/confirm-dialog.component';
+import { take } from 'rxjs';
 
 /** Per-employee salary structure: basic + a set of component lines (each fixed
  *  or % of basic). Versioned by effective dates; a new structure closes the
@@ -54,7 +55,7 @@ export class SalaryStructureComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    this.commonService.GetLoggedInUser().subscribe((u: User) => (this.appUserProfileId = u?.Id || ''));
+    this.commonService.GetLoggedInUser().pipe(take(1)).subscribe((u: User) => (this.appUserProfileId = u?.Id || ''));
     const p = this.commonService.getMenuPermission(this.router.url);
     this.isView = p.IsView; this.isCreate = p.IsCreate; this.isUpdate = p.IsUpdate; this.isDelete = p.IsDelete;
     this.initForm();
@@ -119,7 +120,7 @@ export class SalaryStructureComponent implements OnInit {
   }
 
   loadEmployees(): void {
-    this.hrService.getAllEmployees?.().subscribe?.({
+    this.hrService.getAllEmployees().subscribe({
       next: (r: any) => { if (r?.success && Array.isArray(r.result)) this.employees = r.result; }, error: () => {},
     });
   }

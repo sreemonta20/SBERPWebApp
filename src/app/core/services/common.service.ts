@@ -179,6 +179,12 @@ export class CommonService {
     return !!menu && menu.IsView !== false;
   }
 
+  /** The signed-in user's own profile id? Everyone may open that, with or without the Profiles screen. */
+  isOwnProfile(profileId: string | null | undefined): boolean {
+    const ownId = this.sessionSnapshot().loggedInUser?.Id;
+    return !!profileId && !!ownId && profileId.toLowerCase() === String(ownId).toLowerCase();
+  }
+
   /** Flattens the menu tree into a new array (the old version appended to a field that was never cleared). */
   createSerializedUserMenus(userMenus: MenuItem[], into: MenuItem[] = []): MenuItem[] {
     for (const item of userMenus ?? []) {
@@ -230,20 +236,6 @@ export class CommonService {
     return Common.PAGE_SIZE_ARRAY;
   }
 
-  isValidGuid(value: string | null | undefined): boolean {
-    // Check if the value is null, undefined, or an empty string
-    if (!value || value.trim() === '') {
-      return false;
-    }
-
-    // Regular expression to match the GUID format
-    const guidPattern =
-      /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/;
-
-    // Test if the value matches the GUID pattern
-    return guidPattern.test(value);
-  }
-
   isInvalidObject(obj: any): boolean {
     if (obj === null || obj === undefined || typeof obj === 'undefined') {
       return true;
@@ -260,27 +252,8 @@ export class CommonService {
     return false;
   }
 
-  // isValid(value: any): boolean {
-  //   return (
-  //     value !== null ||
-  //     value !== 'undefined' ||
-  //     value !== undefined ||
-  //     typeof value !== 'undefined'
-  //   );
-  // }
   isValid(value: any): boolean {
     return value !== null && value !== undefined && value !== 'undefined';
-  }
-
-  generateGUID(): string {
-    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(
-      /[xy]/g,
-      function (c) {
-        const r = (Math.random() * 16) | 0;
-        const v = c === 'x' ? r : (r & 0x3) | 0x8;
-        return v.toString(16);
-      },
-    );
   }
 
   parseMenu(userMenus: any): MenuItem[] {

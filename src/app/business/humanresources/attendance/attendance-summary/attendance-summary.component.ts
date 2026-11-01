@@ -43,7 +43,7 @@ export class AttendanceSummaryComponent implements OnInit {
   }
 
   loadDepartments(): void {
-    this.hrService.getAllDepartments?.().subscribe?.({
+    this.hrService.getAllDepartments().subscribe({
       next: (r: any) => { if (r?.success && Array.isArray(r.result)) this.departments = r.result; }, error: () => {},
     });
   }

@@ -13,8 +13,7 @@ import { ToastrModule } from 'ngx-toastr';
 import { NgxSpinnerModule } from 'ngx-spinner';
 
 import {
-  AuthReqInterceptor,
-  EncryptDecryptAuthInterceptor
+  AuthReqInterceptor
 } from '@app/core/interceptor';
 import { AppRoutingModule } from './app.routes';
 import { AppComponent } from './app.component';
@@ -41,8 +40,7 @@ import { AppComponent } from './app.component';
     provideHttpClient(
       withFetch(),
       withInterceptors([
-        AuthReqInterceptor,
-        EncryptDecryptAuthInterceptor
+        AuthReqInterceptor
       ])
     ),
     // the animations package (~60 kB) is loaded on first use (first toast / spinner), not at start-up

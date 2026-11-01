@@ -40,7 +40,6 @@ export const AttendanceAPIConstants = {
   API_CREATE_UPDATE_ATTENDANCE_DEVICE_URL: '/gateway/hr/attendancedevice/createUpdateAttendanceDevice',
   API_DELETE_ATTENDANCE_DEVICE_URL: '/gateway/hr/attendancedevice/deleteAttendanceDevice',
 
-  // biometric attendance — office zones (network / Wi-Fi / GPS)
   API_GET_ALL_ATTENDANCE_ZONES_PAGING_URL: '/gateway/hr/attendancezone/getAllAttendanceZonesPagingWithSearch',
   API_CREATE_UPDATE_ATTENDANCE_ZONE_URL: '/gateway/hr/attendancezone/createUpdateAttendanceZone',
   API_DELETE_ATTENDANCE_ZONE_URL: '/gateway/hr/attendancezone/deleteAttendanceZone',

@@ -12,6 +12,7 @@ import {
 } from '@app/core/services';
 import { HRSettings } from '@app/core/interface/common';
 import { isCommonErrorShow } from '@environments/environment';
+import { take } from 'rxjs';
 
 @Component({
   selector: 'app-hr-settings',
@@ -51,7 +52,7 @@ export class HrSettingsComponent implements OnInit, AfterViewInit {
   ) {}
 
   ngOnInit(): void {
-    this.commonService.GetLoggedInUser().subscribe((user: User) => {
+    this.commonService.GetLoggedInUser().pipe(take(1)).subscribe((user: User) => {
       this.appUserProfileId = user?.Id || '';
     });
     this.loadPermission(this.router.url);
@@ -88,7 +89,6 @@ export class HrSettingsComponent implements OnInit, AfterViewInit {
       casualLeaveDays: [5],
       autoProcessTime: ['23:30'],
       autoProcessEnabled: [false],
-      // biometric attendance (mobile app / door terminal)
       timeZoneId: ['Asia/Dubai'],
       attendanceDayCutoffTime: ['04:00'],
       minMinutesBetweenInOut: [30],

@@ -15,6 +15,7 @@ import { PagingSearchFilter } from '@app/core/interface/common';
 import { Company, CompanyRequest } from '@app/core/interface/common';
 import { isCommonErrorShow } from '@environments/environment';
 import { ConfirmDialogComponent } from '@app/shared/confirm-dialog/confirm-dialog.component';
+import { take } from 'rxjs';
 
 @Component({
   selector: 'app-company',
@@ -62,7 +63,7 @@ export class CompanyComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    this.commonService.GetLoggedInUser().subscribe((user: User) => {
+    this.commonService.GetLoggedInUser().pipe(take(1)).subscribe((user: User) => {
       this.appUserProfileId = user?.Id || '';
     });
     this.loadPermission(this.router.url);

@@ -219,7 +219,7 @@
                 <tbody>
                   @for (n of treeFlat; track n) {
                     <tr>
-                      <td><span [innerHTML]="indent(n.depth)"></span>@if (n.depth > 0) {
+                      <td><span [style.padding-left.rem]="n.depth * 1.5"></span>@if (n.depth > 0) {
                       <i class="fas fa-angle-right text-muted mr-1"></i>
                     }{{ n.title }}</td>
                     <td>{{ n.positionCode }}</td>

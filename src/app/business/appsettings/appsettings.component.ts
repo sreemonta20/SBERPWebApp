@@ -32,7 +32,6 @@ export class AppsettingsComponent implements OnInit, AfterViewInit, OnDestroy {
   ngOnInit(): void {}
 
   ngAfterViewInit() {
-    // this.loadScripts(['assets/js/adminlte.js']);
   }
 
   loadScripts(urls: string[]) {

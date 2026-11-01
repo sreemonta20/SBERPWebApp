@@ -8,6 +8,7 @@ import { MessageConstants } from '@app/core/constants';
 import { isCommonErrorShow } from '@environments/environment';
 import { PagingSearchFilter } from '@app/core/interface/common';
 import { ConfirmDialogComponent } from '@app/shared/confirm-dialog/confirm-dialog.component';
+import { take } from 'rxjs';
 
 /** Appraisal cycles: the review period + workflow + "initiate reviews" action
  *  that fans out a review per employee with goals in the cycle. */
@@ -50,7 +51,7 @@ export class AppraisalCycleComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    this.commonService.GetLoggedInUser().subscribe((u: User) => (this.appUserProfileId = u?.Id || ''));
+    this.commonService.GetLoggedInUser().pipe(take(1)).subscribe((u: User) => (this.appUserProfileId = u?.Id || ''));
     const p = this.commonService.getMenuPermission(this.router.url);
     this.isView = p.IsView; this.isCreate = p.IsCreate; this.isUpdate = p.IsUpdate; this.isDelete = p.IsDelete;
     this.initForm();

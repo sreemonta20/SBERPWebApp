@@ -1,5 +1,3 @@
-// export * from './logged-in-user.interface';
-// export * from './user.interface';
 
 export * from './models/app.user.menu';
 export * from './models/app.user.profile';

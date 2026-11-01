@@ -18,7 +18,6 @@ export class HeaderComponent implements OnInit, OnDestroy  {
   /** Name, designation / role and photo (employee photo, else profile photo, else default avatar). */
   public card: UserCard;
   private subscriptions = new Subscription();
-  // public jwtHelper: JwtHelperService = new JwtHelperService();
   
   constructor(
     private datePipe: DatePipe,
@@ -49,36 +48,8 @@ export class HeaderComponent implements OnInit, OnDestroy  {
   }
 
   ngOnInit(): void {
-    // // this.isUserAuthenticated();
-    // this.commonService.GetLoggedInUser().pipe(take(1)).subscribe((userInformation) => {
-    //   this.user = userInformation;
-    // });
   }
 
-  // isUserAuthenticated() {
-  //   this.commonService.loggedInUser$.subscribe((loggedInUser) => {
-      
-  //     this.loggedInUser = loggedInUser;
-  //   });
-
-  //   this.user = this.loggedInUser.user;
-  //   const token: string | null = this.loggedInUser.access_token;
-  //   const tokenPayload = jwtDecode(token) as any;
-  //   const expirationTimestamp = tokenPayload.exp;
-  //   const currentTimestamp = new Date().getTime() / 1000; // Convert to seconds
-  //   if (
-  //     token &&
-  //     !this.commonService.IsExpired(expirationTimestamp, currentTimestamp)
-  //   ) {
-  //     return true;
-  //   } else {
-  //     return false;
-  //   }
-  // }
-
-  // signOut(): void {
-  //   this.commonService.RevokeSession();
-  // }
   signOut(): void {
      this.authService.logout();
   }

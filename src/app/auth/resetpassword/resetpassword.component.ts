@@ -35,7 +35,6 @@ export class ResetpasswordComponent
   ngOnInit(): void {}
 
   ngAfterViewInit() {
-    // this.loadScripts(['assets/js/adminlte.js']);
   }
 
   loadScripts(urls: string[]) {

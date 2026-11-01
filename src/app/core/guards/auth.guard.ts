@@ -82,7 +82,7 @@ export class AuthGuard implements CanMatch, CanActivate, CanActivateChild {
 
   /** The URL must be one of the user's menu screens (menu rights come from SecurityDB). */
   private checkPermission(url: string): boolean | UrlTree {
-    if (this.commonService.isRouteValid(url)) {
+    if (this.commonService.isRouteValid(url) || this.isOwnProfileUrl(url)) {
       return true;
     }
     this.notifyService.showError(
@@ -90,11 +90,17 @@ export class AuthGuard implements CanMatch, CanActivate, CanActivateChild {
       MessageConstants.GENERAL_ERROR_TITLE
     );
     const home = RouteConstants.BUSINESS_HOME_URL;
-    // fall back to the dashboard, unless the dashboard itself is the denied page (no loop)
     if (!url.startsWith(home) && this.commonService.isRouteValid(home)) {
       return this.router.parseUrl(home);
     }
     return false;
+  }
+
+  /** The "Profile" link of the top bar and sidebar: every user has one, not only those with the Profiles screen. */
+  private isOwnProfileUrl(url: string): boolean {
+    const tree = this.router.parseUrl(url);
+    return url.split(/[?#]/)[0].toLowerCase() === RouteConstants.USER_PROFILE_URL
+      && this.commonService.isOwnProfile(tree.queryParamMap.get('profile'));
   }
 
   private loginUrl(returnUrl: string): UrlTree {

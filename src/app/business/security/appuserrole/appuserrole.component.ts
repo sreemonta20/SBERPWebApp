@@ -97,11 +97,9 @@ export class AppUserRoleComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   ngAfterViewInit() {
-    // this.loadScripts(['assets/js/adminlte.js']);
   }
 
   loadPermission(url: any): void {
-    console.log('Execution from AppUserRole');
     const permissionModel = this.commonService.getMenuPermission(url);
     this.isView = permissionModel.IsView;
     this.isCreate = permissionModel.IsCreate;
@@ -164,7 +162,6 @@ export class AppUserRoleComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   changePageSize(event: any): void {
-    // this.pageSize = +event.target.value;
     this.currentPage = 1; // Reset to first page whenever page size changes
     this.getAllAppUserRolesPagination(this.currentPage, this.pageSize);
   }
@@ -264,40 +261,6 @@ export class AppUserRoleComponent implements OnInit, AfterViewInit, OnDestroy {
     }
   }
 
-  // deleteAppUserRole(roleId: string): void {
-  //   if (confirm('Are you sure you want to delete this role?')) {
-  //     this.loadingService.setLoading(true);
-
-  //     this.securityService.deleteAppUserRole(roleId).subscribe({
-  //       next: (response: DataResponse) => {
-  //         this.loadingService.setLoading(false);
-  //         if (response.Success) {
-  //           this.notifyService.showSuccess(
-  //             response.Message,
-  //             MessageConstants.GENERAL_SUCCESS_TITLE
-  //           );
-  //           this.getAllAppUserRolesPagination(this.currentPage, this.pageSize);
-  //         } else {
-  //           this.notifyService.showError(
-  //             response.Message,
-  //             MessageConstants.GENERAL_ERROR_TITLE
-  //           );
-  //         }
-  //       },
-  //       error: (error) => {
-  //         this.loadingService.setLoading(false);
-  //         this.error_message = error.error;
-  //         this.notifyService.showError(
-  //                     isCommonErrorShow
-  //                       ? MessageConstants.INTERNAL_ERROR_MEG
-  //                       : this.error_message,
-  //                     MessageConstants.GENERAL_ERROR_TITLE
-  //                   );
-  //       },
-  //     });
-  //   }
-  // }
-
   deleteAppUserRole(roleId: string): void {
     this.itemIdToDelete = roleId;
     this.confirmDialog.open();
@@ -343,7 +306,6 @@ export class AppUserRoleComponent implements OnInit, AfterViewInit, OnDestroy {
 
   resetForm(): void {
     this.isEdit = false;
-    // ActionName: 'Save',
     this.appUserRoleForm.reset({
       Id: null,
       RoleName: '',

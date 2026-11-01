@@ -18,7 +18,6 @@ const routes: Routes = [
   { path: 'shift',     component: ShiftComponent },
   { path: 'overtime',  component: OvertimeComponent },
   { path: 'summary',   component: AttendanceSummaryComponent },
-  // biometric attendance (mobile app / door terminal)
   { path: 'biometric-registrations', component: BiometricRegistrationComponent },
   { path: 'punches',   component: AttendancePunchComponent },
   { path: 'devices',   component: AttendanceDeviceComponent },

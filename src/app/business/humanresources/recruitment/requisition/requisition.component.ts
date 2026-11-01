@@ -13,6 +13,7 @@ import { MessageConstants } from '@app/core/constants';
 import { isCommonErrorShow } from '@environments/environment';
 import { PagingSearchFilter } from '@app/core/interface/common';
 import { ConfirmDialogComponent } from '@app/shared/confirm-dialog/confirm-dialog.component';
+import { take } from 'rxjs';
 
 /**
  * Manpower Requisition screen. Same shape as DepartmentComponent:
@@ -51,7 +52,6 @@ export class RequisitionComponent implements OnInit, AfterViewInit {
   public positions: any[] = [];
   public searchTerm = '';
 
-  // requisition status enum (mirror of EnumRequisitionStatus)
   public readonly STATUS = { Draft: 1, Pending: 2, Approved: 3, Rejected: 4, OnHold: 5, Closed: 6, Filled: 7 };
 
   public requisitionForm!: FormGroup;
@@ -72,7 +72,7 @@ export class RequisitionComponent implements OnInit, AfterViewInit {
   ) {}
 
   ngOnInit(): void {
-    this.commonService.GetLoggedInUser().subscribe((user: User) => {
+    this.commonService.GetLoggedInUser().pipe(take(1)).subscribe((user: User) => {
       this.appUserProfileId = user?.Id || '';
     });
     this.loadPermission(this.router.url);

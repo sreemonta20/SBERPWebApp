@@ -53,7 +53,6 @@ export class LoginComponent implements OnInit, AfterViewInit, OnDestroy {
   public tokenResponse: TokenResponse = new TokenResponse();
   public profileMenuResponse: ProfileMenuResponse = new ProfileMenuResponse();
 
-  // loginModelRequest = new LoginRequest();
   userMenus: MenuItem[] = [];
   private subscriptions = new Subscription();
 
@@ -79,7 +78,6 @@ export class LoginComponent implements OnInit, AfterViewInit, OnDestroy {
   ngOnInit(): void {}
 
   ngAfterViewInit() {
-    // this.loadScripts(['assets/js/adminlte.js']);
   }
 
   get f() {
@@ -136,7 +134,6 @@ export class LoginComponent implements OnInit, AfterViewInit, OnDestroy {
               this.commonService.parseMenu(this.profileMenuResponse.userMenus)
             );
 
-            // straight to the page the guard sent the user away from (no artificial delay)
             this.router.navigateByUrl(this.safeReturnUrl());
           } else {
             this.authService.logout();

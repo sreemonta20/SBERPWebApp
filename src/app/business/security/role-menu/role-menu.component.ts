@@ -12,6 +12,7 @@ import { PagingSearchFilter } from '@app/core/interface/common';
 import { Router } from '@angular/router';
 import { MessageConstants } from '@app/core/constants';
 import { isCommonErrorShow } from '@environments/environment';
+import { take } from 'rxjs';
 
 @Component({
   selector: 'app-role-menu',
@@ -77,7 +78,7 @@ export class RoleMenuComponent implements OnInit, AfterViewInit {
   ) {}
 
   ngOnInit(): void {
-    this.commonService.GetLoggedInUser().subscribe((user: User) => {
+    this.commonService.GetLoggedInUser().pipe(take(1)).subscribe((user: User) => {
       this.loggedInUserId = user.Id;
     });
     this.loadPermission(this.router.url);
@@ -85,7 +86,6 @@ export class RoleMenuComponent implements OnInit, AfterViewInit {
   }
 
   ngAfterViewInit() {
-    // this.loadScripts(['assets/js/adminlte.js']);
   }
 
   loadPermission(url: any): void {

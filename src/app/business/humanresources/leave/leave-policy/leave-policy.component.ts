@@ -10,6 +10,7 @@ import { MessageConstants } from '@app/core/constants';
 import { isCommonErrorShow } from '@environments/environment';
 import { PagingSearchFilter } from '@app/core/interface/common';
 import { ConfirmDialogComponent } from '@app/shared/confirm-dialog/confirm-dialog.component';
+import { take } from 'rxjs';
 
 /** Leave policies: entitlement per type/scope/year, plus a Grant action that
  *  seeds employee balances from the year's active policies. */
@@ -55,7 +56,7 @@ export class LeavePolicyComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    this.commonService.GetLoggedInUser().subscribe((u: User) => (this.appUserProfileId = u?.Id || ''));
+    this.commonService.GetLoggedInUser().pipe(take(1)).subscribe((u: User) => (this.appUserProfileId = u?.Id || ''));
     const p = this.commonService.getMenuPermission(this.router.url);
     this.isView = p.IsView; this.isCreate = p.IsCreate; this.isUpdate = p.IsUpdate; this.isDelete = p.IsDelete;
     this.initForm();
@@ -107,7 +108,7 @@ export class LeavePolicyComponent implements OnInit {
     });
   }
   loadDepartments(): void {
-    this.hrService.getAllDepartments?.().subscribe?.({
+    this.hrService.getAllDepartments().subscribe({
       next: (r: any) => { if (r?.success && Array.isArray(r.result)) this.departments = r.result; }, error: () => {},
     });
   }

@@ -16,9 +16,6 @@
             "outputPath": "dist/sberpweb-app",
             "index": "src/index.html",
             "browser": "src/main.ts",
-            "allowedCommonJsDependencies": [
-              "crypto-js"
-            ],
             "polyfills": [
               "zone.js"
             ],

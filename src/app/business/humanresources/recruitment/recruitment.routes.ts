@@ -10,7 +10,6 @@ import { ApplicantPipelineComponent } from './applicant-pipeline/applicant-pipel
 // AuthGuard on the parent /business route (canActivateChild), not on every route here.
 const routes: Routes = [
   { path: '', redirectTo: 'requisition', pathMatch: 'full' },
-  // Positions are maintained in Organization Setup (one shared seat model)
   { path: 'position',     redirectTo: '/business/humanresources/orgsetup/position', pathMatch: 'full' },
   { path: 'requisition',  component: RequisitionComponent },
   { path: 'job-posting',  component: JobPostingComponent },

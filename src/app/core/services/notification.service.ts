@@ -13,7 +13,7 @@ export class NotificationService {
   }
    
   showError(message: any, title: any){
-      this.toastr.error(message, title)
+      this.toastr.error(this.toText(message), title)
   }
    
   showInfo(message: any, title: any){
@@ -22,6 +22,17 @@ export class NotificationService {
    
   showWarning(message: any, title: any){
       this.toastr.warning(message, title)
+  }
+
+  /**
+   * Screens pass the raw response body when the API refuses a call, e.g. { Success, Message }
+   * from Security or { success, message } from HR: an object would show as "[object Object]".
+   */
+  private toText(message: any): string {
+    if (message && typeof message === 'object') {
+      return message.Message ?? message.message ?? 'Something went wrong. Please try again.';
+    }
+    return message;
   }
    
 }

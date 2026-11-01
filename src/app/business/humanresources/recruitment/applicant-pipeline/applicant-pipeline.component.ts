@@ -9,6 +9,7 @@ import { MessageConstants } from '@app/core/constants';
 import { isCommonErrorShow } from '@environments/environment';
 import { PagingSearchFilter } from '@app/core/interface/common';
 import { ConfirmDialogComponent } from '@app/shared/confirm-dialog/confirm-dialog.component';
+import { take } from 'rxjs';
 
 /**
  * Applicant pipeline. Pick a published posting, then see its applications laid
@@ -33,7 +34,6 @@ export class ApplicantPipelineComponent implements OnInit {
   public selectedPostingId = '';
   public applications: any[] = [];
 
-  // stage columns (mirror of EnumApplicationStage 1..6 for the active pipeline)
   public readonly stages = [
     { id: 1, name: 'Applied' },
     { id: 2, name: 'Screening' },
@@ -58,7 +58,7 @@ export class ApplicantPipelineComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    this.commonService.GetLoggedInUser().subscribe((u: User) => (this.appUserProfileId = u?.Id || ''));
+    this.commonService.GetLoggedInUser().pipe(take(1)).subscribe((u: User) => (this.appUserProfileId = u?.Id || ''));
     const p = this.commonService.getMenuPermission(this.router.url);
     this.isView = p.IsView; this.isUpdate = p.IsUpdate;
     this.loadPostings();

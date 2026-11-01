@@ -7,6 +7,7 @@ import { MessageConstants } from '@app/core/constants';
 import { isCommonErrorShow } from '@environments/environment';
 import { PagingSearchFilter } from '@app/core/interface/common';
 import { ConfirmDialogComponent } from '@app/shared/confirm-dialog/confirm-dialog.component';
+import { take } from 'rxjs';
 
 /**
  * Reviews: list + the rating screen. Each review carries goal lines + competency
@@ -55,7 +56,7 @@ export class ReviewComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    this.commonService.GetLoggedInUser().subscribe((u: User) => (this.appUserProfileId = u?.Id || ''));
+    this.commonService.GetLoggedInUser().pipe(take(1)).subscribe((u: User) => (this.appUserProfileId = u?.Id || ''));
     const p = this.commonService.getMenuPermission(this.router.url);
     this.isView = p.IsView; this.isUpdate = p.IsUpdate;
     this.loadPaging();
@@ -111,7 +112,6 @@ export class ReviewComponent implements OnInit {
 
   back(): void { this.viewMode = 'list'; this.detail = null; this.ratings = []; }
 
-  // live weighted preview (server recomputes authoritatively on save)
   get previewSelf(): number { return this.weighted('selfScore'); }
   get previewManager(): number { return this.weighted('managerScore'); }
   private weighted(field: 'selfScore' | 'managerScore'): number {

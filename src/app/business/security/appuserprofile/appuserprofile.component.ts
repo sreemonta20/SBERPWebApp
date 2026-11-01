@@ -95,6 +95,8 @@ export class AppUserProfileComponent
   private savedPhotoUrl: string = DEFAULT_AVATAR_URL;
   private localPreviewUrl: string | null = null;
   private photoLoad?: Subscription;
+  /** A user without the Profiles rights, on their own profile: no list, and role and status are locked. */
+  isSelfService = false;
 
   constructor(
     private formBuilder: FormBuilder,
@@ -115,6 +117,11 @@ export class AppUserProfileComponent
         this.appUserProfileId = userInformation.Id;
       });
     this.loadPermission(this.router.url.split('?')[0]);
+    if (!this.isUpdate && this.commonService.isOwnProfile(this.route.snapshot.queryParamMap.get('profile'))) {
+      this.isSelfService = true;
+      this.isView = true;
+      this.isUpdate = true;
+    }
   }
 
   ngOnInit(): void {
@@ -124,9 +131,9 @@ export class AppUserProfileComponent
   }
 
   ngAfterViewInit(): void {
-    // $('#userRoleSelect').select2();
-    this.getAllAppUserProfilePagingWithSearch();
-    // "Profile" in the top bar user card / sidebar opens this screen with ?profile={id}
+    if (!this.isSelfService) {
+      this.getAllAppUserProfilePagingWithSearch();
+    }
     this.subscription.add(
       this.route.queryParamMap.subscribe((params) => {
         const profileId = params.get('profile');
@@ -231,7 +238,6 @@ export class AppUserProfileComponent
           )
           .subscribe({
             next: (response: DataResponse) => {
-              console.log('DataTable Response:', response);
               if (response.ResponseCode === 302) {
                 const result =
                   response.Result as PagingResult<AppUserProfileResponse>;
@@ -394,7 +400,7 @@ export class AppUserProfileComponent
                 : this.notifyService.showWarning(photoResult.message, MessageConstants.GENERAL_WARNING_TITLE);
             }
             this.resetForm();
-            this.dataTable.ajax.reload(null, false);
+            this.dataTable?.ajax.reload(null, false);
           });
         } else {
           this.notifyService.showError(
@@ -472,6 +478,11 @@ export class AppUserProfileComponent
         Password: '',
         ConfirmPassword: '',
       });
+      if (this.isSelfService) {
+        // a form control's disabled state must be set on the control: the template attribute is overwritten
+        this.appUserProfileForm.get('AppUserRoleId')?.disable();
+        this.appUserProfileForm.get('IsActive')?.disable();
+      }
     } else {
       this.notifyService.showError(
         MessageConstants.APP_USER_PROFILE_NOT_FOUND_TO_UPDATE_MEG,
@@ -479,40 +490,6 @@ export class AppUserProfileComponent
       );
     }
   }
-
-  // deleteAppUserProfile(userProfileId: string): void {
-  //   if (confirm(MessageConstants.APP_USER_PROFILE_DELETE_CONFIRMATION_MSG)) {
-  //     this.loadingService.setLoading(true);
-
-  //     this.securityService.deleteAppUserProfile(userProfileId).subscribe({
-  //       next: (response: DataResponse) => {
-  //         this.loadingService.setLoading(false);
-  //         if (response.Success) {
-  //           this.notifyService.showSuccess(
-  //             response.Message,
-  //             MessageConstants.GENERAL_SUCCESS_TITLE
-  //           );
-  //           this.dataTable.ajax.reload(null, false);
-  //         } else {
-  //           this.notifyService.showError(
-  //             response.Message,
-  //             MessageConstants.GENERAL_ERROR_TITLE
-  //           );
-  //         }
-  //       },
-  //       error: (error) => {
-  //         this.loadingService.setLoading(false);
-  //         this.error_message = error.error;
-  //         this.notifyService.showError(
-  //           isCommonErrorShow
-  //             ? MessageConstants.INTERNAL_ERROR_MEG
-  //             : this.error_message,
-  //           MessageConstants.GENERAL_ERROR_TITLE
-  //         );
-  //       },
-  //     });
-  //   }
-  // }
 
   deleteAppUserProfile(userProfileId: string): void {
     this.itemIdToDelete = userProfileId;
@@ -590,6 +567,9 @@ export class AppUserProfileComponent
       ConfirmPassword: '',
     });
     this.initializeFormData();
+    if (this.isSelfService) {
+      this.loadAppUserProfileForEdit(this.appUserProfileId);
+    }
   }
 
   // ===============================================================================================================

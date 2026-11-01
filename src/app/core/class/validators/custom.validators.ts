@@ -1,16 +1,5 @@
 import { AbstractControl, ValidationErrors, ValidatorFn } from '@angular/forms';
 
-// export class CustomValidators {
-//   static patternValidator(regex: RegExp, error: ValidationErrors): ValidatorFn {
-//     return (control: AbstractControl) => {
-//       if (!control.value) {
-//         return null;
-//       }
-//       const valid = regex.test(control.value);
-//       return valid ? null : error;
-//     };
-//   }
-// }
 
 export class CustomValidators {
   static englishText(minLength: number, maxLength: number): ValidatorFn {
@@ -77,7 +66,6 @@ export class CustomValidators {
     return (control: AbstractControl): { [key: string]: any } | null => {
       const value = control.value;
 
-      // Check if the value is valid (allows English text, numbers, and hyphens)
       const regex = /^[a-zA-Z0-9-]+$/;
       if (!regex.test(value)) {
         return { 'englishTextNumberHyphen': 'Only English text, numbers, and hyphens are allowed' };

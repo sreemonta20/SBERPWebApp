@@ -19,6 +19,7 @@ export const SessionConstants = {
 export const RouteConstants = {
   LOGIN_USER_URL: 'auth/login',
   BUSINESS_HOME_URL: '/business/home',
+  USER_PROFILE_URL: '/business/security/appuserprofile',
   HOME_DASHBOARD_URL: '/home/dashboard'
 }
 
@@ -32,33 +33,7 @@ export const APIConstants = {
   AUTHORIZATION: 'Authorization',
   BEARER: 'Bearer',
   TOKEN: 'access_token',
-  // API_USER_LOGIN_URL: '/api/v1/Auth/authenticateUser',
-  // API_USER_PROFILE_MENU_URL: '/api/v1/Auth/getAppUserProfileMenu',
-  // API_REFRESH_TOKEN_URL: '/api/v1/Auth/refreshToken',
-  // API_REVOKE_URL: '/api/v1/Auth/revoke',
-  // API_GET_ALL_APP_USER_ROLES_URL: '/api/v1/RoleMenu/getAllAppUserRoles',
-  // API_GET_ALL_APP_USER_ROLES_PAGINATION_URL: '/api/v1/RoleMenu/getAllAppUserRolesPagination',
-  // API_GET_APP_USER_ROLE_BY_ID_URL: '/api/v1/RoleMenu/getAppUserRolesById',
-  // API_SAVE_UPDATE_APP_USER_ROLE_URL: '/api/v1/RoleMenu/createUpdateAppUserRole',
-  // API_DELETE_APP_USER_ROLE_URL: '/api/v1/RoleMenu/deleteAppUserRole',
-  // API_GET_ALL_APP_USER_MENU_PAGING_SEARCH_URL: '/api/v1/RoleMenu/getAllAppUserMenuPagingWithSearch',
-  // API_GET_ALL_APP_USER_MENU_BY_USER_ID_URL: '/api/v1/RoleMenu/getAllAppUserMenuByUserId',
-  // API_CREATE_UPDATE_APP_USER_MENU_URL: '/api/v1/RoleMenu/createUpdateAppUserMenu',
-  // API_DELETE_APP_USER_MENU_URL: '/api/v1/RoleMenu/deleteAppUserMenu',
-  // API_GET_ALL_PARENT_MENU_URL: '/api/v1/RoleMenu/getAllParentMenus',
-  // API_GET_APP_USER_ROLE_MENU_INITIAL_DATA_URL: '/api/v1/RoleMenu/getAppUserRoleMenuInitialData',
-  // API_SAVE_UPDATE_ROLE_MENU_URL: '/api/v1/RoleMenu/saveUpdateRoleMenuBulk',
-  // API_CREATE_UPDATE_APP_USER_URL:'/api/v1/User/createUpdateAppUser',
-  // API_GET_ALL_USER_PROFILE_PAGING_WITH_SEARCH_URL: '/api/v1/User/getAllAppUserProfilePagingWithSearch',
-  // API_GET_USER_PROFILE_BY_PROFILE_ID_URL: '/api/v1/User/getAppUserProfileById',
-  // API_POST_SAVE_UPDATE_USER_PROFILE_URL: '/api/v1/User/createUpdateAppUserProfile',
-  // API_DELETE_USER_PROFILE_URL: '/api/v1/User/deleteAppUserProfile',
 
-  // API_GET_ALL_APP_USER_ROLE_MENU_INITIAL_DATA_URL: '/api/v1/RoleMenu/getAppUserRoleMenuInitialData',
-  // API_GET_ALL_APP_USER_MENU_PAGING_WITH_SEARCH_TERM_URL: '/api/v1/RoleMenu/getAllAppUserMenuPagingWithSearch',
-  // API_GET_ALL_MENU_BY_USER_ID_URL: '/api/v1/RoleMenu/getAllAppUserMenuByUserId',
-  // API_POST_SAVE_UPDATE_USER_MENU_URL: '/api/v1/RoleMenu/createUpdateAppUserMenu',
-  // API_DELETE_USER_MENU_URL: '/api/v1/RoleMenu/deleteAppUserMenu',
 
   // =====================================================================
   // Security

@@ -19,7 +19,6 @@ declare var $: any;
   host: { class: 'hold-transition register-page' },
   styleUrls: ['./register.component.css'],
 })
-// export default class RegisterComponent {}
 export class RegisterComponent implements OnInit, AfterViewInit, OnDestroy {
   constructor(
     @Inject(DOCUMENT) private document: Document,
@@ -34,7 +33,6 @@ export class RegisterComponent implements OnInit, AfterViewInit, OnDestroy {
   ngOnInit(): void {}
 
   ngAfterViewInit() {
-    // this.loadScripts(['assets/js/adminlte.js']);
   }
 
   loadScripts(urls: string[]) {

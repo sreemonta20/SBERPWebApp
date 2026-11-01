@@ -1,4 +1,3 @@
-export * from './encrypt-decrypt.service';
 export * from './loader.service';
 export * from './notification.service';
 export * from './session.service';

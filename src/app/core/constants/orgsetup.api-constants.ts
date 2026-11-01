@@ -24,7 +24,6 @@ export const OrgSetupAPIConstants = {
   API_CREATE_UPDATE_JOBGRADE_URL: '/gateway/hr/jobgrade/createUpdateJobGrade',
   API_DELETE_JOBGRADE_URL: '/gateway/hr/jobgrade/deleteJobGrade',
 
-  // Holiday Calendar (+ dates)
   API_GET_ALL_HOLIDAYCALENDARS_PAGING_URL: '/gateway/hr/holidaycalendar/getAllHolidayCalendarsPagingWithSearch',
   API_CREATE_UPDATE_HOLIDAYCALENDAR_URL: '/gateway/hr/holidaycalendar/createUpdateHolidayCalendar',
   API_DELETE_HOLIDAYCALENDAR_URL: '/gateway/hr/holidaycalendar/deleteHolidayCalendar',

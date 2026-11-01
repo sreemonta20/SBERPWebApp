@@ -32,19 +32,6 @@ export class BusinessComponent implements OnInit, AfterViewInit, OnDestroy {
   ngOnInit(): void {}
 
   ngAfterViewInit() {
-    // this.loadScripts([
-    //   'assets/plugins/jquery/jquery.min.js',
-    //   'assets/plugins/bootstrap/js/bootstrap.bundle.min.js',
-    //   'assets/plugins/overlayScrollbars/js/jquery.overlayScrollbars.min.js',
-    //   'assets/js/adminlte.js',
-    //   'assets/plugins/jquery-mousewheel/jquery.mousewheel.js',
-    //   'assets/plugins/raphael/raphael.min.js',
-    //   'assets/plugins/jquery-mapael/jquery.mapael.min.js',
-    //   'assets/plugins/jquery-mapael/maps/usa_states.min.js',
-    //   'assets/plugins/chart.js/Chart.min.js',
-    //   'assets/js/pages/dashboard2.js',
-    // ]);
-    //this.loadScripts(['assets/js/adminlte.js']);
   }
 
   loadScripts(urls: string[]) {

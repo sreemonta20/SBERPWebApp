@@ -5,7 +5,6 @@ export interface AppUserRoleMenuResponse {
 
   MenuName: string;
 
-  // metadata (read-only)
   IsHeader: boolean;
   IsModule: boolean;
   IsSubModule?: boolean;

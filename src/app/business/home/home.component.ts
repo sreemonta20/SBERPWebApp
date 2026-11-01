@@ -89,8 +89,6 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
         filter((userInformation) => !!userInformation),
         take(1),
         tap((userInformation: User) => {
-          console.log('Home-> appUserProfileId: '+userInformation.Id);
-
           this.appUserProfileId = userInformation.Id;
           // Now that we have the user info, load permissions
           this.loadPermission(this.router.url);

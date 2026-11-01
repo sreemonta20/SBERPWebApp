@@ -3,14 +3,9 @@
 // The list of file replacements can be found in `angular.json`.
 
 export const environment = {
-  production: false,
-  encryptKey: '1203199320052021',
-  encryptIV:'1203199320052021'
+  production: false
 };
 
-// export const securityApiUrl = 'https://localhost:44360';
-// export const securityApiUrl = 'https://localhost:44357';
-// export const securityApiUrl = 'https://localhost:5200';
 export const gatewayUrl = 'https://localhost:5200';
 export const isCommonErrorShow = false;
 /*
