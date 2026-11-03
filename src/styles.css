@@ -85,3 +85,31 @@
 .dot { display:inline-block; width:10px; height:10px; border-radius:50%; margin-right:6px; vertical-align:middle; }
 .grant-year { width:80px; display:inline-block; }
 
+
+
+/* ===== Signed-in page layout =====
+   AdminLTE positions the sidebar absolutely unless the body has layout-fixed, so a long menu made the
+   page taller than its content and left empty white space under the footer. The sidebar now stays in
+   the viewport and scrolls on its own, and the footer always sits at the bottom of the page. */
+.wrapper.sb-layout {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background-color: #f4f6f9;
+}
+
+.dark-mode .wrapper.sb-layout {
+  background-color: #454d55;
+}
+
+.wrapper.sb-layout .main-sidebar {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  height: 100vh;
+  min-height: 0;
+}
+
+.wrapper.sb-layout > app-footer {
+  margin-top: auto;
+}
